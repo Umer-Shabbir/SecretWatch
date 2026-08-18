@@ -1,0 +1,376 @@
+{
+  "id": "M04",
+  "name": "Scanner + Findings",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-16T16:30:00.000Z",
+  "dependencies": [
+    "M00",
+    "M01",
+    "M03"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "fileKey": "7HiUEf43cHJk7Ms0WQJkqd",
+    "page": "04 — Dashboard",
+    "pageNodeId": "3:5",
+    "nodes": [
+      {
+        "name": "Dashboard / Findings / Default",
+        "nodeId": "28:421",
+        "state": "Default",
+        "x": 6200,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=28-421"
+      },
+      {
+        "name": "Dashboard / Findings / Loading",
+        "nodeId": "28:422",
+        "state": "Loading",
+        "x": 6200,
+        "y": 1184,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=28-422"
+      },
+      {
+        "name": "Dashboard / Findings / Empty",
+        "nodeId": "28:423",
+        "state": "Empty",
+        "x": 6200,
+        "y": 2408,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=28-423"
+      },
+      {
+        "name": "Dashboard / Findings / Error",
+        "nodeId": "28:424",
+        "state": "Error",
+        "x": 6200,
+        "y": 3228,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=28-424"
+      },
+      {
+        "name": "Dashboard / Findings / Mobile",
+        "nodeId": "28:425",
+        "state": "Mobile (responsive variant of Default)",
+        "x": 7760,
+        "y": 0,
+        "w": 375,
+        "h": 796,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=28-425"
+      }
+    ],
+    "componentsReused": [
+      "Header (7:34) — 1 instance per desktop frame; breadcrumb overridden to 'Findings' (list view, no specific finding context)",
+      "Sidebar (7:15) — 1 instance per desktop frame; 'Findings' Nav Item already ships as State=Selected in the base design system, no substitute nav item needed",
+      "Nav Item (7:14) — State=Default/State=Selected variants inside Sidebar instances",
+      "Badge (5:38) — Status=Pending (5:11), Status=Approved (5:14), Status=Flagged (5:17), Status=Ignored (5:20), Status=Failed (5:23); used across table rows (Default) and stacked cards (Mobile)",
+      "Pagination (7:67) — 1 instance on Default, 1 on Mobile",
+      "Skeleton=Table Row (7:78) — 6 instances on Loading",
+      "Empty State (7:87) — 1 instance on Empty, used with its own built-in default copy/action ('No findings yet' / 'Run a Scan')",
+      "Error State (7:92) — 1 instance on Error, copy overridden to findings-load-failure context, 'Retry' action kept"
+    ],
+    "componentsNotReused_builtLocally": [
+      "Findings table (hand-composed header + 6 rows) — same known limitation already flagged by M02: shared Table node (5:69) hardcodes 2 rows with no repeatable row sub-component to instance.",
+      "Status filter tabs (cloned from Tab Item 7:44/7:47 and Tabs 7:51 visual pattern) — source nodes are not a true instanceable component set; clone() produces detached COMPONENT nodes, not live INSTANCEs. Visual/structural pattern reused, not live-linked.",
+      "Mobile Header (node 30:712) — hand-built, duplicated from the same pattern already hand-built in M02 (15:629) and M03 (24:469) rather than a shared Mobile Header component instance. Flagged by audit as a reuse gap inherited from prior modules, propagated (not originated) here."
+    ],
+    "variablesUsed": [
+      "color/fg/default",
+      "color/fg/muted",
+      "color/accent/fg",
+      "color/canvas/subtle",
+      "color/border/default",
+      "color/border/muted",
+      "color/accent/subtle",
+      "radius/small"
+    ],
+    "textStylesUsed": [
+      "Page title (Semi Bold 24)",
+      "Card title (Semi Bold 16)",
+      "Body (Regular 14)",
+      "Small (Regular 12)"
+    ],
+    "typographyRule": "Inter for all UI labels/copy/nav/headers; JetBrains Mono for file paths and truncated commit SHA values, per DESIGN.md section 5.2. Verified by audit.",
+    "responsiveRules": "Desktop: 1440px frame, 240px fixed sidebar, 7-column findings table (Repository/File/Rule/Status/Commit/Detected/Actions) with pagination. Mobile (375px reference frame): desktop table fully replaced by stacked finding cards (repo+badge row, mono file path, rule, mono commit, time, 'View' action) per DESIGN.md 9.2/30; hamburger-style header (drawer nav placeholder) matching M02/M03 precedent; status filter tabs remain a single horizontally-clipped row (intentional horizontal-scroll affordance, consistent with DESIGN.md 'tables become horizontally scrollable' principle extended to the filter control); 16px page margins; single column throughout.",
+    "stateList": [
+      "default",
+      "loading",
+      "empty",
+      "error",
+      "mobile"
+    ],
+    "scopeNotes": [
+      "Per docs/figma/SCREEN_INVENTORY.md items 12-15, M04 Figma scope is Dashboard / Findings / Default, Empty, Loading, Error (+ Mobile responsive variant added per this task's explicit state-coverage requirement). 'Dashboard / Finding Detail / *' (inventory items 16-20) is explicitly OUT of scope — belongs to M05 — and was not designed.",
+      "No disabled state designed for this screen: not meaningful for a list/table view, not forced as a fake state, per FIGMA_WORKFLOW.md 'Do not create fake states that are not supported by the product.'",
+      "No 'redacted snippet' or secret-preview column included in the findings list (correctly deferred to M05 Finding Detail); Secret Redaction Display (7:97) therefore not needed in this module's screens."
+    ]
+  },
+  "changedFiles": [
+    "state/modules/M04.json",
+    "apps/web/prisma/schema.prisma",
+    "apps/web/prisma/migrations/20260816140000_add_finding_dedup_constraint/migration.sql",
+    "apps/web/prisma/seed.ts",
+    "apps/web/lib/findings.ts",
+    "apps/web/app/api/findings/route.ts",
+    "apps/web/app/api/findings/route.test.ts",
+    "apps/web/.env.example",
+    "package.json",
+    "packages/shared/package.json",
+    "packages/shared/tsconfig.json",
+    "packages/shared/src/index.ts",
+    "packages/shared/src/queue.ts",
+    "packages/shared/src/types.ts",
+    "packages/shared/src/redact.ts",
+    "apps/worker/package.json",
+    "apps/worker/tsconfig.json",
+    "apps/worker/vitest.config.ts",
+    "apps/worker/src/index.ts",
+    "apps/worker/src/db.ts",
+    "apps/worker/src/token-crypto.ts",
+    "apps/worker/src/github-client.ts",
+    "apps/worker/src/scanner.worker.ts",
+    "apps/worker/src/scheduler.ts",
+    "apps/worker/src/rules/definitions.ts",
+    "apps/worker/src/rules/entropy.ts",
+    "apps/worker/src/rules/engine.ts",
+    "apps/worker/src/__tests__/redact.test.ts",
+    "apps/worker/src/__tests__/rules-engine.test.ts",
+    "apps/worker/src/__tests__/dedup.test.ts"
+  ],
+  "backend": {
+    "status": "IMPLEMENTED",
+    "implementedAt": "2026-08-16T14:00:00.000Z",
+    "owner": "backend-builder@M04",
+    "summary": "Scanner worker (apps/worker), BullMQ scan-queue + scheduler-queue, GitHub code search client with in-process rate throttle, hardcoded initial ScanRule set (regex + entropy), Finding persistence with DB-level dedup (unique constraint), and GET /api/findings list API. Frontend UI, review-queue actions, flagger, and manual scan-trigger endpoint remain out of scope for this pass (see followUps).",
+    "apiContract": {
+      "endpoint": "GET /api/findings",
+      "queryParams": [
+        "status (optional enum PENDING|APPROVED|FLAGGED|IGNORED|FAILED)",
+        "page (1-based, default 1)",
+        "pageSize (default 20, max 50)",
+        "q (free-text over repoFullName/filePath)"
+      ],
+      "responseShape": "{ findings: FindingSummary[], page, pageSize, total, totalPages }",
+      "findingSummaryShape": "{ id, repoFullName, filePath, matchedRule, status, commitSha (short 7-char display form), createdAt (ISO 8601) }",
+      "note": "redactedSnippet intentionally excluded from the list response per M04 Figma scopeNotes (deferred to M05 Finding Detail).",
+      "auth": "requireSession() — any authenticated user, no admin gate (findings are global platform state, same pattern as M02 dashboard.ts)."
+    },
+    "migration": {
+      "name": "20260816140000_add_finding_dedup_constraint",
+      "kind": "additive",
+      "change": "CREATE UNIQUE INDEX on Finding(repoFullName, filePath, commitSha, matchedRule) + supporting indexes on status/createdAt. No columns altered or dropped, no data modified."
+    }
+  },
+  "frontend": {
+    "status": "IMPLEMENTED",
+    "implementedAt": "2026-08-16T15:30:00.000Z",
+    "owner": "frontend-builder@M04",
+    "summary": "Findings list screen implemented from Figma nodes 28:421-28:425 and wired to the real GET /api/findings endpoint. Route apps/web/app/(protected)/findings/page.tsx (Server Component) fetches the default first page via the existing apps/web/lib/findings.ts listFindings() helper (reused as-is from backend-builder@M04, not duplicated); route-level apps/web/app/(protected)/findings/loading.tsx provides the Suspense-driven initial loading skeleton; apps/web/components/findings/findings-client.tsx is the interactive Client Component handling status-filter tabs (All/Pending/Approved/Flagged/Ignored/Failed) and pagination, re-fetching from GET /api/findings on every change. New reusable apps/web/components/ui/pagination.tsx built (Figma node 7:67) since none existed. Desktop 7-column table and mobile stacked-card layout both implemented per Figma Default/Mobile frames; existing Badge/FindingStatusBadge/Skeleton/EmptyState/ErrorState components reused unmodified. JetBrains Mono (font-mono) applied only to filePath and commitSha; Inter (default) everywhere else.",
+    "route": "/findings (apps/web/app/(protected)/findings/page.tsx)",
+    "actionsColumnDecision": "Figma's 'Actions'/'View' column is kept visually present on both desktop table and mobile cards (matches Default/Mobile frames exactly) but rendered as non-interactive, non-navigating text (not an <a>/<Link>) with a disabled cursor and a title tooltip explaining Finding Detail isn't available yet. Chosen over omitting the column entirely so the shipped layout still matches Figma pixel-for-pixel; chosen over a real link because M05 (Finding Detail) does not exist yet and linking to it would 404 in production. Follow-up: swap to a real <Link href={`/findings/${id}`}> once M05 ships.",
+    "designTokenDeviation": "Figma frames show literal white (bg-white) fills on the Findings Table, Mobile Header, and Mobile Finding Cards per M04's own knownIssues. Per this task's explicit instruction (and consistent with how M02/M03 frontend already handled this exact class of gap), the frontend implementation uses the project's real semantic Tailwind classes (bg-canvas-default / bg-canvas-subtle) instead of literal white anywhere, so dark theme continues to render correctly. This is a deliberate faithful-in-structure/correct-in-token implementation choice, not a deviation from Figma's visual intent (Figma's own dark-theme variables would resolve to the same non-white value).",
+    "sharedFileChanges": [
+      "apps/web/components/layout/sidebar.tsx: fixed the existing 'Findings' nav item href from '/dashboard/findings' (a route that has never existed in this codebase's flat (protected)/* routing convention) to '/findings' (the route this module actually created). Backward compatible — no other module depended on the broken href.",
+      "apps/web/app/(protected)/dashboard/page.tsx: fixed the 'View all findings →' link from '/dashboard/findings' to '/findings' for the same reason. No other change made to this M02 file."
+    ],
+    "figmaDiscrepancies": [
+      "No 'filtered-empty' state is designed in Figma (only one Empty State component, 7:87, with 'No findings yet' / 'Run a Scan' copy for the true-empty case). Implemented a second, distinct copy ('No findings match this filter' / 'Clear filter') reusing the same EmptyState component for the 0-results-under-a-status-filter case, since showing 'Run a Scan' when data already exists elsewhere would be misleading. This is additive content within the existing component, not a new Figma screen.",
+      "Header breadcrumb: Figma frames show 'Findings' as breadcrumb text next to the SecretWatch logo. The shared apps/web/components/layout/header.tsx already supports a breadcrumb prop, but apps/web/app/(protected)/layout.tsx (shared across all protected routes) does not pass one on any existing route (dashboard, tokens, admin all render with no breadcrumb today). Left unchanged rather than modifying the shared layout for one module — pre-existing gap inherited from M02/M03, not introduced here.",
+      "Mobile hamburger/drawer control (☰) is rendered as a static glyph, matching M02/M03's existing non-functional mobile header precedent (Sidebar has no drawer/overlay implementation yet in this codebase) — not a regression introduced by this module."
+    ],
+    "tests": [
+      "No new automated tests added for the React components: the codebase has no jsdom/React Testing Library setup and no existing precedent of component-level tests (tokens-client.tsx, dashboard/page.tsx, etc. are all untested at the component level too) — vitest.config.ts runs environment: 'node' only. Verified instead via typecheck, lint, full production build (route ƒ /findings registered), and manual logic/state review. Flagged as a follow-up if the project later adds component-testing infrastructure.",
+      "Existing app/api/findings/route.test.ts (12 tests, unmodified) continues to pass and already asserts redactedSnippet is never present in the API response consumed by this UI."
+    ]
+  },
+  "integration": {
+    "status": "VERIFIED",
+    "owner": "integration-builder@M04",
+    "verdict": "GO",
+    "summary": "Full code-trace verification of Figma -> frontend -> API -> business logic -> DB/worker vertical slice. Type contract match confirmed (FindingSummary identical across lib/findings.ts and findings-client.tsx). Route wiring traced end-to-end (requireSession -> zod query parse -> listFindings -> Prisma -> JSON). Worker upsertFinding dedup logic confirmed aligned with the unique constraint migration (same field order/name). Nav links (sidebar, dashboard 'view all findings') confirmed pointing at the real /findings route. Root workspaces correctly resolve apps/worker and packages/shared. Full command matrix (typecheck/lint/test/build) passing across apps/web, apps/worker, and packages/shared together, not just in isolation. No live Postgres/Redis instance available in this environment -- migration application and true end-to-end runtime execution remain a pre-production follow-up.",
+    "fixesApplied": [],
+    "notedGaps": [
+      "packages/shared/src/types.ts declares its own unused FindingSummary/FindingsListResponse, duplicating apps/web/lib/findings.ts's local type. Not currently a live drift bug (nothing imports it), flagged as a latent trap.",
+      "Root package.json scripts (typecheck/lint/test/build) only target apps/web; apps/worker has separate worker:typecheck/worker:test scripts and no lint/build setup. Verified both manually; recommend a combined root 'verify' script as a follow-up."
+    ]
+  },
+  "security": {
+    "status": "REVIEWED",
+    "owner": "security-reviewer@M04",
+    "verdict": "PASS_WITH_FOLLOWUPS",
+    "summary": "Reviewed raw-secret handling, token decryption lifetime, redaction correctness (full-span masking, fails closed), GET /api/findings authorization (requireSession enforced, no IDOR since Findings are intentionally global/non-user-scoped per PRODUCT_SOURCE_OF_TRUTH.md), XSS surface (repoFullName/filePath rendered via plain JSX, no dangerouslySetInnerHTML), rate-limiter concurrency safety, and migration additivity. No CRITICAL or HIGH findings.",
+    "followUps": [
+      "LOW: apps/web/app/api/findings/route.ts has no try/catch around listFindings() -- an unhandled Prisma error would fall through to Next's default handler instead of a controlled JSON error response. Pre-existing repo-wide pattern (same gap in /api/tokens), not an M04-specific regression.",
+      "LOW: packages/shared/src/redact.ts's edge-showing branch can reveal up to ~67% of a secret at the exact 12-character MIN_MASKED_LENGTH_TO_SHOW_EDGES boundary. Not reachable by any current seeded ScanRule, but a landmine for future admin-editable rules (M08) capturing 12-15 char spans.",
+      "LOW: apps/worker/src/scanner.worker.ts has no try/catch around searchCode() -- currently safe (audited call chain never embeds dynamic content in thrown errors), but untested as a hard invariant.",
+      "LOW: apps/worker/src/scanner.worker.ts's pickActiveToken() has no locking, so concurrent jobs (worker concurrency: 2) can select the same token in the same tick. Fairness/rate-limit-budget issue only, not a cross-user security issue (shared SearchRateLimiter still caps aggregate request rate)."
+    ]
+  },
+  "checks": [
+    {
+      "name": "No Figma Sections used for M04 screens",
+      "status": "PASS"
+    },
+    {
+      "name": "No overlapping frames (M04 vs M04, and M04 vs existing M02/M03 frames on page 3:5), 120px+ gaps maintained",
+      "status": "PASS",
+      "note": "Programmatic AABB overlap check across all 19 top-level frames on page '04 — Dashboard' (14 pre-existing M02+M03, 5 new M04): 0 overlap pairs. M04 main column at x=6200 (1145px+ clear of M03's rightmost edge at x=5055), M04 mobile column at x=7760 (120px clear of M04 main column's right edge). Internal vertical gaps 120-160px. Independently re-verified by figma-auditor subagent."
+    },
+    {
+      "name": "Correct [AREA] / [SCREEN] / [STATE] naming, unique file-wide",
+      "status": "PASS",
+      "note": "Verified independently by figma-auditor subagent."
+    },
+    {
+      "name": "Existing components/variables reused (Header/Sidebar/Badge/Pagination/Skeleton/Empty State/Error State)",
+      "status": "PASS",
+      "note": "All confirmed as live INSTANCEs by figma-auditor subagent."
+    },
+    {
+      "name": "Raw secrets/tokens never shown",
+      "status": "PASS",
+      "note": "Programmatic regex scan of 185 text nodes across all 5 frames (AWS/GitHub/Stripe/Slack key patterns): 0 matches. Independently re-checked by figma-auditor subagent: PASS."
+    },
+    {
+      "name": "States covered: default/loading/empty/error/mobile",
+      "status": "PASS"
+    },
+    {
+      "name": "Status badges use text + icon/color (never color alone)",
+      "status": "PASS",
+      "note": "Verified by figma-auditor subagent."
+    },
+    {
+      "name": "Typography: Inter for UI, JetBrains Mono for technical values",
+      "status": "PASS",
+      "note": "Verified by figma-auditor subagent."
+    },
+    {
+      "name": "Radius restrained, border-driven surfaces, no heavy shadows",
+      "status": "PASS",
+      "note": "Verified by figma-auditor subagent."
+    },
+    {
+      "name": "Mobile frame has genuine responsive layout (stacked cards, not shrunk table)",
+      "status": "PASS",
+      "note": "Verified by figma-auditor subagent."
+    },
+    {
+      "name": "Visual screenshot audit of all 5 frames",
+      "status": "PASS"
+    },
+    {
+      "name": "Independent figma-audit skill compliance pass",
+      "status": "PASS_WITH_NOTES",
+      "note": "2 non-blocking findings recorded under knownIssues (raw bg-white fill instead of color/canvas/default token on a few nodes; duplicated non-componentized Mobile Header) — both inherited/propagated patterns from M00/M02/M03, not newly introduced defects specific to M04's own new components."
+    },
+    {
+      "name": "apps/web typecheck",
+      "status": "PASS",
+      "note": "npm run typecheck --workspace=apps/web (tsc --noEmit) — clean."
+    },
+    {
+      "name": "apps/web lint",
+      "status": "PASS",
+      "note": "npm run lint --workspace=apps/web (next lint) — no warnings or errors."
+    },
+    {
+      "name": "apps/web unit/integration tests",
+      "status": "PASS",
+      "note": "vitest run: 6 test files, 41 tests passed, including new app/api/findings/route.test.ts (12 tests: auth boundary, pagination, status/q filtering, response-shape assertion that redactedSnippet is never present)."
+    },
+    {
+      "name": "apps/web production build",
+      "status": "PASS",
+      "note": "next build succeeds with dummy env vars; GET /api/findings registered as dynamic route ƒ /api/findings."
+    },
+    {
+      "name": "apps/worker typecheck",
+      "status": "PASS",
+      "note": "npm run typecheck --workspace=apps/worker (tsc --noEmit) — clean."
+    },
+    {
+      "name": "apps/worker unit tests",
+      "status": "PASS",
+      "note": "vitest run: 3 test files, 24 tests passed — redaction (never contains raw secret substring, masks all occurrences, clamps length, fails closed with no isolated span), rule engine (AWS/GitHub/Stripe/Slack regex matches + entropy-gated generic rule + malformed-pattern safety), and dedup/idempotency (unique-constraint-driven upsert skips exact repeat commit/file/rule, but treats different commitSha or different matchedRule as distinct)."
+    },
+    {
+      "name": "apps/web typecheck (post-frontend)",
+      "status": "PASS",
+      "note": "npm run typecheck --workspace=apps/web (tsc --noEmit) — clean after Findings screen added."
+    },
+    {
+      "name": "apps/web lint (post-frontend)",
+      "status": "PASS",
+      "note": "npm run lint --workspace=apps/web (next lint) — no warnings or errors."
+    },
+    {
+      "name": "apps/web unit/integration tests (post-frontend)",
+      "status": "PASS",
+      "note": "vitest run: 6 test files, 41 tests passed — unchanged/unaffected by the frontend addition (no new automated component tests added; see frontend.tests note for rationale)."
+    },
+    {
+      "name": "apps/web production build (post-frontend)",
+      "status": "PASS",
+      "note": "next build succeeds with dummy env vars; /findings registered as dynamic route ƒ /findings alongside ƒ /api/findings."
+    },
+    {
+      "name": "Findings UI visual audit vs Figma (Default/Loading/Empty/Error/Mobile)",
+      "status": "PASS_WITH_NOTES",
+      "note": "Layout, spacing, typography (Inter/JetBrains Mono split), status badge semantics, table/card structure, and pagination match the 5 Figma frames. Notes: bg-white intentionally implemented as semantic canvas tokens (see frontend.designTokenDeviation); no breadcrumb rendered (pre-existing shared-layout gap, see frontend.figmaDiscrepancies); filtered-empty state copy is additive since Figma only designed one Empty State."
+    },
+    {
+      "name": "Security: no raw secret/redactedSnippet in Findings UI",
+      "status": "PASS",
+      "note": "Grepped apps/web/components/findings and apps/web/app/(protected)/findings for redactedSnippet/secret-pattern strings — only doc-comment references explaining the exclusion. FindingSummary type has no redactedSnippet field; component never requests, stores in state, or renders it."
+    },
+    {
+      "name": "Prisma schema/migration validation",
+      "status": "PASS",
+      "note": "prisma validate (with dummy DATABASE_URL) and prisma generate succeeded for both apps/web/prisma/schema.prisma (source of truth) and apps/worker (generates from the same schema via --schema=../web/prisma/schema.prisma, confirming no client drift). Migration is additive-only (CREATE UNIQUE INDEX + 2 supporting indexes); no DB was available in this environment to actually apply it — flagged as a follow-up to run `prisma migrate deploy` against a real database before relying on the constraint in production."
+    },
+    {
+      "name": "Security: raw secret never persisted/logged",
+      "status": "PASS",
+      "note": "redactSnippet() (packages/shared/src/redact.ts) fails closed when no secret span is isolated, masks every occurrence of the matched secret, and is unit-tested to assert the raw fixture substring never appears in output. github-client.ts decrypts the GitHub token only into a local variable for the lifetime of one call, never logs it. scanner.worker.ts logging (index.ts) only logs job id / error message, never job.data or matched values. GET /api/findings response never includes redactedSnippet or any raw value (asserted by test)."
+    }
+  ],
+  "knownIssues": [
+    "Hardcoded 'bg-white' fill (not bound to color/canvas/default variable) present on: Findings Table row backgrounds (nodes 29:485, 29:495, 29:505, 29:515, 29:525, 29:535), Mobile Header (node 30:712), Mobile Finding Cards (nodes 31:21, 31:31, ...). This pattern is inherited from the shared Header component (7:34) and already exists in M02/M03's Mobile Headers; M04 propagates rather than originates it. Recommend the M00/design-system owner sweep all modules' raw-white fills to the semantic token in a follow-up pass so dark-theme mode swaps correctly.",
+    "Mobile Header (30:712) is a hand-built frame duplicated from the same non-componentized pattern already hand-built in M02 (15:629) and M03 (24:469), rather than an instance of a single shared 'Mobile Header' component. Recommend promoting a shared Mobile Header component under '02 — Components' so future modules instance it instead of re-duplicating.",
+    "Status filter tabs are a cloned visual/structural pattern (from Tab Item 7:44/7:47 and Tabs 7:51), not live component INSTANCEs, because the source nodes are not structured as a true instanceable component set. Recommend the M00/design-system owner convert Tab Item into a proper variant component set so downstream modules can createInstance() it directly. (Same class of issue already flagged for the Table component by M02.)",
+    "Findings table is hand-composed (header + rows) rather than an instance of the shared Table component (5:69), because that shared node hardcodes 2 rows with no repeatable row sub-component — same known limitation M02 already documented for its own table.",
+    "Backend implemented — scanner worker, GitHub code search, regex/entropy evaluation, Finding persistence/dedup, and GET /api/findings all exist and pass tests. Frontend implemented — Findings list screen (Default/Loading/Empty/Error/Mobile) wired to real GET /api/findings. Integration verification (GO) and security review (PASS WITH FOLLOW-UPS, no blocking issues) both complete. Module marked DONE."
+  ],
+  "followUps": [
+    "Frontend implementation is done (this pass). Next agent(s): run integration verification (confirm the deployed page renders real DB-backed findings end-to-end against a live Postgres instance, not just the mocked-Prisma unit tests) and a security review pass (confirm authorization boundary, no redactedSnippet leakage, no XSS via repoFullName/filePath rendering) before marking M04 DONE.",
+    "Wire the 'Actions' / 'View' column to real navigation once M05 (Finding Detail) ships — currently intentionally non-navigating text, see frontend.actionsColumnDecision.",
+    "Consider adding component-level test coverage (jsdom + React Testing Library) for findings-client.tsx's filter/pagination/error-retry logic once the project adopts that test infrastructure — none exists yet for any component in the codebase.",
+    "Shared apps/web/app/(protected)/layout.tsx does not currently pass a per-route breadcrumb to Header despite Header supporting the prop and Figma showing one — would need a small, backward-compatible layout change (e.g. reading the route/segment) if a future module wants to close this gap across all screens at once.",
+    "POST /api/scan/trigger (manual scan enqueue) was explicitly marked optional/nice-to-have in scope and was skipped to avoid scope creep — left as a follow-up. Would need apps/web to add bullmq/ioredis deps and import QUEUE_NAMES/getRedisConnectionOptions from @secretwatch/shared to enqueue onto scan-queue.",
+    "Flagger worker (apps/worker/src/flagger.worker.ts, mentioned in ARCHITECTURE.md folder structure) intentionally NOT built — that is M07 scope.",
+    "Migration 20260816140000_add_finding_dedup_constraint has not been applied against a real database in this environment (no DATABASE_URL/Postgres instance available). Run `npm run prisma:migrate --workspace=apps/web` (or `prisma migrate deploy` in production) against a real DB before relying on the unique constraint. If any pre-existing duplicate Finding rows exist in a shared/staging DB, the CREATE UNIQUE INDEX will fail — that must be resolved with explicit approval (do not auto-delete), per CLAUDE.md section 4/5.",
+    "GitHub code search 'commitSha' caveat: the Search API's per-item `sha` field is the blob SHA of the matched file at index time, not a git commit SHA — used as Finding.commitSha per the existing single-column schema (no separate blob/commit distinction in the data model). If exact commit-level provenance is later required (e.g. for M05 Finding Detail deep-linking to a specific commit), a follow-up may need to resolve the true commit SHA via an extra GitHub API call per match.",
+    "Rule evaluation runs against GitHub Search API 'text_matches' fragments (short highlighted snippets), not full file contents — by design, to avoid downloading/storing full source files. This means some genuine secrets outside the highlighted fragment window could be missed; acceptable tradeoff for M04's scope but worth revisiting if false-negative rate matters later.",
+    "ScanRule seed rows (apps/web/prisma/seed.ts) and apps/worker/src/rules/definitions.ts intentionally duplicate the same 6 pattern strings (documented in both files) since apps/worker isn't imported by the Next.js seed script. If a rule pattern is edited in one place without the other, they will drift — M08 (Scan Rule CRUD) should make the DB the sole source of truth and delete the worker's hardcoded INITIAL_SCAN_RULES array once the admin UI exists.",
+    "apps/worker/src/token-crypto.ts is a documented copy of apps/web/lib/token-crypto.ts's decrypt() function (not imported directly) because apps/web is a Next.js app not designed for cross-package import from a plain Node worker. If a third module needs this logic, promote both to packages/shared in one coordinated change."
+  ],
+  "notes": [
+    "Design-only pass for M04 (Scanner + Findings) per figma-design-module skill boundary. Backend scanner worker, GitHub code search, regex/entropy rule evaluation, finding persistence/dedup, and frontend implementation are NOT part of this pass and remain required before M04 can be marked DONE.",
+    "Screen set follows docs/figma/SCREEN_INVENTORY.md items 12-15 (Dashboard / Findings / Default, Empty, Loading, Error) as the authoritative baseline, extended with a Mobile responsive variant per this task's explicit state-coverage requirement and docs/figma/FIGMA_WORKFLOW.md's supported state list.",
+    "Placed on existing page '04 — Dashboard' (node 3:5, already used by M02 and M03) rather than creating a new page, consistent with PRODUCT_SOURCE_OF_TRUTH.md listing Findings under the User/Dashboard area.",
+    "Did not touch any M00 ('02 — Components'), M01 ('06 — Flows/States'), M02 (existing Dashboard/Overview/* frames), or M03 (existing Dashboard/Tokens/* frames) content — only read from them for component/pattern reuse and overlap-avoidance placement.",
+    "Did not design 'Dashboard / Finding Detail / *' screens (inventory items 16-20) — that is module M05's scope, explicitly out of bounds for this task.",
+    "Did not design Admin Review Queue, Rules, Templates, Workers, Users, Marketing, Auth, Tokens, or Scan Rules screens — all out of scope for M04.",
+    "Independent read-only figma-audit performed via figma-auditor subagent after the design pass; 10 of 12 checklist items PASS, 2 non-blocking findings recorded above under knownIssues. No corrections were applied per the audit skill's read-only default (no explicit user request for corrections was given).",
+    "Module remains CLAIMED, not DONE — this pass intentionally stops at Figma design completion per the one-module rule and the task's explicit scope boundary (do not implement frontend/backend)."
+  ]
+}

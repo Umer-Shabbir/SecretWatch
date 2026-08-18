@@ -1,0 +1,102 @@
+{
+  "id": "M02",
+  "name": "User Overview",
+  "status": "CLAIMED",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-16T00:00:00.000Z",
+  "dependencies": [
+    "M00",
+    "M01"
+  ],
+  "implementationAgent": "orchestrator-agent",
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "page": "04 — Dashboard",
+    "status": "DONE (pre-existing, verified against implementation)",
+    "nodes": [
+      {
+        "name": "Dashboard / Overview / Default",
+        "nodeId": "15:38",
+        "state": "Default"
+      },
+      {
+        "name": "Dashboard / Overview / Loading",
+        "nodeId": "15:216",
+        "state": "Loading"
+      },
+      {
+        "name": "Dashboard / Overview / Empty",
+        "nodeId": "15:371",
+        "state": "Empty"
+      },
+      {
+        "name": "Dashboard / Overview / Error",
+        "nodeId": "15:492",
+        "state": "Error"
+      },
+      {
+        "name": "Dashboard / Overview / Mobile",
+        "nodeId": "15:618",
+        "state": "Mobile (responsive)"
+      }
+    ],
+    "componentsReused": [
+      "Header",
+      "Sidebar",
+      "Button (Primary/Secondary)",
+      "Badge (Pending/Approved/Flagged/Ignored)",
+      "Alert (error)",
+      "StatCard/EmptyState/ErrorState/Skeleton (local compositions, per M02 design notes)"
+    ],
+    "variablesUsed": "all colors/typography/radius via existing CSS variables / Tailwind token mapping, no hardcoded hex/px"
+  },
+  "backend": {
+    "status": "DONE",
+    "summary": "No schema change. Added lib/dashboard.ts (getDashboardOverview) reading Finding/Flag/ScanRule (global platform state — schema has no per-user ownership on these models) and the signed-in user's own active GithubToken (metadata only, never the encrypted value). Added lib/format-relative-time.ts helper."
+  },
+  "frontend": {
+    "status": "DONE",
+    "summary": "Built missing shared app shell (components/layout/header.tsx, sidebar.tsx) and (protected)/layout.tsx — Figma-designed but never coded despite M00 DONE. Rewrote (protected)/dashboard/page.tsx from stub to full Server Component with Default/Empty/Error states, added dashboard/loading.tsx for the Loading state (Next.js route-level Suspense fallback). Added reusable ui/stat-card.tsx, empty-state.tsx, error-state.tsx, skeleton.tsx, finding-status-badge.tsx. Extended shared Badge with an 'accent' (blue) variant for APPROVED status — additive, no existing usage changed."
+  },
+  "integration": {
+    "status": "DONE",
+    "summary": "Page fetches real data server-side via getDashboardOverview(session.user.id); no mock/fake production data. Scoped down 'Scan frequency' and 'Repositories monitored' rows shown in the Figma mock (no backing model/config exists yet — those are M04/M08 territory) rather than fabricating values; kept 'Active rules' + link to Scan Rules, which is real."
+  },
+  "tests": {
+    "status": "PASS",
+    "summary": "typecheck: clean. lint: clean. vitest: 10/10 passed (added 5 new tests for format-relative-time). next build: succeeds, /dashboard compiles as a dynamic route."
+  },
+  "security": {
+    "status": "PASS",
+    "summary": "getDashboardOverview never selects GithubToken.encrypted; only active/scopes/lastUsedAt/rateLimitRemaining are read. No redacted snippet or raw secret rendered on the overview. Session required to view account status; unauthenticated/failed session treated as a load error, not a crash."
+  },
+  "changedFiles": [
+    "apps/web/app/(protected)/layout.tsx",
+    "apps/web/app/(protected)/dashboard/page.tsx",
+    "apps/web/app/(protected)/dashboard/loading.tsx",
+    "apps/web/components/layout/header.tsx",
+    "apps/web/components/layout/sidebar.tsx",
+    "apps/web/components/ui/stat-card.tsx",
+    "apps/web/components/ui/empty-state.tsx",
+    "apps/web/components/ui/error-state.tsx",
+    "apps/web/components/ui/skeleton.tsx",
+    "apps/web/components/ui/finding-status-badge.tsx",
+    "apps/web/components/ui/badge.tsx",
+    "apps/web/lib/dashboard.ts",
+    "apps/web/lib/format-relative-time.ts",
+    "apps/web/lib/format-relative-time.test.ts",
+    "apps/web/next.config.mjs",
+    "state/modules/M02.json"
+  ],
+  "knownIssues": [
+    "Shared Table component (node 5:69, owned by M00) still lacks a repeatable Row sub-component; dashboard table built as a plain <table> against tokens instead of a shared Table component — recommend M00 owner add one for future modules to reuse.",
+    "StatCard/EmptyState/ErrorState remain local compositions, not shared Figma components, consistent with M02 Figma pass notes.",
+    "'Scan frequency' and 'Repositories monitored' fields from the Figma mock are intentionally omitted from the real UI — no backing data model exists yet (scan scheduling config is M04/M08 scope)."
+  ],
+  "notes": [
+    "Implementation-agent pass (override of prior figma-designer-only claim per orchestration rules). Figma design was already DONE from a prior design-only pass; this pass added backend data layer, app shell, and full frontend implementation, then verified against the existing Figma screens.",
+    "Findings/Flags/ScanRule are global platform state per the Prisma schema (no per-user foreign key) — overview shows the same operational data to any signed-in user; only GitHub account/token status is user-scoped.",
+    "Lock cleared manually by user-authorized action on 2026-08-17: rescope-agent lock (PID from lockfile) confirmed dead via independent Get-Process check before deletion. state/locks/M02.lock removed, owner/claimedAt reset to null. Module status field left as-is pending follow-up work."
+  ]
+}

@@ -1,0 +1,257 @@
+{
+  "id": "M06",
+  "name": "Admin Review Queue",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-16T20:05:00.000Z",
+  "dependencies": [
+    "M01",
+    "M04"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "fileKey": "7HiUEf43cHJk7Ms0WQJkqd",
+    "page": "05 — Admin",
+    "pageNodeId": "3:6",
+    "nodes": [
+      {
+        "name": "Admin / Review Queue / Default",
+        "nodeId": "42:844",
+        "state": "Default",
+        "x": 0,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=42-844"
+      },
+      {
+        "name": "Admin / Review Queue / Loading",
+        "nodeId": "42:845",
+        "state": "Loading",
+        "x": 0,
+        "y": 1184,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=42-845"
+      },
+      {
+        "name": "Admin / Review Queue / Empty",
+        "nodeId": "42:846",
+        "state": "Empty",
+        "x": 0,
+        "y": 2408,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=42-846"
+      },
+      {
+        "name": "Admin / Review Queue / Error",
+        "nodeId": "42:847",
+        "state": "Error",
+        "x": 0,
+        "y": 3228,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=42-847"
+      },
+      {
+        "name": "Admin / Review Queue / Confirm Approve",
+        "nodeId": "42:848",
+        "state": "Confirm Approve (modal overlay on Default)",
+        "x": 1560,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=42-848"
+      },
+      {
+        "name": "Admin / Review Queue / Mobile",
+        "nodeId": "42:849",
+        "state": "Mobile (responsive variant of Default)",
+        "x": 3120,
+        "y": 0,
+        "w": 375,
+        "h": 708,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=42-849"
+      }
+    ],
+    "sharedComponentChange": {
+      "component": "Sidebar (7:15, page '02 — Components')",
+      "change": "Added a real 9th Nav Item ('Review Queue', State=Default variant 7:10) to the master Sidebar component itself, inserted immediately after 'Findings' and before 'Scan Rules'. The component's VERTICAL auto-layout reflowed all items automatically; frame height (600px) was unaffected since content (355px) still fits with room to spare. All 8 pre-existing nav items (Overview, Findings, Scan Rules, Flags, Workers, Templates, Users, Settings) are unchanged and still present — this is a strictly additive, backward-compatible change per CLAUDE.md section 4 (shared components require extra care and must stay backward compatible).",
+      "reason": "First attempt used detachInstance() to insert a 9th nav item per-frame, which broke live component linkage (flagged BLOCKING by an independent figma-auditor pass: 'no Sidebar component reused, hand-rebuilt in every frame'). A second attempt tried repurposing/overlaying an existing item instead of extending the component, but that either silently dropped a real nav item (renaming 'Scan Rules') or structurally hid it behind an opaque duplicate — both rejected as dishonest fixes. Asked the user how to resolve the underlying gap; user chose to extend the shared Sidebar component itself (recommended option) rather than work around it per-module.",
+      "userDecision": "User explicitly chose 'Extend Sidebar component' when asked, over 'repurpose an existing slot' or 'leave unmodified as known issue'.",
+      "downstreamImpact": "Every module using the Sidebar component (M00 foundation, and any of M01-M05's existing frames that instance it) now shows 'Review Queue' as a 9th nav entry. This is additive/non-breaking: existing instances elsewhere in the file automatically pick up the new item since they reference the same master component; no existing frame's approved content, other nav items, or selected-state on other screens was altered by this change."
+    },
+    "componentsReused": [
+      "Header (7:34) — 1 live instance per desktop frame (5 of 6 frames; Mobile uses a hand-built Mobile Header per established M02/M03/M04/M05 precedent); breadcrumb text slot overridden to 'Review Queue' on all 5",
+      "Sidebar (7:15) — after extending the master component with a real 'Review Queue' item (see sharedComponentChange above), all 5 desktop-scale frames (Default, Loading, Empty, Error, Confirm Approve) use genuine live INSTANCEs of the updated 9-item component, each with 'Findings' swapped to State=Default and 'Review Queue' swapped to State=Selected via swapComponent() — no detaching required this time. Verified via getMainComponentAsync() equality (mainComponentId === '7:15') on all 5 instances.",
+      "Nav Item (7:14 component set) — State=Default (7:10) and State=Selected (7:12) variants used via swapComponent() on the live Sidebar instances' nested Nav Item children (confirmed this works without detaching the parent instance)",
+      "Badge (5:38) — Status=Pending (5:11) used as a live instance on every review-queue-item card (Default desktop x3, Mobile x2), since pending is the only status a review-queue item can have by definition",
+      "Button (4:50 set) — Variant=Secondary/State=Default/Size=Medium (4:14, relabeled 'Ignore') and Variant=Primary/State=Default/Size=Medium (4:2, relabeled 'Approve & Flag') — live instances on every card, desktop and mobile. Mobile buttons additionally set to layoutSizingHorizontal=FILL for full-width stacked presentation, and resized to 44px height (up from the component's 36px default) to satisfy DESIGN.md section 30's 44px minimum mobile tap-target rule — both axes were FIXED sizing mode so this resize does not break internal auto-layout.",
+      "Tab Item (7:50 set) — State=Default (7:44) and State=Selected (7:47) variant components used directly via createInstance() to build the Severity Filter Tabs row (All/Critical/High/Medium/Low) on both Default desktop and Mobile, producing true live INSTANCEs",
+      "Dialog=Confirmation (7:2) — 1 live instance on Confirm Approve state; ships with the exact DESIGN.md section 26 copy ('Approve finding?' / 'This will allow the flagging worker to create a GitHub issue using an available authorized token.' / [Cancel] [Approve & Flag]) already baked in — no text override needed",
+      "Empty State (7:87) — 1 live instance on the Empty state; copy overridden to 'Nothing to review' / 'All findings have been reviewed. New findings will appear here for approval.' / 'View Findings'",
+      "Error State (7:92) — 1 live instance on the Error state; copy overridden to 'Failed to load review queue' / \"We couldn't load pending findings. Please try again.\" / 'Retry' (unchanged)",
+      "Pagination (7:67) — 1 instance on Default desktop, 1 instance on Mobile (repositioned after the mobile button height fix to stay below the taller cards)"
+    ],
+    "componentsNotReused_builtLocally": [
+      "Review Queue Item card (repo+badge row, mono file path, rule name, detected-time caption, actions row) — hand-composed frame; no generic 'Finding Detail'/'labeled card' component exists as an instanceable primitive in '02 — Components' (only a fixed-content Worker Health Card, 5:52). Same class of gap already flagged by M02 (stat cards), M04 (findings table), and M05 (detail card) — hand-building a bespoke content card remains the documented workaround. Recommend the M00/design-system owner promote a 'Review Queue Item' or generic 'Content Card' component so future modules can instance it.",
+      "Skeleton bars for Loading state — hand-built rounded rectangles matching the visual language of Skeleton=Table Row (7:78) rather than live instances, because 7:78's fixed 5-column table-row shape does not fit a card-shaped layout (repo/badge row + 3 stacked lines + action-button row). Same documented gap M05 already flagged for its own field-list skeleton. Recommend a 'Skeleton=Card' variant.",
+      "Mobile Header (hand-built frame: hamburger + wordmark + avatar) — duplicated pattern, not an instance of a shared Mobile Header component, consistent with the same known gap already flagged by M02/M03/M04/M05 (no shared Mobile Header component exists yet).",
+      "Breadcrumb delivered via Header's existing text slot override ('Review Queue'), not a standalone Breadcrumbs component — same pre-existing design-system gap already flagged by M05."
+    ],
+    "variablesUsed": [
+      "color/fg/default (#1f2328)",
+      "color/fg/muted (#656d76)",
+      "color/fg/subtle (#6e7781)",
+      "color/accent/fg (#0969da)",
+      "color/canvas/default (#ffffff)",
+      "color/border/default (#d0d7de)",
+      "color/border/muted (#d8dee4)",
+      "color/danger/emphasis (#cf222e) via Error State component",
+      "color/success via Empty/Badge components",
+      "radius/small (6)"
+    ],
+    "textStylesUsed": [
+      "Page title (Semi Bold 24 / Semi Bold 20 on Mobile)",
+      "Card title (Semi Bold 16 / Semi Bold 15 on Mobile, repo name)",
+      "Body (Regular 14 / 13 on Mobile)",
+      "Small (Regular 12-13 / 11-12 on Mobile)",
+      "Medium 14 (rule name label)"
+    ],
+    "typographyRule": "Inter for all UI labels/copy/nav/headers/breadcrumb/buttons/repo names/rule names (per DESIGN.md 5.2, repository/rule are link-styled references not raw technical values, matching M04's Repository/Rule vs File typography split); JetBrains Mono for file paths only (no commit SHA surfaced in this list-style review queue view, consistent with DESIGN.md section 19's Review Queue example which omits a commit column).",
+    "responsiveRules": "Desktop (1440px frames, 5 of 6 states): 240px fixed sidebar (live 9-item Sidebar instance), single content column (1136px) with page title + count subtitle, severity filter tabs (All/Critical/High/Medium/Low), vertically-stacked review-queue-item cards (repo+badge row, mono file path, rule, detected-time caption, Ignore secondary + Approve & Flag primary actions right-aligned), pagination. Mobile (375px reference frame, Mobile state only, final height 708px after the 44px tap-target fix): hamburger-style Mobile Header (hand-built placeholder per M02/M03/M04/M05 precedent) replaces Header+Sidebar; single-column stacked layout, 16px page margins; severity tabs remain a single horizontally-scrollable row (intentional horizontal-scroll affordance, consistent with M04's precedent); review-queue-item cards narrow to 343px with reduced type scale (15px repo / 12px file / 13px rule / 11px time vs desktop's 16/13/14/12) and full-width STACKED actions (Approve & Flag primary on top at 44px height, Ignore secondary below at 44px height, both layoutSizingHorizontal=FILL) per DESIGN.md 9.2/30 'full-width primary actions', 'stacked finding details', and the 44px minimum interactive target rule.",
+    "stateList": [
+      "default",
+      "loading",
+      "empty",
+      "error",
+      "confirm-approve (modal)",
+      "mobile"
+    ],
+    "scopeNotes": [
+      "docs/figma/FIGMA_WORKFLOW.md's screen list only names 'Admin / Review Queue / Default' explicitly; this task's explicit instruction (source-of-truth priority 1) required designing all meaningful states, so Loading/Empty/Error/Confirm Approve/Mobile were added beyond that one-line baseline, following the same state-expansion precedent M04 and M05 already established for their own screens.",
+      "No 'disabled' state was designed as a separate frame: not meaningful for a queue/list view on its own (the closest disabled-adjacent moment — buttons mid-action, e.g. 'Approving...'/'Ignoring...' — is a frontend in-flight concern per DESIGN.md 12.4/25 'Loading state must preserve button dimensions', not a distinct Figma state), consistent with M05's same reasoning for its own module.",
+      "'Failed' finding status was NOT modeled as a distinct badge/card variant in this module: a review queue by definition only surfaces PENDING findings awaiting a human decision (per ARCHITECTURE.md's admin review gate design and DESIGN.md section 19's example, which only shows Pending items). Findings with status=FAILED are out of scope for a review queue and remain a Findings-list/Finding-detail concern (M04/M05).",
+      "Placed on existing (previously empty) page '05 — Admin' (node 3:6) — this is the first module to add content to that page, consistent with PRODUCT_SOURCE_OF_TRUTH.md/DESIGN.md/docs/figma/FIGMA_WORKFLOW.md listing Review Queue under the Admin area on a dedicated Admin page distinct from '04 — Dashboard' (used by M02/M03/M04/M05).",
+      "The master Sidebar component (7:15) on page '02 — Components' (owned by M00) was extended with a 9th nav item — see figma.sharedComponentChange above for full rationale, the rejected alternatives, and the explicit user decision authorizing this shared-file change per CLAUDE.md section 4. No other M00 content, and no M01-M05 existing frame content, was touched.",
+      "Did not design Rules, Templates, Workers, Users, Marketing, Auth, Tokens, Scan Rules, Overview, Findings-list, or Finding-detail screens — all out of scope for M06 and belong to other modules (M07-M12 and already-claimed M01-M05).",
+      "Audit trail UI (per MODULES.md M06 scope: 'audit trail') was NOT designed as a separate screen/section: DESIGN.md does not specify a distinct Review Queue audit-trail view, and ARCHITECTURE.md's audit_log table is described as a backend logging concern ('Log every flag action to audit_log table... for accountability'), not a documented UI surface. No fake audit-trail screen was invented per FIGMA_WORKFLOW.md's 'Do not create fake states that are not supported by the product' rule. Flagging as an open product-decision gap: if the product wants a visible audit trail surfaced in the Admin UI, that needs an explicit design decision and is not yet scoped to any screen in DESIGN.md."
+    ]
+  },
+  "changedFiles": [
+    "state/modules/M06.json",
+    "apps/web/app/(protected)/admin/review-queue/page.tsx",
+    "apps/web/app/(protected)/admin/review-queue/loading.tsx",
+    "apps/web/components/admin/review-queue-client.tsx"
+  ],
+  "implementation": {
+    "agent": "implementation-agent@M06",
+    "backendStatus": "REUSED_NO_NEW_ENDPOINTS",
+    "backendNotes": "No new backend code was required. GET /api/findings (M04's listFindings, status=PENDING) supplies the queue's data; POST /api/findings/:id/approve and /:id/ignore (built by M05, already ADMIN-gated via requireAdmin(), already audit-logged via recordAudit(), already concurrency-safe via conditional updateMany) are called as-is. This satisfies ARCHITECTURE.md/DESIGN.md/docs/MODULES.md's Review Queue scope (pending list, approve, ignore, admin gate, audit trail) without duplicating any business logic.",
+    "frontendStatus": "IMPLEMENTED",
+    "frontendNotes": "New route apps/web/app/(protected)/admin/review-queue/{page.tsx,loading.tsx} + apps/web/components/admin/review-queue-client.tsx. Reuses existing components as-is: Button, FindingStatusBadge, ErrorState, EmptyState, Pagination, Skeleton, ConfirmApproveDialog (same dialog M05's Finding Detail already uses). Sidebar's 'Review Queue' nav entry (added during the Figma pass) already linked to /admin/review-queue and required no change. States implemented: default (list + counts), loading (route-level Suspense skeleton), empty ('Nothing to review'), error (retry), confirm-approve (modal), mobile (responsive stacked cards + full-width buttons via Tailwind breakpoints on the same route, matching the M04/M05 convention already established instead of a separate mobile page).",
+    "figmaDeviation": "The Figma Default/Mobile frames (42:844/42:849) include a severity filter tab row (All/Critical/High/Medium/Low). This was intentionally NOT implemented: the Finding data model (ARCHITECTURE.md, prisma/schema.prisma) has no severity column, and no severity concept exists anywhere else in the codebase (verified via repo-wide search). Building a severity filter over a field that does not exist would fabricate a non-functional control and violate docs/figma/FIGMA_WORKFLOW.md's 'do not create fake states not supported by the product' rule and CLAUDE.md's 'never silently invent a product requirement.' This is a genuine Figma/data-model gap, not an implementation shortcut — flagged below under knownIssues for a future product decision (add a severity field to Finding, or remove the tabs from Figma).",
+    "integrationStatus": "VERIFIED",
+    "integrationNotes": "Approve/Ignore actions call the real, already-tested M05 endpoints; a successful action removes the row client-side (it is no longer PENDING) rather than faking local state divorced from the server. Middleware (middleware.ts) already gates /admin/:path* to ADMIN role server-side; the client-only isAdmin check is a UX courtesy on top of that, identical to the pattern FindingDetailClient (M05) already uses.",
+    "testStatus": "PASS",
+    "testNotes": "typecheck (tsc --noEmit): clean. eslint on new files: clean. vitest: all 9 existing test files / 64 tests pass unchanged (approve/ignore routes already have 9+9 tests each from M05, exercised as-is, not modified). next build: succeeds, /admin/review-queue registers as a dynamic route. No live Postgres was available in this environment to smoke-test end-to-end against real data (DATABASE_URL in .env.local is a placeholder, not a real connection string) — verification relied on the existing automated test suite plus static Figma-vs-implementation screenshot comparison, the same constraint implicitly faced by prior modules in this environment.",
+    "securityStatus": "PASS",
+    "securityNotes": "No raw secret ever enters this module's code path: FindingSummary (used here) has no snippet/secret field at all (only FindingDetail, used by M05, carries the already-redacted snippet). Authorization enforced server-side twice: middleware.ts redirects non-ADMIN sessions away from /admin/*, and the approve/ignore route handlers independently call requireAdmin() (defense-in-depth, not client-trust). Every approve/ignore action is audit-logged via the existing recordAudit() call inside those routes (unchanged). No token, credential, or raw finding value is logged to console anywhere in the new code."
+  },
+  "checks": [
+    {
+      "name": "No Figma Sections used for M06 screens",
+      "status": "PASS",
+      "note": "All 6 nodes created via figma.createFrame(); re-verified type=FRAME for all 6 in the final post-fix pass."
+    },
+    {
+      "name": "No overlapping frames (M06 vs M06; page 3:6 was empty before this pass)",
+      "status": "PASS",
+      "note": "Final programmatic AABB overlap check across all 6 top-level frames on page '05 — Admin' after all fixes: 0 overlap pairs. Column 1 (Default/Loading/Empty/Error) at x=0 with 120px vertical gaps; Confirm Approve at x=1560 (120px clear); Mobile at x=3120 (120px clear)."
+    },
+    {
+      "name": "Correct [AREA] / [SCREEN] / [STATE] naming, unique file-wide",
+      "status": "PASS",
+      "note": "All 6 frames named exactly 'Admin / Review Queue / <State>'; no collision with existing Dashboard/* or other-area names."
+    },
+    {
+      "name": "Existing components reused as live instances (Header/Sidebar/Nav Item/Badge/Button/Tab Item/Dialog=Confirmation/Empty State/Error State/Pagination)",
+      "status": "PASS",
+      "note": "Initial pass used detachInstance() on the Sidebar, which an independent figma-auditor subagent correctly flagged BLOCKING (Sidebar hand-rebuilt as a plain FRAME in 5 frames, not reused as a live component instance). Fixed by extending the master Sidebar component (7:15) with a real 'Review Queue' item (user-approved shared-component change) and re-instancing it live in all 5 desktop frames. Re-verified via getMainComponentAsync() equality (mainComponentId === '7:15') on all 5 post-fix instances: PASS."
+    },
+    {
+      "name": "Raw secrets/tokens never shown",
+      "status": "PASS",
+      "note": "Programmatic regex scan of 173 text nodes across all 6 frames (AWS/Stripe/GitHub/Slack key patterns), re-run after all fixes: 0 matches."
+    },
+    {
+      "name": "States covered: default/loading/empty/error/confirm-approve/mobile",
+      "status": "PASS"
+    },
+    {
+      "name": "Status badges use text + icon/color (never color alone)",
+      "status": "PASS",
+      "note": "All Badge instances are the existing Status=Pending component variant, which bundles a colored dot + uppercase text label."
+    },
+    {
+      "name": "Typography: Inter for UI, JetBrains Mono for technical values",
+      "status": "PASS",
+      "note": "File paths use JetBrains Mono Regular; all other copy uses Inter, matching DESIGN.md 5.2."
+    },
+    {
+      "name": "Radius restrained, border-driven surfaces, no heavy shadows",
+      "status": "PASS",
+      "note": "6px radius on all review-queue-item cards; no shadow effects; Confirm Approve's scrim is a plain semi-transparent RECTANGLE (opacity 0.4, cornerRadius 0), re-verified directly (the auditor's cosmetic 'mistyped as rounded-rectangle' note did not reproduce on inspection)."
+    },
+    {
+      "name": "Mobile frame has genuine responsive layout with proper tap targets",
+      "status": "PASS",
+      "note": "375px frame, 16px margins, single-column stacked cards, smaller type scale, full-width stacked Approve & Flag / Ignore buttons. An independent figma-auditor pass correctly flagged the 4 mobile action buttons at 36px height (below DESIGN.md section 30's 44px minimum interactive target); fixed by resizing all 4 to 44px height (both axes were FIXED sizing mode, safe to resize) and repositioning pagination/resizing the frame accordingly (676px -> 708px). Re-verified via screenshot: no clipping, text still centered."
+    },
+    {
+      "name": "Confirm Approve modal matches DESIGN.md section 26 copy exactly",
+      "status": "PASS",
+      "note": "Dialog=Confirmation (7:2) used as a live instance with no text changes needed, overlaid via a 40%-opacity scrim on a full clone of the Default state's content. Its Sidebar was also fixed to a live 9-item instance in the same corrective pass."
+    },
+    {
+      "name": "Sidebar nav shows 'Review Queue' as selected (not 'Findings' or another item), without dropping any existing nav item",
+      "status": "PASS",
+      "note": "Master Sidebar component extended with a real 9th item; all 5 desktop-frame instances show 'Findings'=Default and 'Review Queue'=Selected, with all 8 original items (Overview, Findings, Scan Rules, Flags, Workers, Templates, Users, Settings) still present and unrenamed. Verified via getMainComponentAsync() text/state inspection on all 5."
+    },
+    {
+      "name": "Visual screenshot audit of all 6 frames",
+      "status": "PASS",
+      "note": "Each frame re-screenshotted after the corrective pass; all verified clean (no clipped text, no overlapping elements, no leftover placeholder shimmer, correct nav state)."
+    },
+    {
+      "name": "Independent figma-audit skill compliance pass via figma-auditor subagent",
+      "status": "PASS_WITH_FIXES",
+      "note": "A figma-auditor subagent ran independently and returned 1 BLOCKING finding (Sidebar not reused as a live component instance — hand-rebuilt via detachInstance() in 5 frames) and 2 non-blocking notes (mobile buttons at 36px vs 44px minimum tap target; scrim node cosmetic mistype). Every claim was independently re-verified live against the Figma file before acting (confirmed all 5 sidebar nodes were type=FRAME, not INSTANCE). The blocking issue required a product decision (Sidebar's base 8-item set has no 'Review Queue' slot and Figma's Plugin API disallows inserting into a live instance without detaching); the user was asked and chose to extend the shared Sidebar component itself. Fixed by adding a real 9th Nav Item to master component 7:15, then re-instancing it live everywhere Sidebar was used in this module. The 44px tap-target note was fixed by resizing the 4 mobile buttons. The scrim note did not reproduce on direct inspection (already a plain non-rounded RECTANGLE) — recorded as no-change-needed."
+    }
+  ],
+  "knownIssues": [
+    "Figma's severity filter tabs (All/Critical/High/Medium/Low) on 42:844/42:849 were not implemented — the Finding model has no severity field anywhere in the codebase. Needs a product decision: add severity to the data model (scanner-worker rule metadata + migration) or remove the tabs from Figma. Not implemented here per CLAUDE.md's 'never silently invent a product requirement.'",
+    "No live Postgres instance was reachable in this environment to run an end-to-end smoke test against real seeded data; verification relied on the existing automated test suite (64 passing, unchanged), typecheck, lint, build, and a static Figma-screenshot-vs-implementation-screenshot comparison instead.",
+    "No generic 'Review Queue Item' / labeled-content-card component exists as an instanceable primitive in '02 — Components'; the review-queue-item cards are hand-composed per state rather than a single reusable component — same class of limitation M02 (stat cards), M04 (findings table), and M05 (detail card) already documented. Recommend a follow-up design-system pass to componentize a 'Review Queue Item' card.",
+    "Loading-state skeleton bars are hand-built rounded rectangles matching the visual language of Skeleton=Table Row (7:78) rather than live instances, because 7:78's fixed 5-column table-row shape does not fit a card-shaped layout. Recommend the design-system owner add a 'Skeleton=Card' variant.",
+    "Mobile Header is a hand-built frame (hamburger + wordmark + avatar), duplicating the same non-componentized pattern already hand-built in M02, M03, M04, and M05's own Mobile Headers. This is a propagated, not newly originated, gap — same recommendation already on record from M04/M05 (promote a shared Mobile Header component).",
+    "No standalone 'Breadcrumbs' component exists; M06 reused the Header component's existing breadcrumb text slot instead, same workaround already used by M02/M03/M04/M05. Recommend the M00/design-system owner promote a real reusable Breadcrumbs component.",
+    "Audit trail UI (named in MODULES.md's M06 scope) was not designed as a distinct screen or section — this is an open product-decision gap, not an oversight. If the product wants a visible 'who approved/ignored what, when' surface, it needs an explicit design decision and its own scoped task.",
+    "The Sidebar component (7:15) on page '02 — Components' was extended with a 'Review Queue' nav item as part of this module's design pass, per explicit user approval (see figma.sharedComponentChange). This is a shared design-system file technically owned by M00; flagging here for visibility in case M00's owner wants to review/rename/reposition the new item as part of a future foundation pass. The change is additive and backward compatible — no existing nav item, frame, or screen was altered or broken.",
+    "RESOLVED (implementation-agent@M06 pass): backend/frontend/integration/tests/security review are now complete — see the top-level `implementation` object for full detail. This note is kept for history; it no longer reflects the module's current DONE status."
+  ],
+  "notes": [
+    "Design-only pass for M06 (Admin Review Queue) per figma-design-module skill boundary and CLAUDE.md section 3 (one-module rule). Backend review-queue API, server-side state-transition validation, audit logging, admin-role authorization enforcement, and frontend implementation are NOT part of this pass and remain required before M06 can be marked DONE.",
+    "Screen set: Default, Loading, Empty, Error, Confirm Approve (modal), Mobile — 6 states total, following DESIGN.md section 19's Review Queue layout and section 26's exact confirmation-dialog copy, extended with Loading/Empty/Error/Mobile per this task's explicit 'include all meaningful states' instruction.",
+    "This is the first module to place content on page '05 — Admin' (node 3:6), which was empty prior to this pass. All 6 frames are new; nothing pre-existing on that page was touched.",
+    "A figma-auditor subagent was launched after the initial design pass for independent read-only verification. It correctly identified a real BLOCKING defect: the Sidebar was not reused as a live component instance (an earlier detachInstance()-based approach to add a 'Review Queue' nav item had broken the live component link across 5 frames). Rather than accept the auditor's finding on faith, it was independently re-verified live against the file first (confirmed: all 5 sidebar nodes were type=FRAME, not INSTANCE) — consistent with the established M04/M05 reconcile-before-trusting practice.",
+    "Fixing the blocking issue required a genuine product decision: the Sidebar component's shipped 8-item nav set has no 'Review Queue' slot, and two workaround approaches (repurposing an existing item's label, or overlaying a duplicate on top of one) were tried and both rejected as dishonest/lossy — one silently dropped 'Scan Rules' from the visible nav, the other visually hid it behind an opaque duplicate while leaving it structurally present underneath. The user was asked directly and chose to extend the shared Sidebar component itself (recommended option) over the other two choices offered. The master Sidebar component (7:15, owned by M00 on page '02 — Components') was extended with a real, permanent 9th Nav Item — additive and backward compatible, all 8 original items preserved unchanged.",
+    "The auditor's two non-blocking notes were also addressed: mobile action buttons resized from 36px to 44px height to satisfy DESIGN.md section 30's minimum tap-target rule (pagination repositioned and frame resized accordingly, 676px -> 708px); the scrim cosmetic note did not reproduce on direct inspection and required no change.",
+    "Did not touch any M01, M02, M03, M04, or M05 existing frame content — only the master Sidebar component on the shared '02 — Components' page was modified (additively), per explicit user authorization, plus new content added to the previously-empty '05 — Admin' page for this module's own 6 frames.",
+    "Did not design Rules, Templates, Workers, Users, Marketing, Auth, Tokens, Scan Rules, Overview, Findings-list, or Finding-detail screens — all out of scope for M06.",
+    "Module remains CLAIMED, not DONE — this pass intentionally stops at Figma design completion per the one-module rule (CLAUDE.md section 3) and the task's explicit scope boundary (design-only; no frontend/backend code written). Do not automatically start M07 or any other module.",
+    "IMPLEMENTATION PASS (implementation-agent@M06): backend required no new code — reused M04's listFindings (status=PENDING) and M05's already admin-gated, audited, concurrency-safe approve/ignore endpoints as-is. Built apps/web/app/(protected)/admin/review-queue/{page.tsx,loading.tsx} + components/admin/review-queue-client.tsx, reusing Button/FindingStatusBadge/ErrorState/EmptyState/Pagination/Skeleton/ConfirmApproveDialog. Implemented default/loading/empty/error/confirm-approve/mobile states. Deliberately did not implement Figma's severity filter tabs (no severity field exists on Finding anywhere in the codebase) — flagged as a knownIssue/product-decision gap rather than fabricated. typecheck/lint/build clean; all 64 existing tests pass unchanged; no live Postgres available in this environment for an end-to-end smoke test, so verification relied on the automated suite plus a static screenshot comparison against Figma nodes 42:844 (Default) and 42:849 (Mobile), both a close visual match. Security: no raw secret in this module's data path, ADMIN enforced server-side via middleware + requireAdmin() in the reused endpoints, every approve/ignore action audit-logged. Module marked DONE. Released implementation-agent@M06 lock immediately after. Per CLAUDE.md section 3 / docs/AGENT_PROTOCOL.md stop-after-module rule, do NOT automatically continue to M07 or any other module."
+  ]
+}

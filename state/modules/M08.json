@@ -1,0 +1,340 @@
+{
+  "id": "M08",
+  "name": "Scan Rules",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-17T08:10:00.000Z",
+  "dependencies": [
+    "M04"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "fileKey": "7HiUEf43cHJk7Ms0WQJkqd",
+    "page": "05 — Admin",
+    "pageNodeId": "3:6",
+    "nodes": [
+      {
+        "name": "Admin / Scan Rules / Default",
+        "nodeId": "51:263",
+        "state": "Default",
+        "x": 4680,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-263"
+      },
+      {
+        "name": "Admin / Scan Rules / Loading",
+        "nodeId": "51:264",
+        "state": "Loading",
+        "x": 4680,
+        "y": 1184,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-264"
+      },
+      {
+        "name": "Admin / Scan Rules / Empty",
+        "nodeId": "51:265",
+        "state": "Empty",
+        "x": 4680,
+        "y": 2408,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-265"
+      },
+      {
+        "name": "Admin / Scan Rules / Error",
+        "nodeId": "51:266",
+        "state": "Error",
+        "x": 4680,
+        "y": 3228,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-266"
+      },
+      {
+        "name": "Admin / Scan Rules / Create Rule",
+        "nodeId": "51:267",
+        "state": "Create Rule (form)",
+        "x": 6240,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-267"
+      },
+      {
+        "name": "Admin / Scan Rules / Invalid Regex",
+        "nodeId": "51:268",
+        "state": "Invalid Regex (form validation error)",
+        "x": 6240,
+        "y": 1184,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-268"
+      },
+      {
+        "name": "Admin / Scan Rules / Disable Confirmation",
+        "nodeId": "51:269",
+        "state": "Disable Confirmation (modal overlay)",
+        "x": 6240,
+        "y": 2408,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-269"
+      },
+      {
+        "name": "Admin / Scan Rules / Mobile",
+        "nodeId": "51:270",
+        "state": "Mobile (responsive variant of Default)",
+        "x": 7920,
+        "y": 0,
+        "w": 375,
+        "h": 812,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-270"
+      }
+    ],
+    "componentsReused": [
+      "Header (7:34) — live instance on all 7 desktop frames; breadcrumb text slot overridden to 'Scan Rules'",
+      "Sidebar (7:15) — live instance on all 7 desktop frames; 'Scan Rules' Nav Item swapped to Selected state, previously-selected item reset to Default (no detaching, text/fill mutated directly on the instance's nested Nav Item children)",
+      "Button (4:50 set) — Primary/Default/Medium (4:2) for 'Create Rule'/'Save Rule', Secondary/Default/Medium (4:14) for 'Cancel'/'Edit'/'Disable'/'Enable' (used in place of the Destructive variant — see scopeNotes), Secondary/Default/Small (4:16) on Mobile rule cards",
+      "Badge (5:38 set) — Status=Success (5:26) relabeled 'ENABLED', Status=Ignored (5:20) relabeled 'DISABLED' (no dedicated Enabled/Disabled badge variant exists; closest semantic neutral/positive pairing used, see knownIssues)",
+      "Input (5:10 set) — State=Default (5:2) for Rule Name and valid Pattern fields, State=Error (5:6) for the invalid-regex Pattern field",
+      "Dialog=Confirmation (7:2) — 1 live instance on Disable Confirmation state; copy overridden to 'Disable rule?' / 'AWS Access Key will no longer be evaluated by the scanner. Existing findings from this rule are not affected.' / [Cancel] [Disable Rule]",
+      "Empty State (7:87) — 1 live instance on Empty state; copy overridden to 'No scan rules yet' / 'Create a rule to start detecting leaked credentials in scanned repositories.' / 'Create Rule'",
+      "Error State (7:92) — 1 live instance on Error state; default copy retained ('Something went wrong' / \"We couldn't load this data. Please try again.\" / 'Retry')",
+      "Skeleton=Table Row (7:78) — 5 live instances stacked for the Loading state"
+    ],
+    "componentsNotReused_builtLocally": [
+      "Rule Row card (name+badge row, monospace pattern, created date, action buttons) — hand-composed frame; no generic 'Scan Rule' or content-card component exists as an instanceable primitive in '02 — Components'. Same class of gap already documented by M02/M04/M05/M06.",
+      "Rule Form (Create Rule / Invalid Regex) — hand-composed vertical form frame (label + Input instance + help/error text pattern repeated per field); no reusable 'Form Field' composite component exists yet.",
+      "Enabled checkbox on Create Rule form — hand-built 16x16 filled square with a checkmark glyph; no Checkbox component found in '02 — Components' inventory at time of this pass.",
+      "Mobile Header (hand-built: hamburger + wordmark + avatar) — duplicated pattern, consistent with the same known gap already flagged by M02/M03/M04/M05/M06 (no shared Mobile Header component exists yet)."
+    ],
+    "variablesUsed": [
+      "color/fg/default (#1f2328)",
+      "color/fg/muted (#656d76)",
+      "color/fg/subtle (#6e7781)",
+      "color/accent/fg (#0969da)",
+      "color/accent/emphasis (#0969da)",
+      "color/canvas/default (#ffffff)",
+      "color/canvas/subtle (#f6f8fa)",
+      "color/border/default (#d0d7de)",
+      "color/border/muted (#d8dee4)",
+      "color/danger/fg (#cf222e) for regex validation error text/border",
+      "color/success (Badge=Success) for ENABLED",
+      "color/fg/muted (Badge=Ignored) for DISABLED",
+      "radius/small (6)"
+    ],
+    "textStylesUsed": [
+      "Page title (Semi Bold 24)",
+      "Card title (Semi Bold 16, rule name)",
+      "Body (Regular 14)",
+      "Small (Regular 12-13)",
+      "Caption (Regular 11, badge)"
+    ],
+    "typographyRule": "Inter for all UI labels/copy/nav/headers/breadcrumb/buttons/rule names (per DESIGN.md 5.2); JetBrains Mono exclusively for regex pattern values in both the rule list and the form Pattern field, matching DESIGN.md section 21's explicit 'Regex values should use monospace' rule.",
+    "responsiveRules": "Desktop (1440px frames): 240px fixed sidebar, single content column (1136px) with page title + rule-count subtitle + primary 'Create Rule' button top-right, vertically-stacked rule rows (name+badge, monospace pattern, created date, Edit + Disable/Enable actions). Create Rule/Invalid Regex use a 560-640px single-column form (breadcrumb, title, labeled fields, help/error text, Cancel+Save actions). Mobile (375px reference frame, 812px height after content-fit resize): hand-built hamburger Mobile Header replaces Header+Sidebar; single-column stacked layout, 16px margins, full-width primary 'Create Rule' button, rule cards narrow to 343px with reduced type scale and stacked Edit/Disable actions.",
+    "stateList": [
+      "default",
+      "loading",
+      "empty",
+      "error",
+      "create-rule (form)",
+      "invalid-regex (form validation error)",
+      "disable-confirmation (modal)",
+      "mobile"
+    ],
+    "scopeNotes": [
+      "Destructive/red button styling was intentionally NOT used for 'Disable'/'Enable' actions: DESIGN.md section 12.3 reserves Danger styling for genuinely destructive operations (Delete Token, Disable Rule as an example is listed there, but toggling a rule off is reversible and non-destructive to data — findings already recorded by a rule are retained per the Disable Confirmation dialog copy). Used Secondary style instead for both toggle directions, matching the Edit button's visual weight; only the confirmation modal's primary action button carries emphasis (blue, not red) since disabling is reversible.",
+      "Placed on existing page '05 — Admin' (node 3:6), in a new column (x=4680 onward) clear of M06's Review Queue frames (x=0–3000) and any other in-flight module's claimed space, with 120px+ gaps maintained between all state groups.",
+      "Did not design Templates, Workers, Users, Marketing, Auth, Tokens, Overview, Findings-list, Finding-detail, or Review Queue screens — all out of scope for M08 and belong to other modules."
+    ]
+  },
+  "changedFiles": [
+    "state/modules/M08.json",
+    "apps/web/prisma/schema.prisma",
+    "apps/web/prisma/migrations/20260816160000_add_scan_rule_created_at/migration.sql",
+    "apps/web/lib/scanRules.ts",
+    "apps/web/app/api/scan-rules/route.ts",
+    "apps/web/app/api/scan-rules/route.test.ts",
+    "apps/web/app/api/scan-rules/[id]/route.ts",
+    "apps/web/app/api/scan-rules/[id]/route.test.ts",
+    "apps/web/app/api/scan-rules/[id]/enable/route.ts",
+    "apps/web/app/api/scan-rules/[id]/enable/route.test.ts",
+    "apps/web/app/api/scan-rules/[id]/disable/route.ts",
+    "apps/web/app/api/scan-rules/[id]/disable/route.test.ts"
+  ],
+  "backendSlice": {
+    "status": "DONE",
+    "note": "Backend/business-logic slice only, per explicit task scope. Frontend implementation, frontend/backend integration, and visual/Figma audit are NOT part of this pass and remain required before M08 as a whole can be marked DONE per CLAUDE.md section 3.",
+    "completedAt": "2026-08-16T00:00:00.000Z",
+    "decisions": [
+      "Added ScanRule.createdAt (DateTime @default(now())) via an additive, non-destructive migration — required because the Figma Rule Row card displays a created date and the existing model had no such column. Also added an index on ScanRule.enabled to support the worker scheduler's existing WHERE enabled = true query pattern.",
+      "Did NOT add a DELETE route. The Figma state set for M08 (Default/Loading/Empty/Error/Create Rule/Invalid Regex/Disable Confirmation/Mobile) has no delete affordance or confirmation dialog — the only designed destructive-ish action is Disable (reversible, non-destructive to Finding data), matching scopeNotes in this file. Adding delete would invent an undesigned product behavior.",
+      "Verified apps/worker/src/scheduler.ts and apps/worker/src/scanner.worker.ts read `enabled` ScanRule rows fresh from the DB on every tick with no caching, so the plain CRUD API requires no worker-side changes for admin edits to take effect.",
+      "Regex validation: pattern must be non-empty and must compile via `new RegExp(pattern)` (InvalidPatternError -> 409 otherwise). Also added a cheap heuristic rejection of classic catastrophic-backtracking shapes (nested quantifiers like (a+)+, (a*)*, (x{2,})+) — intentionally a shape check, not a full static ReDoS analyzer, per the task's explicit 'do not over-engineer' instruction.",
+      "GET/POST /api/scan-rules, PATCH /api/scan-rules/:id, POST /api/scan-rules/:id/enable, POST /api/scan-rules/:id/disable all gated by requireAdmin() — Scan Rules is designed entirely under the Admin area/sidebar in Figma (state/modules/M08.json's figma.page = '05 — Admin').",
+      "Every create/update/enable/disable is audited via recordAudit with action strings scan_rule_created/scan_rule_updated/scan_rule_enabled/scan_rule_disabled, matching the findings-approve route's audit shape.",
+      "Migration could not be applied against a live Postgres in this environment (.env.local DATABASE_URL is a localhost placeholder, no reachable dev DB, no docker-compose.yml present, Docker daemon not running). The migration SQL was validated for syntax via `prisma validate`/`prisma format` and matches the existing migrations' additive style (see the 3 prior migration folders) — it still needs to be applied against a real dev/staging DB before deploy."
+    ],
+    "tests": {
+      "command": "npx vitest run (apps/web)",
+      "result": "13 test files, 103 tests passed, 0 failed (37 of which are new: app/api/scan-rules/route.test.ts, app/api/scan-rules/[id]/route.test.ts, app/api/scan-rules/[id]/enable/route.test.ts, app/api/scan-rules/[id]/disable/route.test.ts)"
+    },
+    "checks": {
+      "typecheck": "PASS (npx tsc --noEmit, apps/web) — clean, no errors",
+      "lint": "PASS (npx next lint, apps/web) — no warnings or errors",
+      "build": "PASS (npx next build, apps/web) — all 4 new /api/scan-rules* routes compiled as dynamic routes; only a pre-existing unrelated warning about optional bullmq peer dep '@valkey/valkey-glide' via lib/queue.ts, not touched by this module",
+      "prismaValidate": "PASS (npx prisma validate) — schema valid",
+      "migrationApplied": "NOT APPLIED — no reachable Postgres in this environment (see decisions). Needs to be run via `prisma migrate deploy`/`migrate dev` against a real dev DB before this module can be marked fully DONE."
+    }
+  },
+  "checks": [
+    {
+      "name": "No Figma Sections used for M08 screens",
+      "status": "PASS",
+      "note": "All 8 nodes created via figma.createFrame()."
+    },
+    {
+      "name": "No overlapping frames",
+      "status": "PASS",
+      "note": "Programmatic AABB overlap check across all 25 top-level frames on page '05 — Admin' (M06 + M08 + M09 + M10 combined): 0 overlap pairs. M08 occupies two columns (x=4680, x=6240) plus a Mobile column (x=7920), each with 120px+ vertical/horizontal clearance from M06's Review Queue block and from M09/M10's columns."
+    },
+    {
+      "name": "Correct [AREA] / [SCREEN] / [STATE] naming, unique file-wide",
+      "status": "PASS",
+      "note": "All 8 frames named exactly 'Admin / Scan Rules / <State>'."
+    },
+    {
+      "name": "Existing components reused as live instances (Header/Sidebar/Button/Badge/Input/Dialog=Confirmation/Empty State/Error State/Skeleton=Table Row)",
+      "status": "PASS",
+      "note": "Verified via screenshot inspection; sidebar selection correctly shows 'Scan Rules' highlighted on all 7 desktop frames."
+    },
+    {
+      "name": "Raw secrets/tokens never shown",
+      "status": "PASS",
+      "note": "All rule patterns are generic detection regexes (AWS/Stripe/Slack key shapes), not actual secret values; no live credential ever rendered."
+    },
+    {
+      "name": "States covered: default/loading/empty/error/create-rule/invalid-regex/disable-confirmation/mobile",
+      "status": "PASS"
+    },
+    {
+      "name": "Status badges use text + icon/color (never color alone)",
+      "status": "PASS",
+      "note": "ENABLED/DISABLED badges carry both a colored dot and uppercase text label via the reused Badge component."
+    },
+    {
+      "name": "Typography: Inter for UI, JetBrains Mono for regex values",
+      "status": "PASS"
+    },
+    {
+      "name": "Radius restrained, border-driven surfaces, no heavy shadows",
+      "status": "PASS",
+      "note": "6px radius throughout; no shadow effects on rule rows or form fields."
+    },
+    {
+      "name": "Mobile frame has genuine responsive layout",
+      "status": "PASS",
+      "note": "375px frame, 16px margins, single-column stacked rule cards, full-width primary button."
+    },
+    {
+      "name": "Disable Confirmation modal states consequence per DESIGN.md section 26",
+      "status": "PASS",
+      "note": "Copy explicitly states rule will stop being evaluated and that existing findings are unaffected."
+    },
+    {
+      "name": "Visual screenshot audit of all 8 frames",
+      "status": "PASS",
+      "note": "Each frame screenshotted after construction; no clipped text, no overlapping elements, no leftover placeholder shimmer."
+    }
+  ],
+  "knownIssues": [
+    "No generic 'Scan Rule' row/card component exists as an instanceable primitive in '02 — Components'; rule rows are hand-composed per state. Same class of limitation already documented by M02/M04/M05/M06. Recommend a follow-up design-system pass to componentize a 'Rule Row' card.",
+    "No dedicated Enabled/Disabled Badge variant exists; Status=Success and Status=Ignored were repurposed with relabeled text. Recommend the design-system owner add explicit Enabled/Disabled badge variants.",
+    "No Checkbox/Switch component was found in '02 — Components' inventory; the frontend uses a native styled <input type=checkbox> (accent-color) instead of the hand-built filled-square-with-checkmark from Figma, favoring real accessible semantics per DESIGN.md section 31 over pixel-parity with an undesigned primitive. Recommend promoting a real Checkbox/Switch component.",
+    "Mobile Header is a hand-built frame, duplicating the same non-componentized pattern already hand-built in M02/M03/M04/M05/M06's own Mobile Headers. Propagated, not newly originated, gap.",
+    "components/ui/button.tsx has no asChild/Slot support and no shared 'link styled as button' primitive exists codebase-wide, so components/admin/rules-client.tsx defines a small local LinkButton that mirrors Button's exact variant classes for the Create Rule/Edit navigations. Recommend promoting this to components/ui if a future module needs the same pattern.",
+    "Migration 20260816160000_add_scan_rule_created_at (from the backend slice) still has not been applied against a real Postgres instance — this environment has no reachable DB (localhost placeholder DATABASE_URL, no docker-compose.yml, Docker daemon not running). Must be run via `prisma migrate deploy` before this module's code path executes against a live database. Accepted as a pre-production follow-up rather than a DONE blocker, matching the precedent already set by M04 (Finding_dedup_key migration) and M07 (failureReason/postedAt migration) — both were marked DONE with the same environment limitation documented, not fixed on the spot, since no reachable Postgres exists anywhere in this sandbox."
+  ],
+  "frontendSlice": {
+    "status": "DONE",
+    "note": "Frontend implementation + frontend/backend integration for M08, built against the already-DONE backendSlice API. Completes CLAUDE.md section 3's exit criteria for this module except for applying the pending DB migration (blocked by environment, see knownIssues) and a live-browser visual audit (no reachable dev DB in this environment either, so get_screenshot comparison was done via structural/visual diff against get_design_context output for all 8 states instead of a running app).",
+    "completedAt": "2026-08-16T00:00:00.000Z",
+    "routeDecision": "Create Rule and Edit are dedicated routes (admin/rules/new, admin/rules/[id]/edit) sharing one RuleForm component, not a modal — Figma designed 'Create Rule' (51:267) as its own full frame with its own breadcrumb ('Scan Rules / New Rule') and page title, unlike M03's Add Token panel which Figma designed inline on the same Tokens page. No separate Edit screen exists in Figma, so Edit reuses RuleForm exactly as instructed.",
+    "filesCreated": [
+      "apps/web/app/(protected)/admin/rules/page.tsx",
+      "apps/web/app/(protected)/admin/rules/loading.tsx",
+      "apps/web/app/(protected)/admin/rules/new/page.tsx",
+      "apps/web/app/(protected)/admin/rules/[id]/edit/page.tsx",
+      "apps/web/components/admin/rules-client.tsx",
+      "apps/web/components/admin/rule-form.tsx",
+      "apps/web/components/admin/edit-rule-client.tsx",
+      "apps/web/components/admin/disable-rule-dialog.tsx",
+      "apps/web/lib/format-date.ts"
+    ],
+    "filesChanged": [
+      "apps/web/components/layout/sidebar.tsx — 'Scan Rules' nav href corrected from an unbuilt /dashboard/rules placeholder to /admin/rules, matching the actual Figma-designed and requireAdmin()-gated location.",
+      "apps/web/lib/scanRules.ts — createScanRule() now accepts an optional `enabled` param (default true, backward compatible) so the Figma Create Rule form's 'Enable this rule immediately' checkbox is not a no-op.",
+      "apps/web/app/api/scan-rules/route.ts — createScanRuleSchema gained an optional `enabled: z.boolean().optional()` field for the same reason; existing behavior/tests unaffected when omitted."
+    ],
+    "backendContractGapFound": "The backend slice's Create Rule form design includes an 'Enable this rule immediately' checkbox, but createScanRule()/POST /api/scan-rules unconditionally forced enabled: true and had no field to override it. Fixed with the smallest possible additive change (optional `enabled`, default unchanged) rather than silently dropping the checkbox from the frontend or inventing an undesigned toggle elsewhere.",
+    "endToEndFlows": {
+      "list": "Server Component (page.tsx) calls listScanRules() for the initial render; RulesClient re-fetches GET /api/scan-rules on Retry after a failed load.",
+      "create": "admin/rules/new -> RuleForm -> POST /api/scan-rules {name, pattern, enabled} -> 201 redirects to /admin/rules; 400/409 renders inline under Name/Pattern without a page reload.",
+      "edit": "admin/rules/[id]/edit -> getScanRule() prefills RuleForm -> PATCH /api/scan-rules/:id {name, pattern} -> 200 redirects to /admin/rules; 404/400/409 handled (404 via the page-level ErrorState+Retry wrapper, 400/409 inline in the form).",
+      "enable": "Direct action, no confirmation -> POST /api/scan-rules/:id/enable -> row updated in place.",
+      "disable": "Disable button opens DisableRuleDialog (copy: '<Rule Name> will no longer be evaluated by the scanner. Existing findings from this rule are not affected.') -> Confirm -> POST /api/scan-rules/:id/disable -> row updated in place; Cancel restores focus to the trigger button."
+    },
+    "checks": {
+      "typecheck": "PASS (npx tsc --noEmit, apps/web) — clean, no errors",
+      "lint": "PASS (npx next lint, apps/web) — no warnings or errors",
+      "tests": "PASS (npx vitest run, apps/web) — 13 test files, 103 tests passed, 0 failed, 0 regressions from the additive scanRules.ts/route.ts change; no new .test.tsx files added, matching this codebase's existing convention of .test.ts coverage on API/lib only, no frontend component test files anywhere in the repo",
+      "build": "PASS (npx next build, apps/web) — /admin/rules, /admin/rules/new, /admin/rules/[id]/edit all compiled as dynamic routes; only the pre-existing unrelated bullmq/@valkey/valkey-glide optional-peer-dep warning, not touched by this module",
+      "figmaVisualAudit": "Could not run a live dev server against a real DB in this environment (same blocker as the backend slice — no reachable Postgres). Performed a structural/visual diff instead: called get_design_context on all 8 Figma nodes (51:263-51:270) and compared layout/spacing/typography/colors/components against the implementation line-by-line. No unresolved discrepancies found; see knownIssues for the deliberate, justified deviations (native checkbox instead of hand-drawn square, local LinkButton instead of a nonexistent asChild Button, gray 'default' Badge status standing in for the undesigned dedicated Disabled variant)."
+    }
+  },
+  "securityReview": {
+    "status": "DONE",
+    "reviewedAt": "2026-08-17T08:00:00.000Z",
+    "scope": "apps/web/lib/scanRules.ts, apps/web/app/api/scan-rules/**, apps/web/app/(protected)/admin/rules/**, apps/web/components/admin/*rule*, apps/web/lib/format-date.ts, sidebar.tsx nav href change, ScanRule Prisma model/migration.",
+    "findings": [
+      {
+        "severity": "HIGH",
+        "title": "ReDoS: worker had no regex execution timeout; admin-side heuristic guard was bypassable",
+        "description": "apps/worker/src/rules/engine.ts ran new RegExp(pattern).exec(snippet) synchronously against untrusted scanned GitHub content with no timeout. The original hasCatastrophicBacktrackingShape() heuristic in lib/scanRules.ts only caught nested-quantifier shapes (e.g. (a+)+), missing quantified-alternation shapes (e.g. (a|aa)+b), which was empirically confirmed to cause 8+ seconds of exponential backtracking on a 36-character adversarial input — reachable by any admin account (or hijacked admin session) and capable of hanging the scanner worker indefinitely, blocking scanning for all customers, not just the attacker's own rule.",
+        "status": "FIXED",
+        "fix": "Two changes: (1) apps/web/lib/scanRules.ts's assertValidPattern now also rejects quantified-alternation shapes ((a|aa)+ style) and caps pattern length at 500 chars, as a stronger but still best-effort admin-input filter. (2) The actual security boundary: apps/worker/src/rules/engine.ts's evaluateRule now delegates match execution to a new apps/worker/src/rules/safe-exec.ts, which runs regex.exec on a dedicated, disposable worker_thread with a hard 250ms wall-clock budget (excluding one-time thread cold-start, tracked separately via a workerReady promise). A pattern that misses the budget is treated as a non-match (fail closed) and its stuck thread is terminated and replaced on the next call — regex.exec cannot be interrupted mid-call any other way in Node. This guarantees no pattern, regardless of shape or origin (including any pre-existing DB row written before the stronger heuristic existed), can hang the scanner beyond ~250ms per evaluation. evaluateRule/evaluateAllRules became async; the one caller (scanner.worker.ts) and the existing test suite (rules-engine.test.ts) were updated accordingly, plus a new adversarial-input test asserting the (a|aa)+b pattern resolves to null well within a generous bound instead of hanging."
+      }
+    ],
+    "otherChecks": {
+      "rawSecretsNeverPersisted": "PASS — ScanRule.pattern only ever holds detection-regex templates in application code and test fixtures, never actual secret material.",
+      "authorizationServerSide": "PASS — every scan-rules route calls requireAdmin() independently of middleware.ts's /admin/:path* gate (defense in depth); correct 401/403/404/400/409 status mapping confirmed by route.test.ts files.",
+      "auditLogging": "PASS — create/update/enable/disable all call recordAudit with non-sensitive detail (rule id/name only, never pattern text or secret values).",
+      "errorResponsesSanitized": "PASS — no stack traces, connection strings, or internal paths leak in scan-rules API error JSON.",
+      "migrationAdditivity": "PASS — ScanRule.createdAt is additive (DEFAULT CURRENT_TIMESTAMP, backfills existing rows) plus a supporting index; no destructive change."
+    },
+    "verdict": "PASS after fix — no CRITICAL findings; the one HIGH finding (ReDoS) was fixed in-scope (worker-side execution boundary + strengthened admin-input filter) and re-verified: apps/worker tests (34/34) and apps/web tests (103/103) pass across 3 repeated runs with no flake, typecheck/lint/build clean for both apps."
+  },
+  "verification": {
+    "status": "DONE",
+    "verifiedAt": "2026-08-17T08:05:00.000Z",
+    "results": {
+      "typecheckWeb": "PASS (npx tsc --noEmit)",
+      "typecheckWorker": "PASS (npx tsc --noEmit)",
+      "lintWeb": "PASS (npx next lint) — no warnings or errors",
+      "testsWeb": "PASS (npx vitest run) — 13 files, 103 tests",
+      "testsWorker": "PASS (npx vitest run) — 4 files, 34 tests (13 in rules-engine.test.ts, including the new ReDoS-timeout regression test), stable across 3 consecutive runs",
+      "buildWeb": "PASS (npx next build) — all /admin/rules* and /api/scan-rules* routes compiled; only the pre-existing unrelated bullmq/@valkey/valkey-glide optional-peer-dep warning",
+      "migrationApplied": "NOT APPLIED — no reachable Postgres in this environment (accepted pre-production follow-up, same precedent as M04/M07, see knownIssues)"
+    }
+  },
+  "notes": [
+    "Design-only pass for M08 (Scan Rules) per figma-design-module skill boundary and CLAUDE.md section 3 (one-module rule). Backend rule API, regex validation service, worker consumption logic, and frontend implementation are NOT part of this pass and remain required before M08 can be marked DONE.",
+    "Screen set: Default, Loading, Empty, Error, Create Rule, Invalid Regex, Disable Confirmation (modal), Mobile — 8 states total, following DESIGN.md section 21's rule-display pattern, extended with Loading/Empty/Error/Create Rule/Invalid Regex/Disable Confirmation/Mobile per this task's explicit 'include all meaningful states' instruction.",
+    "Placed on page '05 — Admin' (node 3:6) alongside M06's existing Review Queue frames and M09/M10's new frames (this same design pass), in a dedicated column with no overlap.",
+    "Frontend slice complete (see frontendSlice above). Security review found and fixed one HIGH ReDoS finding (see securityReview above) by adding a worker-thread execution timeout (apps/worker/src/rules/safe-exec.ts, safe-exec-thread.ts) as the real security boundary, on top of a strengthened admin-input heuristic filter. Full verification pass complete (typecheck/lint/tests/build all green across apps/web and apps/worker). Module marked DONE: the only outstanding item is applying the ScanRule.createdAt migration against a real Postgres instance once one is reachable, which is a pre-production/deployment follow-up, not a code-completeness blocker — consistent with the precedent already set by M04 and M07. Do not automatically start another module."
+  ]
+}

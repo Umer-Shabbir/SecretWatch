@@ -1,0 +1,24 @@
+{
+  "name": "secretwatch",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspace=apps/web",
+    "start": "npm run start --workspace=apps/web",
+    "lint": "npm run lint --workspace=apps/web",
+    "typecheck": "npm run typecheck --workspace=apps/web",
+    "test": "npm run test --workspace=apps/web",
+    "prisma:generate": "npm run prisma:generate --workspace=apps/web",
+    "prisma:migrate": "npm run prisma:migrate --workspace=apps/web",
+    "worker:dev": "npm run dev --workspace=apps/worker",
+    "worker:start": "npm run start --workspace=apps/worker",
+    "worker:typecheck": "npm run typecheck --workspace=apps/worker",
+    "worker:test": "npm run test --workspace=apps/worker",
+    "worker:prisma:generate": "npm run prisma:generate --workspace=apps/worker"
+  }
+}

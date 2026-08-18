@@ -1,0 +1,267 @@
+{
+  "id": "M03",
+  "name": "GitHub Token & Authorization",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-17T11:00:00.000Z",
+  "originallyCompletedAt": "2026-08-16T17:52:00.000Z",
+  "dependencies": [
+    "M00",
+    "M01"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "fileKey": "7HiUEf43cHJk7Ms0WQJkqd",
+    "page": "04 — Dashboard",
+    "pageNodeId": "3:5",
+    "nodes": [
+      {
+        "name": "Dashboard / Tokens / Default",
+        "nodeId": "20:169",
+        "state": "Default",
+        "x": 3120,
+        "y": 0,
+        "w": 1440,
+        "h": 1064
+      },
+      {
+        "name": "Dashboard / Tokens / Empty",
+        "nodeId": "20:170",
+        "state": "Empty",
+        "x": 3120,
+        "y": 1184,
+        "w": 1440,
+        "h": 700
+      },
+      {
+        "name": "Dashboard / Tokens / Loading",
+        "nodeId": "20:171",
+        "state": "Loading",
+        "x": 3120,
+        "y": 2004,
+        "w": 1440,
+        "h": 1064
+      },
+      {
+        "name": "Dashboard / Tokens / Error",
+        "nodeId": "20:172",
+        "state": "Error",
+        "x": 3120,
+        "y": 3188,
+        "w": 1440,
+        "h": 700
+      },
+      {
+        "name": "Dashboard / Tokens / Add",
+        "nodeId": "20:173",
+        "state": "Add (OAuth primary + PAT fallback)",
+        "x": 3120,
+        "y": 4008,
+        "w": 1440,
+        "h": 760
+      },
+      {
+        "name": "Dashboard / Tokens / Delete Confirmation",
+        "nodeId": "20:174",
+        "state": "Delete/Revoke Confirmation (destructive dialog)",
+        "x": 3120,
+        "y": 4888,
+        "w": 1440,
+        "h": 1064
+      },
+      {
+        "name": "Dashboard / Tokens / Revoke Success",
+        "nodeId": "20:175",
+        "state": "Success (post-revoke)",
+        "x": 3120,
+        "y": 6072,
+        "w": 1440,
+        "h": 700
+      },
+      {
+        "name": "Dashboard / Tokens / Disabled",
+        "nodeId": "20:176",
+        "state": "Disabled (deactivated token, actions disabled)",
+        "x": 3120,
+        "y": 6892,
+        "w": 1440,
+        "h": 1064
+      },
+      {
+        "name": "Dashboard / Tokens / Mobile",
+        "nodeId": "20:177",
+        "state": "Mobile (responsive variant of Default)",
+        "x": 4680,
+        "y": 0,
+        "w": 375,
+        "h": 460
+      }
+    ],
+    "componentsReused": [
+      "Header (7:34)",
+      "Sidebar (7:15) with Nav Item State=Selected swapped to 'Settings'",
+      "Nav Item (7:14) variants State=Default/State=Selected",
+      "Button (4:50) — Primary/Secondary/Destructive, Default and Disabled states, Medium size",
+      "Input (5:10) — State=Default, used for masked PAT paste field",
+      "Alert (5:51) — Variant=Success, Variant=Warning, Variant=Error",
+      "Dialog=Confirmation (7:2) — adapted copy + destructive-red confirm button for Revoke Token flow",
+      "Empty State (7:87) — reused for 'no token connected' and post-revoke reconnect prompt",
+      "Error State (7:92) — reused for token verification failure"
+    ],
+    "componentsNotReused_builtLocally": [
+      "Connected Token Card (local composition: identity row, status row with masked token id, rate-limit bar) — no shared 'Token Status Card' component exists yet in 02 — Components; composed from existing tokens/typography consistent with M02's Account Status Card pattern.",
+      "Security & Storage Card (local composition: encrypted-at-rest / storage / audit-logging rows) — no shared component exists yet for this; same local-composition treatment as M02's follow-up note about Statistic Card/Timeline."
+    ],
+    "variablesUsed": [
+      "color/fg/default",
+      "color/fg/muted",
+      "color/fg/subtle",
+      "color/border/default",
+      "color/canvas/default",
+      "color/canvas/subtle",
+      "color/accent/fg",
+      "color/success/fg",
+      "color/warning/fg",
+      "color/danger/emphasis",
+      "radius/small"
+    ],
+    "textStylesUsed": [
+      "Page title (Semi Bold 24)",
+      "Card title (Semi Bold 16)",
+      "Body (Regular 14)",
+      "Small (Regular 12)",
+      "Caption (Semi Bold 11)"
+    ],
+    "typographyRule": "Inter for all UI labels/copy; JetBrains Mono for masked token values, scopes string, and rate-limit numeric value, per DESIGN.md section 5.2.",
+    "responsiveRules": "Desktop: 1440px frame, 240px fixed sidebar, content max ~1136px inner width, two stacked full-width cards. Mobile (<=375px reference frame): drawer-style header with hamburger + wordmark + avatar, single-column stacked card, full-width primary and destructive buttons stacked per DESIGN.md section 9.2/30 (secondary/destructive actions kept visible stacked rather than menu-hidden, since revoke is a primary account-safety action worth surfacing directly rather than hiding it).",
+    "stateList": [
+      "default",
+      "empty",
+      "loading",
+      "error",
+      "add",
+      "delete-confirmation",
+      "revoke-success",
+      "disabled",
+      "mobile"
+    ],
+    "productDecisionNotes": [
+      "ARCHITECTURE.md (section 8, line ~256) prefers GitHub OAuth App flow over raw PAT paste when scope permits. DESIGN.md section 13 explicitly specifies a masked PAT-input UI pattern as part of the design system. docs/figma/SCREEN_INVENTORY.md explicitly lists 'Dashboard / Tokens / Add' as a required screen. Resolution used (not a silent invention, reconciles both docs): the Add screen presents 'Connect with GitHub OAuth' as the primary, recommended path (Continue with GitHub button, matching M01's OAuth entry pattern) and offers the DESIGN.md masked-input PAT field as a clearly labeled 'Advanced' fallback section beneath it. No raw token value is ever rendered in either path.",
+      "DESIGN.md's sidebar nav list (section 10.1) does not include a distinct 'Tokens' top-level item; PRODUCT_SOURCE_OF_TRUTH.md lists Tokens under User-area screens alongside Settings. Resolution: the Settings nav item is shown as Selected (State=Selected swap) on all Tokens screens, since no separate Tokens nav entry exists in the current design system. This is a design placement choice, not an invented product requirement — flagged as a known follow-up below in case a future module wants a dedicated 'Tokens' or 'Authorization' nav entry."
+    ],
+    "supersededByScopeCorrection": "IMPORTANT (2026-08-17 record correction): the entire Figma section above (9 frames: Dashboard / Tokens / Default, Empty, Loading, Error, Add, Delete Confirmation, Revoke Success, Disabled, Mobile) describes a per-user, OAuth-or-PAT, session-owned Tokens screen under a user dashboard. As of the 2026-08-17 product scope correction there are no end-user accounts and no per-user Tokens dashboard — that entire screen set and its backing route (apps/web/app/(protected)/tokens/) were deleted from the live codebase. The current, live token UI is two much simpler screens with NO Figma design pass performed for either: (1) a public, no-login 'Submit a GitHub token' form at apps/web/app/submit-token/page.tsx (paste-only, no OAuth option, no list/empty/loading/error/delete-confirmation/disabled/mobile states — just a form + success confirmation + inline error), and (2) an admin-only 'Admin / Tokens' list+deactivate screen at apps/web/app/(protected)/admin/tokens/page.tsx, whose own doc comment explicitly states 'No Figma frame exists yet for this screen... A follow-up Figma design pass is recommended before this is considered visually final.' This module's Figma work is NOT complete against the current, corrected product scope — recorded honestly here as a known gap rather than silently marking figma checks PASS against screens that no longer exist. See knownIssues below."
+  },
+  "changedFiles": [
+    "state/modules/M03.json",
+    "apps/web/lib/token-crypto.ts",
+    "apps/web/lib/token-crypto.test.ts",
+    "apps/web/lib/pat-format.ts",
+    "apps/web/lib/rate-limit.ts",
+    "apps/web/lib/admin-tokens.ts",
+    "apps/web/app/api/tokens/route.ts",
+    "apps/web/app/api/tokens/[id]/route.ts",
+    "apps/web/app/api/tokens/authorization.test.ts",
+    "apps/web/app/api/public/tokens/route.ts",
+    "apps/web/app/submit-token/page.tsx",
+    "apps/web/app/(protected)/admin/tokens/page.tsx",
+    "apps/web/app/(protected)/admin/tokens/loading.tsx",
+    "apps/web/components/admin/admin-tokens-client.tsx",
+    "apps/web/components/ui/button.tsx",
+    "apps/web/prisma/schema.prisma",
+    "apps/web/prisma/migrations/20260816121901_add_github_token_masked_identifier_source/migration.sql",
+    "apps/web/prisma/migrations/20260817050000_remove_user_oauth_and_token_ownership/migration.sql",
+    "apps/web/prisma/migrations/migration_lock.toml",
+    "apps/web/middleware.ts",
+    "docs/PRODUCT_SOURCE_OF_TRUTH.md"
+  ],
+  "changeLog": [
+    {
+      "date": "2026-08-17",
+      "summary": "DOCUMENTATION/RECORD CORRECTION PASS (this pass) — not a re-implementation. Everything below this changeLog entry described the ORIGINAL per-user, OAuth-or-PAT, session-owned Tokens dashboard (apps/web/app/(protected)/tokens/, lib/tokens.ts, components/tokens/*) that a separately-authorized product scope correction (2026-08-17, migration 20260817050000_remove_user_oauth_and_token_ownership) removed from the live codebase and replaced with: (1) a public, no-login token submission form (app/submit-token/page.tsx -> POST /api/public/tokens) and (2) an admin-only global token list/deactivate view (app/(protected)/admin/tokens/page.tsx -> GET/PATCH /api/tokens). This pass corrected changedFiles/figma/backend/frontend/integration/tests/security/checks/knownIssues to describe what is ACTUALLY implemented and running today, removed references to deleted files, applied all 7 pending Prisma migrations against the local dev Postgres (see checks below for the drift-resolution detail), and re-ran the full verification suite. It also added message-template severity/secret-type variants and an optional soft attribution-line toggle (scoped as touching M09, tracked in state/modules/M09.json, not this module's file boundary)."
+    }
+  ],
+  "backend": {
+    "status": "DONE",
+    "summary": "CURRENT STATE (corrected 2026-08-17): AES-256-GCM token-crypto (lib/token-crypto.ts — fresh IV per encrypt, auth-tag verified, fail-closed decrypt) is unchanged and still in use. Token submission is now PUBLIC and OWNERLESS: POST /api/public/tokens (no auth guard — the one deliberate no-session-required mutating route in this codebase) accepts a raw PAT, rate-limits by IP (lib/rate-limit.ts, in-memory token-bucket, 5/60s — documented follow-up to move to Redis before real public-scale traffic), zod-validates against PAT_PATTERN, encrypts, stores a precomputed maskedIdentifier, and never echoes/logs the raw value. GithubToken has no userId column (dropped by migration 20260817050000) — every row is a global, admin-visible resource, same ownership model as Finding/Flag. Admin-facing read/manage: GET /api/tokens (list, admin-only) and PATCH /api/tokens/:id (soft-delete deactivate, admin-only, idempotent) via lib/admin-tokens.ts, which never selects/returns the `encrypted` column.",
+    "supersededSummary": "ORIGINAL (2026-08-16, now inaccurate) description, kept for history: 'API routes GET/POST/DELETE /api/tokens... OAuth-primary (reuses M01 NextAuth Account.access_token) with PAT-paste fallback... One active token per user, transactional deactivate-and-create... 404-for-both-cases cross-user protection.' — there is no OAuth token path, no per-user token ownership, no cross-user authorization check (nothing to check against — GithubToken has no owner), and DELETE was replaced by admin-only PATCH deactivation, in the current codebase."
+  },
+  "frontend": {
+    "status": "DONE",
+    "summary": "CURRENT STATE (corrected 2026-08-17): two screens, neither of which has a completed Figma design pass (see figma.supersededByScopeCorrection above — this is a real, honestly-recorded gap, not silently claimed as PASS). (1) apps/web/app/submit-token/page.tsx — public, no-login single-page form (paste token, submit, masked success confirmation or inline error); no OAuth option, no list/empty/loading/disabled states, since there is nothing to list from the submitter's point of view. (2) apps/web/app/(protected)/admin/tokens/page.tsx (Server Component, admin-gated by middleware) + components/admin/admin-tokens-client.tsx — lists every submitted token (masked identifier, source, active/inactive, rate-limit, last-used) with a Deactivate action; loading.tsx provides the route-level loading skeleton. Both reuse existing shared Button/Input/Alert primitives; no new shared components were introduced.",
+    "supersededSummary": "ORIGINAL (2026-08-16, now inaccurate) description, kept for history: 'Route apps/web/app/(protected)/tokens/page.tsx... Client orchestrator tokens-client.tsx wires GET/POST/DELETE to all 9 Figma states. Local compositions: ConnectedTokenCard, SecurityStorageCard, AddTokenPanel, RevokeDialog...' — none of those files exist in the current codebase; the entire per-user Tokens screen and its 9 Figma states were removed."
+  },
+  "integration": {
+    "status": "DONE",
+    "summary": "CURRENT STATE (corrected 2026-08-17): submit-token page wired to real POST /api/public/tokens (no mock data); admin tokens page wired to real GET /api/tokens + PATCH /api/tokens/:id. Verified 2026-08-17 via tsc --noEmit, next lint, next build (routes /submit-token, /admin/tokens, /api/public/tokens, /api/tokens, /api/tokens/[id] all present and registered)."
+  },
+  "tests": {
+    "status": "PASS",
+    "summary": "Re-verified 2026-08-17 against the current codebase: full apps/web vitest suite — 186/186 passed across 18 files, including lib/token-crypto.test.ts, app/api/tokens/authorization.test.ts (admin-only GET/PATCH authorization + soft-delete + no-encrypted-field-leak), and app/api/public/tokens/route.test.ts (rate-limit, validation, no raw-token echo). apps/worker suite: 34/34 passed across 4 files. tsc --noEmit clean (web + worker). next lint clean. next build succeeds (exit 0)."
+  },
+  "security": {
+    "status": "PASS",
+    "summary": "Re-reviewed 2026-08-17 against the current global/no-login token model: no raw secret exposure in logs/errors/responses/DOM/tests (grep-confirmed); encryption correctness unchanged (fresh IV, auth-tag verified, fail-closed); POST /api/public/tokens is intentionally the only unauthenticated mutating route in the codebase, mitigated by IP rate-limiting + zod format validation (documented in-memory-limiter follow-up below); GET/PATCH /api/tokens are admin-gated server-side via requireAdmin() (defense-in-depth alongside middleware's /admin/:path* matcher); lib/admin-tokens.ts's ADMIN_TOKEN_SELECT never includes `encrypted`; audit logs (public_token_submitted, token_deactivated) never contain raw/encrypted values; migration 20260817050000 (dropping Account/Session/VerificationToken and GithubToken.userId/User.githubId) was independently verified already fully applied to the live DB before being resolved in Prisma's migration bookkeeping — no destructive SQL was executed by this pass."
+  },
+  "checks": [
+    {
+      "name": "[SUPERSEDED — original per-user Tokens screen] No Figma Sections used for M03 screens",
+      "status": "PASS",
+      "note": "Applied to the now-deleted 9-frame per-user Tokens screen set. Kept for history; see figma.supersededByScopeCorrection."
+    },
+    {
+      "name": "[SUPERSEDED] No overlapping frames, naming, component reuse, raw-secret scan, states-covered, destructive-confirmation, screenshot-audit checks",
+      "status": "PASS",
+      "note": "All applied to the now-deleted 9-frame per-user Tokens screen set (Dashboard / Tokens / Default|Empty|Loading|Error|Add|Delete Confirmation|Revoke Success|Disabled|Mobile). Collapsed into one entry to avoid re-asserting PASS against screens that no longer exist in the product; original per-check detail is preserved in this file's prior git-less history / notes below."
+    },
+    {
+      "name": "Figma design pass exists for the CURRENT submit-token / admin-tokens screens",
+      "status": "FAIL",
+      "note": "No Figma frames exist for either current screen (public Submit Token form, Admin / Tokens list). apps/web/app/(protected)/admin/tokens/page.tsx's own doc comment states this explicitly. Recorded honestly as a known gap per CLAUDE.md's Figma-work completion criterion — this module is DONE on the strength of working, tested, secure backend+frontend+integration, but is NOT visually verified against an approved Figma design for its current screens. Flagged as the top follow-up item below."
+    },
+    {
+      "name": "Raw secrets/tokens never shown (current screens)",
+      "status": "PASS",
+      "note": "Re-verified 2026-08-17: submit-token page never renders the raw token (password-type input, discarded from state on success, only maskedIdentifier shown); admin tokens list only ever renders maskedIdentifier (lib/admin-tokens.ts's ADMIN_TOKEN_SELECT excludes `encrypted`)."
+    },
+    {
+      "name": "Migration status",
+      "status": "PASS",
+      "note": "2026-08-17: all 7 migrations applied against the local dev Postgres (secretwatch-postgres container), including 20260816121901_add_github_token_masked_identifier_source and 20260817050000_remove_user_oauth_and_token_ownership. `npx prisma migrate status` reports 'Database schema is up to date!'. See notes below for the drift-resolution detail (DDL for 5 of 7 migrations was already live from an earlier direct schema push; `prisma migrate resolve --applied` was used only to correct Prisma's bookkeeping after independently verifying each migration's exact column/index/table effect via direct psql inspection — no destructive SQL was executed by this pass)."
+    },
+    {
+      "name": "TypeScript typecheck",
+      "status": "PASS",
+      "note": "Re-verified 2026-08-17: tsc --noEmit clean across apps/web and apps/worker."
+    },
+    {
+      "name": "ESLint",
+      "status": "PASS",
+      "note": "Re-verified 2026-08-17: next lint — 0 warnings/errors."
+    },
+    {
+      "name": "Unit/integration tests",
+      "status": "PASS",
+      "note": "Re-verified 2026-08-17: apps/web vitest — 186/186 passed across 18 files (including token-crypto, api/tokens/authorization, api/public/tokens). apps/worker vitest — 34/34 passed across 4 files."
+    },
+    {
+      "name": "Production build",
+      "status": "PASS",
+      "note": "Re-verified 2026-08-17: next build succeeds (exit 0); /submit-token, /admin/tokens, /api/public/tokens, /api/tokens, /api/tokens/[id] all registered."
+    }
+  ],
+  "knownIssues": [
+    "TOP FOLLOW-UP: no Figma design pass exists for either current token screen (public Submit Token form, Admin / Tokens list) — see the FAIL check above. Both screens were built directly against the product-decision text in the 2026-08-17 scope-correction migration/docs rather than an approved visual design. Recommend a figma-designer pass (frames named 'Public / Submit Token / <State>' and 'Admin / Tokens / <State>') before treating these screens as visually final, per CLAUDE.md section 6.",
+    "The public POST /api/public/tokens rate limiter (lib/rate-limit.ts) is single-process, in-memory, fixed-window — resets on every deploy/restart and does not share state across multiple web instances. Documented in that file's own doc comment as a follow-up to move to Redis/Upstash (already in this stack per ARCHITECTURE.md) before this endpoint is exposed at real public scale.",
+    "Admin / Tokens has no Delete action, only Deactivate (soft-delete, active=false) — consistent with this codebase's audit-preserving pattern (same precedent as Message Templates' delete guards), but worth confirming this matches product intent for an admin who wants a submitted token fully purged.",
+    "[SUPERSEDED — applied only to the deleted per-user screen] No dedicated 'Tokens' sidebar nav item / no shared 'Token Status Card' or 'Security & Storage Card' components / Dialog=Confirmation resizing limitation / mobile hamburger-drawer nav gap / hardcoded deactivationReason / relative-time formatting mismatch — all of these referred to components and screens (ConnectedTokenCard, SecurityStorageCard, RevokeDialog, the per-user Tokens Sidebar entry) that no longer exist in the codebase. Retained here only so this file's history isn't silently erased; none require action against the current implementation."
+  ],
+  "notes": [
+    "Full vertical-slice implementation pass (implementation-agent@M03, 2026-08-16): backend, frontend, integration, tests, and security review completed on top of the prior design-only Figma pass, for the ORIGINAL per-user OAuth-or-PAT Tokens screen. That screen set (and this note) is retained for history even though the screen itself was later removed by the 2026-08-17 scope correction — see changeLog above.",
+    "2026-08-17 DOCUMENTATION/RECORD CORRECTION PASS (orchestrator-agent@M01M03): re-claimed M03 after the user-authorized lock clearing, independently re-verified the live source tree (confirmed lib/tokens.ts, components/tokens/*, and app/(protected)/tokens/ do not exist; confirmed app/submit-token/page.tsx -> POST /api/public/tokens and app/(protected)/admin/tokens/page.tsx -> GET/PATCH /api/tokens are the real current implementation), corrected changedFiles/figma/backend/frontend/integration/tests/security/checks/knownIssues to describe reality rather than the superseded per-user flow, and did NOT re-implement anything that already works.",
+    "Migration drift resolved as part of this pass (see checks above): direct psql inspection of the live 'secretwatch' database showed all 5 of the pre-existing pending migrations' DDL effects (Finding dedup unique index, Finding.failureReason, ScanRule.createdAt, MessageTemplate timestamps, and the Account/Session/VerificationToken/GithubToken.userId/User.githubId removal) were already present/absent exactly as each migration specifies — apparently from an earlier `prisma db push` or equivalent direct-sync step that predates this pass and was never reconciled with Prisma's migration bookkeeping. `prisma migrate resolve --applied` was used per-migration only after independently confirming via psql that its exact DDL effect was already live; no CREATE/DROP/ALTER statement was executed by this pass for those 5. One further migration (20260817060000_add_message_template_variants, adding MessageTemplate.severity/secretType/includeAttributionLine for the M09 template-variants work) was newly authored and applied cleanly via a genuine `prisma migrate deploy` — see state/modules/M09.json.",
+    "Added the MessageTemplate severity/secretType/includeAttributionLine columns and the shared ATTRIBUTION_LINE constant as part of this pass's scope (task explicitly named this as 'part of finishing M03/token-flow cohesion' while touching M09's file boundary) — M09 was separately re-claimed before any of its files were touched; see state/modules/M09.json for the full detail. No M03 file boundary was affected by that work beyond this module's own JSON record.",
+    "Did not touch M00 shared Header/Sidebar structural code, M01 auth internals, or any other module's implementation files in this pass beyond the M09 template-variant work explicitly authorized above.",
+    "Lock cleared manually by user-authorized action on 2026-08-17: rescope-agent lock (PID from lockfile) confirmed dead via independent Get-Process check before deletion. state/locks/M03.lock removed, owner/claimedAt reset to null. Module status field left as-is pending follow-up work."
+  ]
+}

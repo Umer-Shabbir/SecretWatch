@@ -1,0 +1,65 @@
+{
+  "id": "M12",
+  "name": "Marketing Site",
+  "status": "BLOCKED",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": null,
+  "dependencies": [
+    "M00"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "page": "03 — Marketing",
+    "pageId": "3:4",
+    "nodes": [
+      {
+        "name": "Marketing / Landing / Default",
+        "nodeId": "53:2013",
+        "description": "Nav, hero, how-scanning-works (3 steps), trust cards (4), product preview, final CTA, footer."
+      },
+      {
+        "name": "Marketing / Pricing / Default",
+        "nodeId": "53:2014",
+        "description": "Nav, page header, 3 pricing tiers (Free/Team/Enterprise), FAQ (4 Q&A), footer. Contains an in-canvas dev-annotation frame flagging tier names/prices as unconfirmed placeholders."
+      },
+      {
+        "name": "Marketing / How It Works / Default",
+        "nodeId": "53:2015",
+        "description": "Nav, page header, 4-step detailed flow (OAuth -> scanning -> redacted findings -> admin review) each paired with a monospace technical-value card, GitHub integration section, final CTA, footer."
+      },
+      {
+        "name": "Marketing / Landing / Mobile",
+        "nodeId": "53:2016",
+        "description": "Single-column responsive variant: hamburger nav, stacked hero/steps/trust cards, simplified product preview, stacked footer."
+      },
+      {
+        "name": "Marketing / Pricing / Mobile",
+        "nodeId": "53:2017",
+        "description": "Single-column responsive variant: stacked pricing tiers, stacked FAQ."
+      },
+      {
+        "name": "Marketing / How It Works / Mobile",
+        "nodeId": "53:2018",
+        "description": "Single-column responsive variant: stacked detailed steps, stacked GitHub integration cards."
+      }
+    ]
+  },
+  "changedFiles": [],
+  "checks": [
+    "Self-audit against docs/figma/FIGMA_SCREEN_CHECKLIST.md passed for all 6 frames",
+    "Zero overlap verified programmatically (AABB check); other pages/modules confirmed untouched",
+    "120px+ horizontal gaps between desktop frames, 180px between mobile frames, ~1968px vertical gap between rows",
+    "All fills/strokes/text bound to Color collection variables, no raw hex",
+    "Redacted secret example matches DESIGN.md pattern exactly (AKIA••••••••••9F3)",
+    "Mobile CTAs full-width at 44px height (meets DESIGN.md min interactive target)"
+  ],
+  "knownIssues": [
+    "PRODUCT DECISION NEEDED: no pricing tier names, prices, or feature breakdown exist in ARCHITECTURE.md, DESIGN.md, or docs/PRODUCT_SOURCE_OF_TRUTH.md — only that a /pricing route exists. A placeholder 3-tier structure (Free/$0, Team/$29, Enterprise/Custom) was designed using common SaaS conventions so the page has real structure, with a visible in-canvas dev-annotation note on both Pricing frames. Must be validated against an actual business decision before frontend implementation of M12.",
+    "Loading/empty/error/disabled/destructive-confirmation states intentionally not designed — all 3 marketing routes are static content with no dynamic data fetch per ARCHITECTURE.md's route table; DESIGN.md instructs against inventing unsupported states. Revisit if pricing becomes dynamic (e.g. live billing API data)."
+  ],
+  "notes": [
+    "BLOCKED reason: this task was scoped to Figma design only (explicit instruction: do not write frontend code, do not implement backend). Figma design for M12 is fully complete. Module cannot be marked DONE per docs/MODULES.md completion rule until implementation, integration, and tests/checks also pass in a future implementation pass. Additionally, pricing tier content is a placeholder pending a real product/business decision (see knownIssues).",
+    "No other module's frames were touched, moved, or modified during this work."
+  ]
+}

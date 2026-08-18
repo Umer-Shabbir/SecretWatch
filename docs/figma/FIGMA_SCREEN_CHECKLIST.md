@@ -1,0 +1,23 @@
+# Figma Screen Checklist
+
+- [ ] Correct area/screen/state name
+- [ ] Normal Figma frame used
+- [ ] Frame is not a Section
+- [ ] Frame does not overlap another screen
+- [ ] 120px minimum separation used where practical
+- [ ] Existing components reused
+- [ ] Design tokens/variables used
+- [ ] Correct typography
+- [ ] Correct semantic colors
+- [ ] Responsive variant or responsive rules documented
+- [ ] Loading state considered
+- [ ] Empty state considered
+- [ ] Error state considered
+- [ ] Success state considered where applicable
+- [ ] Disabled state considered where applicable
+- [ ] Accessibility considerations documented
+- [ ] Technical values use monospace
+- [ ] Raw secrets are never shown
+- [ ] Primary action is clear
+- [ ] Destructive actions have confirmation
+- [ ] Figma node/link recorded in module state

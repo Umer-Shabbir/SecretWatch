@@ -1,0 +1,77 @@
+{
+  "id": "M11",
+  "name": "User Management",
+  "status": "REMOVED",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-17T00:00:00.000Z",
+  "dependencies": [
+    "M01"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "page": "05 — Admin",
+    "pageId": "3:6",
+    "nodes": [
+      {
+        "name": "Admin / Users / Default",
+        "nodeId": "53:1951",
+        "description": "Main user list table: User, Role, Token Status, Account Status, Last Activity, Actions; 5 rows covering role/token/account state variety; one disabled Deactivate button; pagination."
+      },
+      {
+        "name": "Admin / Users / Loading",
+        "nodeId": "53:2192",
+        "description": "Skeleton state using 5x Skeleton=Table Row instances."
+      },
+      {
+        "name": "Admin / Users / Error",
+        "nodeId": "53:2261",
+        "description": "Reused Error State component with custom copy."
+      },
+      {
+        "name": "Admin / Users / Empty",
+        "nodeId": "53:2375",
+        "description": "Reused Empty State component depicting a filtered-search-with-no-results scenario."
+      },
+      {
+        "name": "Admin / Users / User Detail",
+        "nodeId": "53:2435",
+        "description": "Full user detail/expansion: identity, Token Status card, Account Status card, activity timeline, action row."
+      },
+      {
+        "name": "Admin / Users / Confirm Deactivate",
+        "nodeId": "53:2529",
+        "description": "Confirmation modal (reused Dialog=Confirmation), primary action recolored to danger red for destructive action."
+      },
+      {
+        "name": "Admin / Users / Action Success",
+        "nodeId": "53:2659",
+        "description": "Success Alert banner + updated row state + new Reactivate secondary action."
+      },
+      {
+        "name": "Admin / Users / Mobile",
+        "nodeId": "53:2772",
+        "description": "Mobile responsive variant: drawer nav, stacked single-column user cards, full-width action buttons."
+      }
+    ]
+  },
+  "changedFiles": [],
+  "checks": [
+    "Self-audit against docs/figma/FIGMA_SCREEN_CHECKLIST.md passed for all 8 frames",
+    "Zero frame overlap verified via AABB check across all 33 frames on the Admin page",
+    "120px min separation exceeded (1560px column gaps, 1184px/700px row gaps)",
+    "All fills/strokes/radii bound to Color/Radius variables (Light/Dark modes resolve automatically)",
+    "No raw secrets/tokens shown anywhere; only status labels"
+  ],
+  "knownIssues": [
+    "No formal reusable Avatar component exists in the design system yet; an inline initials-in-circle equivalent was built from existing color tokens per frame. Recommend promoting to a real library component in a future foundation pass (owned by M00).",
+    "No dedicated tablet frame was created, consistent with existing precedent set by other Admin-area screens (Review Queue, Scan Rules, Templates, Workers) which also only have Desktop + Mobile."
+  ],
+  "notes": [
+    "REMOVED: No longer applicable — product has no end-user accounts to manage after scope correction on 2026-08-17. Confirmed target scope has NO end-user accounts, NO user-facing GitHub OAuth login, and NO per-user dashboard/findings/tokens pages. Admin (via email+password Credentials provider) is the only authenticated role, and the only 'user management' surface is now the admin-only Tokens view (apps/web/app/(protected)/admin/tokens/page.tsx), which is in scope for a corrected module, not M11.",
+    "Do not build the Admin / Users / * Figma screens listed above. They were designed under the pre-correction product scope and are obsolete.",
+    "No other module's frames were touched, moved, or modified during this work.",
+    "This status change (CLAIMED -> REMOVED) was made directly per explicit user/product-owner instruction as part of the scope-correction task; it is not a self-declared DONE and does not close out the module through the normal verify-module flow.",
+    "Lock cleared manually by user-authorized action on 2026-08-17: rescope-agent lock (PID from lockfile) confirmed dead via independent Get-Process check before deletion. state/locks/M11.lock removed, owner/claimedAt reset to null. Module status field left as-is pending follow-up work."
+  ]
+}

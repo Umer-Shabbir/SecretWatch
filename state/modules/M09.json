@@ -1,0 +1,358 @@
+{
+  "id": "M09",
+  "name": "Message Templates",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-17T11:00:00.000Z",
+  "originallyCompletedAt": "2026-08-17T00:00:00.000Z",
+  "dependencies": [
+    "M07"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "fileKey": "7HiUEf43cHJk7Ms0WQJkqd",
+    "page": "05 — Admin",
+    "pageNodeId": "3:6",
+    "nodes": [
+      {
+        "name": "Admin / Templates / Default",
+        "nodeId": "51:271",
+        "state": "Default",
+        "x": 9840,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-271"
+      },
+      {
+        "name": "Admin / Templates / Loading",
+        "nodeId": "51:272",
+        "state": "Loading",
+        "x": 9840,
+        "y": 1184,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-272"
+      },
+      {
+        "name": "Admin / Templates / Error",
+        "nodeId": "51:273",
+        "state": "Error",
+        "x": 9840,
+        "y": 2408,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-273"
+      },
+      {
+        "name": "Admin / Templates / Invalid Variable",
+        "nodeId": "51:274",
+        "state": "Invalid Variable (editor validation error)",
+        "x": 11400,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-274"
+      },
+      {
+        "name": "Admin / Templates / Save Success",
+        "nodeId": "51:275",
+        "state": "Save Success (editor with success alert)",
+        "x": 11400,
+        "y": 1184,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-275"
+      },
+      {
+        "name": "Admin / Templates / Mobile",
+        "nodeId": "51:276",
+        "state": "Mobile (responsive variant of Default)",
+        "x": 12960,
+        "y": 0,
+        "w": 375,
+        "h": 812,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-276"
+      }
+    ],
+    "componentsReused": [
+      "Header (7:34) — live instance on all 5 desktop frames; breadcrumb text slot overridden to 'Templates'",
+      "Sidebar (7:15) — live instance on all 5 desktop frames; 'Templates' Nav Item swapped to Selected state, previously-selected item reset to Default",
+      "Button (4:50 set) — Primary/Default/Medium (4:2) for 'New Template'/'Save Template', Secondary/Default/Medium (4:14) for 'Edit Template'/'Cancel', Secondary/Default/Small (4:16) on Mobile template cards",
+      "Input (5:10 set) — State=Default (5:2) for the Template Name field on both Invalid Variable and Save Success editor states",
+      "Alert (5:51 set) — Variant=Success (5:42) for the Save Success banner ('Template saved successfully.'; the component's second text line hidden via visible=false rather than removed, since instance children cannot be deleted)",
+      "Skeleton=Table Row (7:78) — 3 live instances (card-height resized) for the Loading state"
+    ],
+    "componentsNotReused_builtLocally": [
+      "Template Card (name + monospace preview box + variables row + Edit action) on Default state — hand-composed frame; no generic 'Message Template Editor' or content-card component exists as an instanceable primitive in '02 — Components', per docs/figma/FIGMA_WORKFLOW.md's component pass list naming a 'Message Template Editor' as an intended future component.",
+      "Template Form (Invalid Variable / Save Success editor) — hand-composed vertical form frame with a hand-built Textarea container (bordered frame + monospace text child) since no Textarea component was found in '02 — Components' inventory at time of this pass.",
+      "Mobile Header (hand-built: hamburger + wordmark + avatar) — duplicated pattern, consistent with the same known gap already flagged by M02/M03/M04/M05/M06/M08 (no shared Mobile Header component exists yet)."
+    ],
+    "variablesUsed": [
+      "color/fg/default (#1f2328)",
+      "color/fg/muted (#656d76)",
+      "color/fg/subtle (#6e7781)",
+      "color/accent/fg (#0969da)",
+      "color/accent/emphasis (#0969da)",
+      "color/canvas/default (#ffffff)",
+      "color/canvas/subtle (#f6f8fa)",
+      "color/border/default (#d0d7de)",
+      "color/border/muted (#d8dee4)",
+      "color/danger/fg (#cf222e) for unsupported-variable validation error text/textarea border",
+      "color/success (Alert=Success) for Save Success banner",
+      "radius/small (6)"
+    ],
+    "textStylesUsed": [
+      "Page title (Semi Bold 24)",
+      "Card title (Semi Bold 16, template name)",
+      "Body (Regular 14)",
+      "Small (Regular 12-13)"
+    ],
+    "typographyRule": "Inter for all UI labels/copy/nav/headers/breadcrumb/buttons/template names (per DESIGN.md 5.2); JetBrains Mono exclusively for template body content (preview box on Default, textarea on the editor states) matching DESIGN.md section 22's example, which renders the template body in a monospace-styled block.",
+    "responsiveRules": "Desktop (1440px frames): 240px fixed sidebar, single content column (1136px) with page title + primary 'New Template' button top-right, vertically-stacked template cards (name, monospace body preview in an inset box, available-variables caption row, 'Edit Template' action). Invalid Variable/Save Success editor states use a 640px single-column form (breadcrumb, title, Name field, Body textarea with validation/help text below, Cancel+Save actions), with the Save Success variant additionally showing a full-width green success Alert above the form. Mobile (375px reference frame, content-fit height): hand-built hamburger Mobile Header replaces Header+Sidebar; single-column stacked layout, 16px margins, full-width primary 'New Template' button, template cards narrow to 343px with reduced type scale.",
+    "stateList": [
+      "default",
+      "loading",
+      "error",
+      "invalid-variable (editor validation error)",
+      "save-success (editor success)",
+      "mobile"
+    ],
+    "scopeNotes": [
+      "An 'Empty' state was intentionally not designed as a separate frame: DESIGN.md section 22 and docs/MODULES.md do not describe a zero-templates scenario as materially different in workflow from Default with an empty list — the product ships with at least one default template per ARCHITECTURE.md's template variable design, so an empty template library is not a realistic first-run state the way an empty findings/rules list is. Flagging as a documented scope decision, not an oversight, consistent with FIGMA_WORKFLOW.md's 'do not create fake states that are not supported by the product' rule.",
+      "A 'disabled' state was not designed as a separate frame: no per-template enable/disable concept is described in DESIGN.md section 22 or ARCHITECTURE.md's template model (unlike Scan Rules, which explicitly has an enabled/disabled toggle) — templates are simply created, edited, and used.",
+      "Placed on existing page '05 — Admin' (node 3:6), in a new column (x=9840 onward) clear of M06's Review Queue block, M08's Scan Rules columns, and M10's Workers column, with 120px+ gaps maintained throughout.",
+      "Did not design Scan Rules, Workers, Users, Marketing, Auth, Tokens, Overview, Findings-list, Finding-detail, or Review Queue screens — all out of scope for M09 and belong to other modules."
+    ]
+  },
+  "changedFiles": [
+    "state/modules/M09.json",
+    "apps/web/app/(protected)/admin/templates/page.tsx",
+    "apps/web/app/(protected)/admin/templates/loading.tsx",
+    "apps/web/app/(protected)/admin/templates/new/page.tsx",
+    "apps/web/app/(protected)/admin/templates/[id]/edit/page.tsx",
+    "apps/web/components/admin/templates-client.tsx",
+    "apps/web/components/admin/template-form.tsx",
+    "apps/web/components/admin/edit-template-client.tsx",
+    "apps/web/prisma/schema.prisma",
+    "apps/web/prisma/migrations/20260817060000_add_message_template_variants/migration.sql",
+    "apps/web/prisma/seed.ts",
+    "apps/web/lib/messageTemplates.ts",
+    "apps/web/lib/messageTemplates.test.ts",
+    "apps/web/app/api/message-templates/route.ts",
+    "apps/web/app/api/message-templates/route.test.ts",
+    "apps/web/app/api/message-templates/[id]/route.ts",
+    "apps/web/app/api/message-templates/[id]/route.test.ts",
+    "packages/shared/src/template.ts",
+    "apps/worker/src/flagger.worker.ts"
+  ],
+  "changeLog": [
+    {
+      "date": "2026-08-17",
+      "summary": "TEMPLATE VARIANTS ADDITION (this pass, orchestrator-agent@M01M03) — scoped as part of finishing M03/token-flow cohesion per the task brief, which explicitly authorized re-claiming M09 to touch its template data. Re-claimed M09 (was DONE/unclaimed) before touching any file. Added: (1) two nullable classification columns on MessageTemplate — severity (CRITICAL/HIGH/MEDIUM/LOW enum) and secretType (AWS_KEY/GITHUB_TOKEN/GENERIC_API_KEY/DB_CONNECTION_STRING enum), both additive/optional, defaulting to null on every existing and new row; (2) an includeAttributionLine boolean (default false, additive) plus a fixed, shared, non-editable ATTRIBUTION_LINE constant (packages/shared/src/template.ts) — 'If you'd like to support this project, visit: https://github.com/TODO-project-org/secretwatch' — appended to a rendered template body ONLY when that specific template's includeAttributionLine is true (never forced, never a per-template freeform value, never a wallet address/star-request/direct donation ask); (3) 8 seeded template variants (4 severity tone variants, 4 secret-type-specific variants — apps/web/prisma/seed.ts's seedTemplateVariants(), idempotent by name); (4) CRUD support for the 3 new fields in lib/messageTemplates.ts and both API routes (zod-validated enums); (5) UI: severity/secret-type selects + an attribution-line checkbox (with a fixed, non-editable preview of the line's exact text) added to the shared TemplateForm, and severity/secret-type/attribution-line Badges added to the Template Card in templates-client.tsx; (6) apps/worker/src/flagger.worker.ts now calls appendAttributionLine(renderedBody, template.includeAttributionLine) when rendering the real GitHub issue body — a one-line, backward-compatible change (no-op for every template with includeAttributionLine=false, which is every pre-existing/self-healed template). Did NOT wire severity/secretType into automatic template selection in the flagger worker — the worker still only ever selects the single isDefault:true template (getOrCreateDefaultTemplate) — that remains a documented follow-up, not implemented here, to avoid unscoped changes to M07's selection logic."
+    }
+  ],
+  "backend": {
+    "note": "ORIGINAL (2026-08-17 frontend pass): Backend (lib/messageTemplates.ts, app/api/message-templates/route.ts, app/api/message-templates/[id]/route.ts, packages/shared/src/template.ts) was already implemented and fully tested (48 passing tests) prior to this frontend pass; that pass did not modify any backend file. SUPERSEDED BY THE TEMPLATE-VARIANTS PASS BELOW: this module's backend was extended (not rewritten) later the same day to add severity/secretType/includeAttributionLine — see backendVariantsAddition.",
+    "filesReused": [
+      "apps/web/lib/messageTemplates.ts",
+      "apps/web/lib/messageTemplates.test.ts",
+      "apps/web/app/api/message-templates/route.ts",
+      "apps/web/app/api/message-templates/route.test.ts",
+      "apps/web/app/api/message-templates/[id]/route.ts",
+      "apps/web/app/api/message-templates/[id]/route.test.ts",
+      "packages/shared/src/template.ts"
+    ],
+    "backendVariantsAddition": {
+      "status": "DONE",
+      "summary": "Added TemplateSeverity and TemplateSecretType Prisma enums; MessageTemplate.severity (nullable), MessageTemplate.secretType (nullable), MessageTemplate.includeAttributionLine (boolean, default false) — migration 20260817060000_add_message_template_variants, applied cleanly via `prisma migrate deploy`. lib/messageTemplates.ts's createMessageTemplate/updateMessageTemplate accept and persist the 3 new optional fields (never required, never breaking any existing caller); MessageTemplateSummary includes them; renderMessageTemplatePreview accepts an includeAttributionLine flag. packages/shared/src/template.ts exports ATTRIBUTION_LINE (fixed constant) and appendAttributionLine(body, include) (pure, no-op when include is falsy). Both API routes' zod schemas accept severity/secretType (enum, nullish) and includeAttributionLine (boolean, optional); PATCH's at-least-one-field refine was extended to include the 3 new fields. apps/web/prisma/seed.ts's new seedTemplateVariants() seeds 8 non-default templates (4 severity, 4 secret-type), idempotent by name, includeAttributionLine left false on every seeded row. apps/worker/src/flagger.worker.ts's runFlagForFinding now appends the attribution line to the real rendered issue body when the selected template's includeAttributionLine is true."
+    }
+  },
+  "frontend": {
+    "routes": [
+      "/admin/templates (list — Default/Loading/Error/Mobile)",
+      "/admin/templates/new (create — reuses Template Form)",
+      "/admin/templates/[id]/edit (edit — Invalid Variable / Save Success states)"
+    ],
+    "stateMapping": [
+      "Admin / Templates / Default (51:271) -> app/(protected)/admin/templates/page.tsx + components/admin/templates-client.tsx",
+      "Admin / Templates / Loading (51:272) -> app/(protected)/admin/templates/loading.tsx (Next.js route-level loading UI)",
+      "Admin / Templates / Error (51:273) -> components/admin/templates-client.tsx (ErrorState + Retry, same component as Default)",
+      "Admin / Templates / Invalid Variable (51:274) -> components/admin/template-form.tsx bodyError branch, rendered from either /admin/templates/new or /admin/templates/[id]/edit",
+      "Admin / Templates / Save Success (51:275) -> components/admin/template-form.tsx savedSuccessfully Alert, edit mode only (matches Figma: both captured editor frames are the Edit Template screen)",
+      "Admin / Templates / Mobile (51:276) -> responsive Tailwind classes in the same templates-client.tsx / template-form.tsx components (no separate mobile route), matching M08's precedent"
+    ],
+    "frontendVariantsAddition": {
+      "status": "DONE",
+      "note": "NOT re-verified against Figma — no Figma frame exists (in this module's captured node set) depicting severity/secret-type selects or an attribution-line toggle on the Template Form, or severity/secret-type/attribution badges on the Template Card. This UI was added directly from the task's product description (severity tone variants, secret-type variants, one optional toggleable soft attribution line) rather than from an approved Figma design, since no such design exists yet. Kept minimal and consistent with the existing GitHub-native design system (native <select>s matching existing Input styling, a checkbox + fixed non-editable line preview, and the existing shared Badge component for card-level indicators) rather than inventing new component patterns. Recommend a follow-up Figma pass to formalize this UI if/when a designer is available — flagged in knownIssues below, not silently claimed as Figma-verified.",
+      "changes": [
+        "components/admin/template-form.tsx: added Severity and Secret Type native <select> fields (values: none + 4 options each) and an 'Include soft attribution line' checkbox with a fixed, non-editable preview of the exact line text beneath it — admins can only toggle inclusion, never edit the line's text.",
+        "components/admin/templates-client.tsx's TemplateCard: added a Default badge (when isDefault), plus severity/secretType/attribution-line Badges (reusing the existing shared Badge component, no new UI primitive) shown only when at least one is set — no visual change for templates with none of the 3 new fields populated.",
+        "app/(protected)/admin/templates/new/page.tsx and components/admin/edit-template-client.tsx: pass severity/secretType/includeAttributionLine through to/from the API on create and edit."
+      ]
+    }
+  },
+  "checks": [
+    {
+      "name": "No Figma Sections used for M09 screens",
+      "status": "PASS",
+      "note": "All 6 nodes created via figma.createFrame()."
+    },
+    {
+      "name": "No overlapping frames",
+      "status": "PASS",
+      "note": "Programmatic AABB overlap check across all 25 top-level frames on page '05 — Admin' (M06 + M08 + M09 + M10 combined): 0 overlap pairs. M09 occupies two columns (x=9840, x=11400) plus a Mobile column (x=12960), each with 120px+ clearance from adjacent module columns."
+    },
+    {
+      "name": "Correct [AREA] / [SCREEN] / [STATE] naming, unique file-wide",
+      "status": "PASS",
+      "note": "All 6 frames named exactly 'Admin / Templates / <State>'."
+    },
+    {
+      "name": "Existing components reused as live instances (Header/Sidebar/Button/Input/Alert/Skeleton=Table Row)",
+      "status": "PASS",
+      "note": "Verified via screenshot inspection; sidebar selection correctly shows 'Templates' highlighted on all 5 desktop frames."
+    },
+    {
+      "name": "Raw secrets/tokens never shown",
+      "status": "PASS",
+      "note": "Template bodies contain only placeholder variables ({{repo}}, {{file}}, {{rule}}) and generic copy, never a real credential value."
+    },
+    {
+      "name": "States covered: default/loading/error/invalid-variable/save-success/mobile",
+      "status": "PASS"
+    },
+    {
+      "name": "Typography: Inter for UI, JetBrains Mono for template body content",
+      "status": "PASS"
+    },
+    {
+      "name": "Radius restrained, border-driven surfaces, no heavy shadows",
+      "status": "PASS",
+      "note": "6px radius throughout; no shadow effects on template cards or form fields."
+    },
+    {
+      "name": "Mobile frame has genuine responsive layout",
+      "status": "PASS",
+      "note": "375px frame, 16px margins, single-column stacked template cards, full-width primary button."
+    },
+    {
+      "name": "Available variables ({{repo}}, {{file}}, {{rule}}) surfaced per DESIGN.md section 22",
+      "status": "PASS",
+      "note": "Variables caption shown on Default cards and as editor help text on both form states."
+    },
+    {
+      "name": "Visual screenshot audit of all 6 frames",
+      "status": "PASS",
+      "note": "Each frame screenshotted after construction; no clipped text, no overlapping elements. One duplicate Alert subline (leftover default component text) was found and fixed by hiding the redundant text node."
+    },
+    {
+      "name": "Frontend implemented from Figma (design-to-code pass)",
+      "status": "PASS",
+      "note": "get_design_context + get_screenshot re-inspected on all 6 node IDs before implementation. Confirmed via screenshot: (1) the Default/Mobile Template Card preview box shows the RAW unrendered body (with {{repo}}/{{file}}/{{rule}} tokens still visible), not a sample-substituted rendering — implementation matches this exactly rather than using lib/messageTemplates.ts's renderMessageTemplatePreview() for the card, which would have silently invented a design Figma does not show. (2) No Delete action exists on any of the 6 captured frames (card or editor Form Actions row) — no delete UI was built; see knownIssues. (3) Both editor frames (Invalid Variable, Save Success) share the 'Templates / Edit Template' breadcrumb, confirming Create and Edit reuse one Template Form component, mirroring RuleForm's exact precedent from M08."
+    },
+    {
+      "name": "Wired to real API (no mock/fake data)",
+      "status": "PASS",
+      "note": "List page fetches via lib/messageTemplates.ts's listMessageTemplates() server-side; TemplatesClient refetches GET /api/message-templates on Retry; create/edit forms call POST/PATCH /api/message-templates(/:id) directly; no hardcoded/sample template data in any shipped component."
+    },
+    {
+      "name": "Admin-only route protection",
+      "status": "PASS",
+      "note": "middleware.ts's matcher already covers /admin/:path* and redirects non-ADMIN sessions to /unauthorized before app/(protected)/admin/templates/page.tsx renders, identical to how admin/rules is protected. All 3 API routes additionally call requireAdmin() server-side as defense-in-depth."
+    },
+    {
+      "name": "Typecheck",
+      "status": "PASS",
+      "note": "npx tsc --noEmit — 0 errors."
+    },
+    {
+      "name": "Lint",
+      "status": "PASS",
+      "note": "npx next lint — 0 warnings/errors, full project."
+    },
+    {
+      "name": "Build",
+      "status": "PASS",
+      "note": "npx next build succeeded; /admin/templates, /admin/templates/new, /admin/templates/[id]/edit all registered as dynamic (ƒ) routes alongside the existing /admin/rules* routes. One pre-existing, unrelated warning (bullmq -> @valkey/valkey-glide optional dep) present before this change."
+    },
+    {
+      "name": "Unit/integration tests",
+      "status": "PASS",
+      "note": "npx vitest run lib/messageTemplates.test.ts app/api/message-templates -- 48/48 passing. No backend files were modified by this frontend pass; tests re-run only to confirm no regression."
+    },
+    {
+      "name": "No raw secrets in new frontend code",
+      "status": "PASS",
+      "note": "Template Card renders template.body verbatim (admin-authored copy with placeholder variables only, per lib/messageTemplates.ts's doc comment); never renders Finding.redactedSnippet or any secret-shaped value. No credentials in source, fixtures, or screenshots taken during this pass."
+    },
+    {
+      "name": "Independent QA verification (qa-reviewer, post-hoc)",
+      "status": "PASS",
+      "note": "Re-ran tsc/lint/vitest/prisma validate/next build independently; manually inspected auth-on-every-route, invalid-variable validation, server-side delete guards, no redactedSnippet leakage, real API wiring, real loading/error/empty states, and M08 non-regression (37/37). No HIGH/CRITICAL findings; two LOW cosmetic regex edge cases noted in knownIssues."
+    },
+    {
+      "name": "Independent security review (security-reviewer, post-hoc)",
+      "status": "PASS",
+      "note": "Authorization (admin-gated server-side on all verbs, role sourced server-side only), injection/XSS (no dangerous sinks, React auto-escaping, typed Octokit call), secret exposure (zero path from redactedSnippet), validation-bypass resistance, delete-guard safety, audit logging (message_template_created/updated/deleted via recordAudit, body never logged), and error-message hygiene (no stack/DB leakage) all PASS. No HIGH/CRITICAL findings; three LOW findings recorded in knownIssues (delete TOCTOU race, Unicode lookalike-brace inertness, pre-existing M07 markdown-injection-via-repo/file characteristic)."
+    },
+    {
+      "name": "[2026-08-17 template-variants pass] Migration applied",
+      "status": "PASS",
+      "note": "20260817060000_add_message_template_variants applied cleanly via `npx prisma migrate deploy` (genuine fresh apply, not drift-resolution). `npx prisma migrate status` reports 'Database schema is up to date!' across all 7 migrations."
+    },
+    {
+      "name": "[2026-08-17 template-variants pass] Seed idempotency",
+      "status": "PASS",
+      "note": "`npx prisma db seed` run against the local dev DB: 'Message template variants ready (8 created, 0 already present).' — matched by name, re-running the seed is a no-op for already-seeded rows (verified by design: seedTemplateVariants() only creates when findFirst by name returns null)."
+    },
+    {
+      "name": "[2026-08-17 template-variants pass] TypeScript typecheck",
+      "status": "PASS",
+      "note": "tsc --noEmit clean across apps/web and apps/worker after adding the Prisma enum imports/types and the appendAttributionLine wiring in flagger.worker.ts."
+    },
+    {
+      "name": "[2026-08-17 template-variants pass] ESLint",
+      "status": "PASS",
+      "note": "next lint — 0 warnings/errors (one unescaped-apostrophe error in the new attribution-line checkbox label was caught by lint and fixed to &apos; during this pass)."
+    },
+    {
+      "name": "[2026-08-17 template-variants pass] Unit/integration tests",
+      "status": "PASS",
+      "note": "apps/web vitest: 186/186 passed across 18 files, including new/updated coverage in lib/messageTemplates.test.ts (createMessageTemplate/updateMessageTemplate variant-field defaults, persistence, and clearing back to null; renderMessageTemplatePreview with/without the attribution line) and both API route test files (POST/PATCH accepting and validating severity/secretType/includeAttributionLine, invalid-enum 400s, exact-response-key assertion updated to include the 3 new fields). apps/worker vitest: 34/34 passed, including flagger.test.ts's existing happy-path coverage which exercises the new appendAttributionLine call with a no-op (false) template."
+    },
+    {
+      "name": "[2026-08-17 template-variants pass] Production build",
+      "status": "PASS",
+      "note": "npx next build succeeds (exit 0) with the schema/lib/API changes included; no new routes added (severity/secretType/attribution are fields on the existing template routes, not new endpoints)."
+    },
+    {
+      "name": "[2026-08-17 template-variants pass] Attribution line never forced, never a freeform per-template value",
+      "status": "PASS",
+      "note": "ATTRIBUTION_LINE is a single module-level constant in packages/shared/src/template.ts; MessageTemplate stores only a boolean (includeAttributionLine), never its own copy of the line's text — a template cannot be edited to append a different URL/ask via this mechanism. Defaults to false on every existing and newly seeded template; verified by test that omitting it defaults to false and that the rendered preview/issue body is unchanged when false."
+    }
+  ],
+  "knownIssues": [
+    "[2026-08-17 template-variants pass] No Figma design pass exists for the severity/secret-type selects, attribution-line toggle, or the new Template Card badges — see frontendVariantsAddition.note above. Built directly from the task's product description using existing design-system primitives (native selects styled like Input, existing Badge component) rather than an approved Figma frame. Recommend a follow-up Figma pass.",
+    "[2026-08-17 template-variants pass] severity/secretType do not yet drive automatic template selection in the flagger worker — getOrCreateDefaultTemplate() still only ever selects the single isDefault:true row regardless of a Finding's matched rule or any notion of severity. The new fields are admin-organization/authoring metadata only today. A natural follow-up (out of scope here, would touch M07's file boundary) is to have the worker select a template variant based on Finding.matchedRule/severity when one exists, falling back to the default template.",
+    "[2026-08-17 template-variants pass] No UI exists to promote a variant template to isDefault, or to bulk-manage the 8 seeded variants — each is edited individually like any other template via the existing Edit Template flow. Consistent with the module's existing documented scope (no setDefault action, per the original module doc comment in lib/messageTemplates.ts).",
+    "No generic 'Message Template Editor' component exists as an instanceable primitive in '02 — Components', despite being named in docs/figma/FIGMA_WORKFLOW.md's intended component pass list; the template card and editor form are hand-composed per state, both in Figma and in the matching React components (components/admin/templates-client.tsx's TemplateCard, components/admin/template-form.tsx). Recommend a follow-up design-system pass to componentize both.",
+    "No Textarea component was found in '02 — Components' inventory; the template body editor is a hand-built bordered <textarea> styled to match Figma's hand-built Textarea frame. Recommend promoting a real Textarea component (also named in docs/figma/FIGMA_WORKFLOW.md's component pass list) and wiring Code Connect once it exists.",
+    "Mobile Header is not a separate component: like M02/M03/M04/M05/M06/M08, this module has no shared Mobile Header component. Unlike those modules' hand-built hamburger headers, this module's Mobile frame's hamburger/wordmark/avatar row is currently NOT implemented as a distinct mobile route/header — the shared components/layout/sidebar.tsx already hides at <md and components/layout/header.tsx renders at all sizes, so mobile users see the Header without a hamburger-triggered nav drawer. Functionally the templates list/cards/buttons are fully responsive (single-column, full-width New Template button, narrow cards) per the Mobile frame's content layout, but the hamburger-menu interaction itself was not wired since no shared mobile-nav-drawer pattern exists anywhere in the codebase yet to reuse (would require a cross-cutting change touching the shared Header/Sidebar, out of scope for a single-module frontend pass per CLAUDE.md section 4's shared-file caution). Flagging as a known follow-up, not a regression specific to this module.",
+    "No Delete action was built for individual templates, even though DELETE /api/message-templates/:id exists and is fully guarded (409 cannot_delete_default / cannot_delete_last_template). None of the 6 captured Figma frames (Default, Mobile, or either editor state) show a delete control on a template card or in the editor's Form Actions row, and CLAUDE.md's Figma-fidelity rules forbid inventing UI beyond what Figma specifies. If product intent is to expose delete in the UI, a follow-up Figma pass should add a Delete action (e.g. to the Template Card or Edit Template form) before frontend work adds a confirmation dialog for it.",
+    "LOW (QA): findUnsupportedVariables/renderTemplate silently pass through malformed tokens (unclosed '{{repo', hyphenated '{{re-po}}') without flagging or rendering them — cosmetic only, pre-existing pattern shape, not a regression introduced by M09.",
+    "LOW (security): deleteMessageTemplate's guard sequence (not-found -> cannot-delete-default -> cannot-delete-last) is not wrapped in a DB transaction, so two concurrent DELETE calls against the last two non-default templates could both pass the count check and leave zero templates (TOCTOU race). Admin-only, low likelihood, and self-healing via flagger.worker.ts's getOrCreateDefaultTemplate() (worst case is loss of custom copy, not a pipeline break or security bypass). Recommend wrapping in prisma.$transaction as a follow-up.",
+    "LOW (security): findUnsupportedVariables/renderTemplate match ASCII '{{'/'}}' only; a Unicode lookalike-brace token (e.g. fullwidth braces) is neither flagged as unsupported nor substituted, so it would appear inertly/verbatim in a posted issue. Cosmetic only, no injection or secret-exposure impact.",
+    "LOW (security, pre-existing M07 characteristic, not introduced by M09): Finding.repoFullName/filePath/matchedRule are attacker-influenceable (from scanned repos) and substituted unescaped into the GitHub issue body markdown; a crafted filename could cosmetically break rendering (e.g. an unmatched code fence). No code-execution/credential-leakage impact; GitHub's own renderer sanitizes markdown server-side. Candidate follow-up for a future M07 hardening pass (e.g. backtick-wrapping {{file}}/{{repo}})."
+  ],
+  "notes": [
+    "Design-only pass note (superseded): a prior pass recorded this module as Figma-design-only. This pass adds full frontend implementation on top of the already-existing, already-tested backend (lib/messageTemplates.ts + 2 API route files, 48 passing tests, none of which needed changes).",
+    "Screen set: Default, Loading, Error, Invalid Variable, Save Success, Mobile — 6 states total, following DESIGN.md section 22's template-editor pattern. All 6 re-verified against get_design_context/get_screenshot immediately before writing frontend code (not solely relied on the earlier design-pass JSON summary), which surfaced two corrections: (1) the card preview renders raw unrendered {{}} tokens, not a sample-rendered preview; (2) there is no Delete UI in any captured frame.",
+    "Frontend routes mirror apps/web/app/(protected)/admin/rules's exact file/routing structure and conventions: list page.tsx (Server Component, fetches via lib helper) + loading.tsx (Next.js route-level loading UI) + templates-client.tsx (Client Component: fetch/retry/error/empty/list) + new/page.tsx + [id]/edit/page.tsx + edit-template-client.tsx, with a shared template-form.tsx mirroring rule-form.tsx's create/edit-reuse pattern.",
+    "Reused existing shared UI primitives only: components/ui/button.tsx, input.tsx, alert.tsx, skeleton.tsx, error-state.tsx, empty-state.tsx. No new shared/global components were added; Template Card and the Textarea field remain hand-composed locally per the Figma spec's componentsNotReused_builtLocally list, exactly as instructed (no second design system invented).",
+    "Module status set to DONE: plan existed (this JSON's earlier Figma pass), Figma work was complete, backend business logic existed and is tested, frontend is implemented from Figma, frontend/backend integration is wired to the real API (no mock data), typecheck/lint/build/tests all pass, security constraints pass (no raw secrets, admin-only gating, audited create/update/delete), and known follow-ups are recorded above rather than silently dropped. Per CLAUDE.md section 3, no further module is started automatically.",
+    "PROCESS NOTE: the frontend-builder agent self-certified completion and released its own module lock (status DONE, owner null) without a prior independent verify/security-review pass having run. Orchestrator subsequently ran independent qa-reviewer and security-reviewer passes against the already-implemented code (both PASS, no HIGH/CRITICAL findings; see appended checks below and knownIssues LOW entries). Module remains DONE on the strength of these after-the-fact independent passes, but the lock-release-before-verification sequencing itself was a process violation of the intended CLAIM -> ... -> VERIFY -> REVIEW -> DONE -> release-lock order and should not recur.",
+    "2026-08-17 TEMPLATE-VARIANTS PASS (orchestrator-agent@M01M03): re-claimed this module (properly, via the claim script, before touching any file — was DONE/unclaimed) as authorized by the task brief's explicit scoping of the severity/secret-type-variant and attribution-line work as touching M09's file boundary. Added the schema/backend/UI/worker changes described in the changeLog and backendVariantsAddition/frontendVariantsAddition entries above, ran the full verification suite (typecheck, lint, vitest for both apps/web and apps/worker, next build) — all green — and recorded the one real gap honestly (no Figma design pass exists for the new UI) rather than silently claiming visual verification that didn't happen. Did not touch any other module's files."
+  ]
+}

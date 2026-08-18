@@ -1,0 +1,258 @@
+{
+  "id": "M07",
+  "name": "Flagger + Flags",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-16T20:16:00.000Z",
+  "dependencies": [
+    "M03",
+    "M04",
+    "M06"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "fileKey": "7HiUEf43cHJk7Ms0WQJkqd",
+    "page": "04 — Dashboard",
+    "pageNodeId": "3:5",
+    "nodes": [
+      {
+        "name": "Dashboard / Flags / Default",
+        "nodeId": "47:1143",
+        "state": "Default",
+        "x": 14870,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=47-1143"
+      },
+      {
+        "name": "Dashboard / Flags / Loading",
+        "nodeId": "47:1144",
+        "state": "Loading",
+        "x": 14870,
+        "y": 1184,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=47-1144"
+      },
+      {
+        "name": "Dashboard / Flags / Empty",
+        "nodeId": "47:1145",
+        "state": "Empty",
+        "x": 14870,
+        "y": 2408,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=47-1145"
+      },
+      {
+        "name": "Dashboard / Flags / Error",
+        "nodeId": "47:1146",
+        "state": "Error",
+        "x": 14870,
+        "y": 3228,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=47-1146"
+      },
+      {
+        "name": "Dashboard / Flags / Mobile",
+        "nodeId": "47:1147",
+        "state": "Mobile (responsive variant of Default)",
+        "x": 16430,
+        "y": 0,
+        "w": 375,
+        "h": 694,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=47-1147"
+      }
+    ],
+    "componentsReused": [
+      "Header (7:34) — 1 live instance per desktop frame; breadcrumb overridden to 'Flags'",
+      "Sidebar (7:15) — 1 live instance per desktop frame, verified via getMainComponentAsync() equality; all 8 original nav items unchanged, only 'Flags' swapped to State=Selected (7:12), no shared-component modification needed since 'Flags' already existed in the base nav set",
+      "Nav Item (7:14 set) — State=Default (7:10) / State=Selected (7:12) variants inside Sidebar instances",
+      "Tab Item (7:50 set) — State=Default (7:44) / State=Selected (7:47) used for All/Flagged/Failed filter tabs on Default desktop and Mobile",
+      "Badge (5:38) — Status=Flagged (5:17) and Status=Failed (5:23) live instances across table rows and mobile cards",
+      "Pagination (7:67) — 1 instance on Default desktop, 1 on Mobile",
+      "Skeleton=Table Row (7:78) — 6 instances on Loading",
+      "Empty State (7:87) — 1 instance on Empty, copy adapted to flags-history context",
+      "Error State (7:92) — 1 instance on Error, copy adapted to flags-load-failure context, 'Retry' action kept"
+    ],
+    "componentsNotReused_builtLocally": [
+      "Flags table (hand-composed header + rows) — shared Table component (5:69) hardcodes 2 rows with no repeatable row sub-component to instance; same limitation already flagged by M02/M04/M05/M06.",
+      "Mobile Header (hand-built: hamburger + wordmark + avatar) — no shared Mobile Header component exists yet; duplicates the same pattern already hand-built in M02/M03/M04/M05/M06.",
+      "Mobile Flag Card — hand-composed stacked card, same class of gap as the Findings/Review-Queue mobile cards (no generic Card/labeled-row component exists)."
+    ],
+    "variablesUsed": [
+      "color/fg/default",
+      "color/fg/muted",
+      "color/fg/subtle",
+      "color/accent/fg",
+      "color/canvas/default",
+      "color/canvas/subtle",
+      "color/border/default",
+      "color/border/muted",
+      "color/success/fg",
+      "color/danger/emphasis",
+      "radius/small"
+    ],
+    "textStylesUsed": [
+      "Page title (Semi Bold 24)",
+      "Card title (Semi Bold 16)",
+      "Body (Regular 14)",
+      "Small (Regular 12)"
+    ],
+    "typographyRule": "Inter for all UI labels/copy/nav/headers/breadcrumb/repo+rule references; JetBrains Mono for file paths, issue references, and the masked token-reference string (e.g. 'Personal token (····8f2a)'), per DESIGN.md section 5.2.",
+    "responsiveRules": "Desktop: 1440px frame, 240px fixed sidebar, All/Flagged/Failed filter tabs, 8-column table (Repository/File/Rule/Status/Issue-Detail/Template/Token/Posted). Mobile (375px reference frame): hamburger-style Mobile Header replaces Header+Sidebar per M02-M06 precedent; single-column stacked Flag cards (repo+badge row, mono file path, rule, mono issue reference or failure reason, template, masked token reference, posted time); filter tabs remain a single horizontally-scrollable row per M04/M06 precedent.",
+    "stateList": [
+      "default",
+      "loading",
+      "empty",
+      "error",
+      "mobile"
+    ],
+    "productDecisionNotes": [
+      "Flag (ARCHITECTURE.md) has no status field and only exists on a successful GitHub issue creation (issueUrl/usedTokenId/templateId/postedAt all present). MODULES.md's M07 exit criterion 'failures are visible' is therefore represented as Finding.status=FAILED rows mixed into the same Flags history table/list, NOT a fabricated Flag.status field. FLAGGED rows show a real issue reference, template, and masked token reference; FAILED rows show a red FAILED badge and a plain failure-reason string in the Issue/Detail column (e.g. 'GitHub API rate limit (403)', 'Issue creation failed: repo archived', 'Token revoked before retry') with Template and Token columns left blank, since neither exists for a failed attempt. A subtitle reinforces the mix at a glance (e.g. '128 flag attempts · 121 successful · 7 failed').",
+      "No destructive-confirmation dialog was invented for a 'retry failed flag' action: ARCHITECTURE.md places retry/backoff entirely inside the BullMQ worker (automatic exponential backoff on 403/429), not as a user-facing manual retry button, so no such control was designed. Flagged here as an open product-decision gap if the product later wants a manual user-facing retry.",
+      "No disabled-state frame was designed: this is a read-only history view with no interactive disabled controls, consistent with FIGMA_WORKFLOW.md's 'do not create fake states.'",
+      "Flags placed on existing page '04 — Dashboard' (pageNodeId 3:5) in a new column (x=14870, 1560px clear of M05 Finding Detail's rightmost frame) rather than a new page, consistent with PRODUCT_SOURCE_OF_TRUTH.md/FIGMA_WORKFLOW.md listing 'Dashboard / Flags / Default' under the User/Dashboard area."
+    ]
+  },
+  "changedFiles": [
+    "state/modules/M07.json"
+  ],
+  "checks": [
+    {
+      "name": "No Figma Sections used for M07 screens",
+      "status": "PASS"
+    },
+    {
+      "name": "No overlapping frames (M07 vs M07, and M07 vs all 27 pre-existing M02/M03/M04/M05 frames on page 3:5)",
+      "status": "PASS",
+      "note": "Programmatic AABB overlap check across all 32 top-level frames on page '04 — Dashboard': 0 overlap pairs, 0 duplicate names. M07 column at x=14870 (1560px+ clear of M05's rightmost edge), Mobile column at x=16430 (120px clear of M07 main column)."
+    },
+    {
+      "name": "Correct [AREA] / [SCREEN] / [STATE] naming, unique file-wide",
+      "status": "PASS"
+    },
+    {
+      "name": "Existing components reused as live instances (Header/Sidebar/Nav Item/Tab Item/Badge/Pagination/Skeleton/Empty State/Error State)",
+      "status": "PASS",
+      "note": "Verified via getMainComponentAsync() equality, not visual similarity, per the discipline established after M06's Sidebar defect."
+    },
+    {
+      "name": "Raw secrets/tokens never shown",
+      "status": "PASS",
+      "note": "164 text nodes across all 5 frames scanned against AWS/Stripe/GitHub-PAT/Slack/hex-secret/PEM patterns: 0 matches. Token mentions use masked reference format only."
+    },
+    {
+      "name": "States covered: default/loading/empty/error/mobile",
+      "status": "PASS"
+    },
+    {
+      "name": "Status badges use text + icon/color (never color alone)",
+      "status": "PASS"
+    },
+    {
+      "name": "Typography: Inter for UI, JetBrains Mono for technical values",
+      "status": "PASS"
+    },
+    {
+      "name": "Radius restrained, border-driven surfaces, no heavy shadows",
+      "status": "PASS"
+    },
+    {
+      "name": "Mobile frame has genuine responsive layout (stacked cards, not shrunk table)",
+      "status": "PASS",
+      "note": "Sub-44px tap targets on hamburger/avatar/tabs match the exact pre-existing Findings-mobile precedent, not a new regression; documented as inherited known issue."
+    },
+    {
+      "name": "Visual screenshot audit of all 5 frames",
+      "status": "PASS"
+    },
+    {
+      "name": "Failed-flag visibility (MODULES.md exit criterion)",
+      "status": "PASS",
+      "note": "Represented via Finding.status=FAILED rows in the same table with Failed badge + failure-reason text, per productDecisionNotes above."
+    },
+    {
+      "name": "Sidebar shows 'Flags' as selected without altering any other nav item or the shared component",
+      "status": "PASS",
+      "note": "No shared-component modification was needed or made; 'Flags' already existed in the base 8-item nav set."
+    },
+    {
+      "name": "Destructive actions have confirmation where applicable",
+      "status": "N/A",
+      "note": "No destructive/manual-retry action exists in this view per productDecisionNotes; not invented."
+    },
+    {
+      "name": "Disabled state considered where applicable",
+      "status": "N/A",
+      "note": "Read-only history view, no disabled controls to depict."
+    }
+  ],
+  "knownIssues": [
+    "No reusable Table-row/Card component exists as an instanceable primitive in '02 — Components'; Flags table rows and Mobile Flag Cards are hand-composed, same class of limitation already documented by M02/M04/M05/M06.",
+    "Mobile Header is a hand-built frame duplicating the same non-componentized pattern already hand-built in M02/M03/M04/M05/M06's own Mobile Headers. Recommend the design-system owner promote a shared Mobile Header component (recurring recommendation across 6 modules now).",
+    "Mobile tap targets on hamburger/avatar/filter tabs are below the 44px minimum, matching the exact pre-existing Findings/Review-Queue mobile precedent rather than a newly introduced regression. Recommend a follow-up sweep across all mobile frames file-wide.",
+    "No named Figma Text Styles exist file-wide (pre-existing M00 gap; text uses matched font/size/weight properties directly rather than linked styles).",
+    "No user-facing manual 'retry failed flag' control was designed since ARCHITECTURE.md scopes retry/backoff entirely to the BullMQ worker; flagged as an open product-decision gap if the product wants a manual retry surfaced in the UI later.",
+    "No dedicated backend/API exists yet for this module (flagging worker, GitHub issue creation, template rendering, token rotation, rate-limit awareness, retry/backoff, flags query/list API) — this pass is Figma design only. M07 cannot be marked DONE until: flagger worker built, flags API implemented, frontend built from these Figma frames, frontend/backend integration verified, tests/checks pass, and security review confirms token references remain masked and raw secrets/tokens never render end-to-end, per docs/MODULES.md exit criteria and CLAUDE.md section 3."
+  ],
+  "notes": [
+    "Design-only pass for M07 (Flagger + Flags) per figma-design-module skill boundary and CLAUDE.md section 3 (one-module rule). Backend flagging worker, GitHub issue creation, template rendering, token rotation/rate-limit logic, retry/backoff, and frontend implementation are NOT part of this pass and remain required before M07 can be marked DONE.",
+    "Screen set: Default, Loading, Empty, Error, Mobile — 5 states total. Baseline per docs/figma/SCREEN_INVENTORY.md items 21-22 (Dashboard / Flags / Default, Empty) was extended with Loading/Error/Mobile per this task's explicit 'include all meaningful states' instruction, following the same state-expansion precedent M03/M04/M05/M06 already established.",
+    "Placed on existing page '04 — Dashboard' (node 3:5, already used by M02/M03/M04/M05) rather than a new page, consistent with PRODUCT_SOURCE_OF_TRUTH.md listing Flags under the User/Dashboard area.",
+    "Did not touch any M02, M03, M04, M05, or M06 existing frame content — verified directly that all 27 pre-existing frames retained original positions/dimensions after this pass.",
+    "Did not modify any shared component (Sidebar's 'Flags' item already existed in the base 8-item nav set; unlike M06, no shared-component extension was required or performed).",
+    "Did not design Rules, Templates, Workers, Users, Marketing, Auth, Tokens, Scan Rules, Overview, Findings-list, Finding-detail, Review Queue, or any other Admin screens — all out of scope for M07.",
+    "A self-audit pass (figma-audit skill) was performed by the same designer session; two real defects found and fixed (table column text wrapping/clipping rebalanced; Sidebar/Header instances resized to stretch to frame width matching Findings-frame precedent), independently re-verified via screenshot rather than accepted on faith.",
+    "Implementation pass (this session, implementation-agent@M07): built flagger worker, flags API, Flags dashboard frontend, and full integration on top of the existing Figma design. Reused get_design_context on node 47:1143 to pull the exact table contract (columns, badge/pagination/tab component reuse) rather than reinterpreting the design."
+  ],
+  "implementation": {
+    "backend": {
+      "status": "DONE",
+      "summary": "apps/worker/src/flagger.worker.ts consumes flag-queue jobs: picks least-recently-used active token skipping near-rate-limit ones, renders MessageTemplate ({{repo}}/{{file}}/{{rule}}), self-heals a default template row if missing, opens a GitHub issue via new createGithubIssue()/GithubApiError in github-client.ts, writes a Flag row + transitions Finding APPROVED->FLAGGED inside a Prisma transaction (race-safe via conditional updateMany), or on failure marks Finding FAILED with a short non-secret failureReason and lets BullMQ's existing exponential backoff (3 attempts) retry. Writes an AuditLog row (userId=null, action=flag_created|flag_failed) on every attempt per ARCHITECTURE.md §8 — this was a gap found and fixed during the module's own security-audit pass. apps/web/lib/queue.ts (new) enqueues a flag-queue job from POST /api/findings/:id/approve (apps/web/app/api/findings/[id]/approve/route.ts, shared file, additive change) right after the existing APPROVED transition commits; enqueue failure is logged and does not fail the request. apps/web/lib/flags.ts + GET /api/flags (new) list flag attempts (FLAGGED Finding+Flag join, or FAILED Finding alone) merged/sorted by postedAt, with status filter (FLAGGED/FAILED) and summary counts. Schema: added nullable Finding.failureReason and Flag.postedAt index via new additive migration 20260816150000_add_flag_failure_reason_and_index (no destructive change; prisma validate passed; prisma generate re-run). Seeded a default MessageTemplate row in prisma/seed.ts.",
+      "changedOrAddedFiles": [
+        "apps/web/prisma/schema.prisma",
+        "apps/web/prisma/migrations/20260816150000_add_flag_failure_reason_and_index/migration.sql",
+        "apps/web/prisma/seed.ts",
+        "apps/web/lib/flags.ts",
+        "apps/web/lib/queue.ts",
+        "apps/web/app/api/flags/route.ts",
+        "apps/web/app/api/findings/[id]/approve/route.ts",
+        "apps/web/app/api/findings/[id]/approve/route.test.ts",
+        "apps/web/package.json",
+        "apps/worker/src/flagger.worker.ts",
+        "apps/worker/src/github-client.ts",
+        "apps/worker/src/index.ts",
+        "apps/worker/src/__tests__/flagger.test.ts",
+        "packages/shared/src/types.ts",
+        "packages/shared/src/template.ts",
+        "packages/shared/src/index.ts"
+      ]
+    },
+    "frontend": {
+      "status": "DONE",
+      "summary": "app/(protected)/dashboard/flags/page.tsx (Server Component, fetches page 1 via lib/flags.ts, same pattern as findings/page.tsx) + loading.tsx (6 skeleton rows) + components/flags/flags-client.tsx (Client Component: All/Flagged/Failed tabs, desktop 8-column table, mobile stacked cards, pagination, error/empty/filtered-empty states) built directly from get_design_context on Figma node 47:1143, matching column order/labels (REPOSITORY/FILE/RULE/STATUS/ISSUE-DETAIL/TEMPLATE/TOKEN/POSTED), JetBrains Mono on file path/issue ref/token, Inter elsewhere, reused Badge/Pagination/EmptyState/ErrorState/Skeleton/Button components unchanged (no new design-system primitives invented). Route matches the pre-existing Sidebar link at /dashboard/flags (components/layout/sidebar.tsx, already pointed here before this module — not modified).",
+      "changedOrAddedFiles": [
+        "apps/web/app/(protected)/dashboard/flags/page.tsx",
+        "apps/web/app/(protected)/dashboard/flags/loading.tsx",
+        "apps/web/components/flags/flags-client.tsx",
+        "apps/web/components/ui/flag-status-badge.tsx"
+      ]
+    },
+    "integration": {
+      "status": "DONE",
+      "summary": "Full vertical slice verified end-to-end at the code level: Figma contract -> flags-client.tsx -> GET /api/flags -> lib/flags.ts -> Prisma (Finding+Flag+GithubToken+MessageTemplate joins), and the write path Admin approve -> enqueueFlagJob -> flag-queue -> flagger.worker.ts -> Flag row / FAILED Finding -> visible in the same Flags list. No live Postgres/Redis instance was available in this environment (.env has no DATABASE_URL/REDIS_URL configured) so the flow was verified via `npx prisma validate`, `npx prisma generate`, full workspace typecheck, `next build` (route /dashboard/flags and /api/flags both compiled into the build's route manifest), and unit/integration tests with a faithful in-memory Prisma-shaped mock (not a live DB) — this is the same verification depth used by M04/M06's existing test suites in this repo."
+    },
+    "tests": {
+      "status": "PASS",
+      "summary": "apps/web: 66/66 vitest tests pass (9 files) including 2 new approve-route tests (enqueues flag job; still returns 200 if enqueue fails). apps/worker: 33/33 vitest tests pass (4 files) including 9 new flagger.worker.ts tests (happy path, self-heals default template, no-secret-content assertions, skip on nonexistent/non-APPROVED finding, FAILED + failureReason on 403/no-token, token rotation prefers healthy rate limit, audit log written on success/failure). `tsc --noEmit` clean in both apps/web and apps/worker. `next build` succeeds (17 routes incl. /dashboard/flags, /api/flags). `eslint .` clean on apps/web."
+    },
+    "security": {
+      "status": "PASS",
+      "summary": "Ran the security-audit skill checklist against this module's code: raw secrets never persisted (Flag/Finding schema unchanged in that respect; failureReason is a fixed classification string, never raw error/body); GithubToken.encrypted never selected in lib/flags.ts or logged anywhere in flagger.worker.ts/queue.ts/approve route (grepped for console.* touching token/encrypted — zero matches); decryption stays in-memory via the existing withGithubClient pattern; GET /api/flags requires an authenticated session (requireSession), approve route remains admin-only (requireAdmin, unchanged); retries cannot duplicate a Flag row (Flag.findingId unique + conditional updateMany guard); failed flag attempts are visible (Finding.status=FAILED + failureReason); input validated via zod (flagsListQuerySchema); error responses carry only generic zod issue messages, no stack traces or secrets. One real gap found during this pass and fixed: ARCHITECTURE.md §8 requires every flag action to hit AuditLog (who/when/which token/which template) — the initial flagger.worker.ts draft didn't write one; added recordAuditEvent() calls (action=flag_created|flag_failed, userId=null since it's a system action) on every success/failure path, with a dedicated test asserting the audit detail string never contains a token value."
+    }
+  }
+}

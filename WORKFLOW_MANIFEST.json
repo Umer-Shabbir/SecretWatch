@@ -1,0 +1,41 @@
+{
+  "project": "SecretWatch",
+  "workflowVersion": "1.0.0",
+  "sourceOfTruth": [
+    "ARCHITECTURE.md",
+    "DESIGN.md"
+  ],
+  "claude": {
+    "claudeMd": ".claude/CLAUDE.md",
+    "agents": 9,
+    "skills": 9,
+    "rules": 3
+  },
+  "modules": [
+    "M00",
+    "M01",
+    "M02",
+    "M03",
+    "M04",
+    "M05",
+    "M06",
+    "M07",
+    "M08",
+    "M09",
+    "M10",
+    "M11",
+    "M12",
+    "M13"
+  ],
+  "figma": {
+    "preferredMcp": "remote",
+    "endpoint": "https://mcp.figma.com/mcp",
+    "usesNormalFrames": true,
+    "usesSectionsForScreens": false
+  },
+  "coordination": {
+    "lockDirectory": "state/locks",
+    "stateDirectory": "state/modules",
+    "stopAfterOneModule": true
+  }
+}

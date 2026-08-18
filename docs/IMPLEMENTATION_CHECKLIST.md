@@ -1,0 +1,27 @@
+# Module Implementation Checklist
+
+- [ ] Module claimed
+- [ ] Existing implementation inspected
+- [ ] Dependencies verified
+- [ ] Figma frame selected
+- [ ] Backend requirements extracted
+- [ ] Data/API contract defined
+- [ ] Database changes added safely
+- [ ] Business logic implemented
+- [ ] Authorization checked
+- [ ] Frontend components implemented
+- [ ] Frontend uses design tokens
+- [ ] Frontend matches Figma structure
+- [ ] Loading/empty/error states implemented
+- [ ] Mobile behavior implemented
+- [ ] API wired to UI
+- [ ] No mock data remains where real data is required
+- [ ] Typecheck passes
+- [ ] Lint passes
+- [ ] Tests pass
+- [ ] Build passes where practical
+- [ ] Security review passes
+- [ ] Figma audit passes
+- [ ] Module state updated
+- [ ] Lock released
+- [ ] Agent stopped

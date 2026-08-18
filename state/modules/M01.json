@@ -1,0 +1,272 @@
+{
+  "id": "M01",
+  "name": "Authentication",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-17T11:00:00.000Z",
+  "originallyCompletedAt": "2026-08-16T15:45:00.000Z",
+  "dependencies": [
+    "M00"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "fileKey": "7HiUEf43cHJk7Ms0WQJkqd",
+    "page": "06 — Flows / States",
+    "pageNodeId": "3:7",
+    "rationale": "Auth screens are cross-cutting (not owned by Marketing, Dashboard, or Admin alone), so placed on the shared Flows/States page per FIGMA_WORKFLOW.md.",
+    "supersededByScopeCorrection": "The 'Auth / Sign In / *' frames below (13:2/13:3/13:4/13:9) depict a GitHub-OAuth end-user sign-in flow. As of the 2026-08-17 product scope correction (docs/PRODUCT_SOURCE_OF_TRUTH.md), SecretWatch has no end-user accounts and no GitHub OAuth login — only admin email+password Credentials sign-in exists. These 4 frames and the corresponding apps/web/app/(auth)/sign-in/page.tsx implementation file were removed from the live codebase; they are left recorded here as design/implementation history rather than deleted from this JSON, per CLAUDE.md's instruction to correct rather than silently rewrite history. The 'Auth / Admin Sign In / *', 'Auth / Unauthorized', and 'Auth / Session Expired' frames remain accurate and current.",
+    "frames": [
+      {
+        "name": "Auth / Sign In / Default",
+        "nodeId": "13:2",
+        "x": 0,
+        "y": 0,
+        "w": 480,
+        "h": 800,
+        "state": "default",
+        "description": "GitHub OAuth entry card: wordmark, heading, subtext, primary 'Continue with GitHub' button (reused Primary/Medium Button component), consent footer, admin sign-in link."
+      },
+      {
+        "name": "Auth / Sign In / Loading",
+        "nodeId": "13:3",
+        "x": 0,
+        "y": 920,
+        "w": 480,
+        "h": 800,
+        "state": "loading",
+        "description": "Redirect-to-GitHub loading card, reuses Spinner component with 'Connecting...' label."
+      },
+      {
+        "name": "Auth / Sign In / Error",
+        "nodeId": "13:4",
+        "x": 0,
+        "y": 1840,
+        "w": 480,
+        "h": 800,
+        "state": "error",
+        "description": "OAuth failure card, reuses Alert=Error and Primary/Secondary Button components ('Try again' / 'Back to home')."
+      },
+      {
+        "name": "Auth / Admin Sign In / Default",
+        "nodeId": "13:5",
+        "x": 600,
+        "y": 0,
+        "w": 480,
+        "h": 800,
+        "state": "default",
+        "description": "Admin credential sign-in form: email + password Input instances (State=Default), Primary submit button, link back to GitHub sign-in."
+      },
+      {
+        "name": "Auth / Admin Sign In / Error",
+        "nodeId": "13:6",
+        "x": 600,
+        "y": 920,
+        "w": 480,
+        "h": 800,
+        "state": "error",
+        "description": "Admin sign-in with invalid credentials: Alert=Error banner + password Input swapped to State=Error variant."
+      },
+      {
+        "name": "Auth / Unauthorized / Default",
+        "nodeId": "13:7",
+        "x": 600,
+        "y": 1840,
+        "w": 480,
+        "h": 800,
+        "state": "default",
+        "description": "Protected-route/role-gate boundary (403): Status Badge=Error, explanation copy, Secondary 'Back to dashboard' button."
+      },
+      {
+        "name": "Auth / Session Expired / Default",
+        "nodeId": "13:8",
+        "x": 600,
+        "y": 2760,
+        "w": 480,
+        "h": 800,
+        "state": "default",
+        "description": "Session boundary screen: Status Badge=Warning, explanation copy, Primary 'Sign in again' button."
+      },
+      {
+        "name": "Auth / Sign In / Mobile",
+        "nodeId": "13:9",
+        "x": 1200,
+        "y": 0,
+        "w": 375,
+        "h": 812,
+        "state": "mobile",
+        "description": "Responsive variant of Sign In / Default: edge-to-edge (no card border), reduced horizontal padding (24px), full-width primary button, stacked column layout per DESIGN.md mobile rules."
+      }
+    ],
+    "componentsReused": [
+      "Button (4:50) — Primary/Secondary variants, Medium size",
+      "Input (5:10) — State=Default, State=Error variants",
+      "Alert (5:51) — Variant=Error",
+      "Badge (5:38) — Status=Error, Status=Warning",
+      "Spinner (7:84)"
+    ],
+    "variablesUsed": [
+      "color/canvas/default",
+      "color/fg/default",
+      "color/fg/muted",
+      "color/fg/subtle",
+      "color/border/default",
+      "color/accent/fg",
+      "radius/small"
+    ],
+    "textStylesUsed": [
+      "Card title (Semi Bold 16)",
+      "Body (Regular 14)",
+      "Caption/Small (Medium/Regular 12)"
+    ],
+    "responsiveRules": "Desktop: centered 360px card with border/radius/padding on a 480px frame. Mobile (<=480px): card border removed, content edge-to-edge with 24px horizontal padding, full-width primary button, single-column stack — per DESIGN.md section 9.2/30.",
+    "stateList": [
+      "default",
+      "loading",
+      "error",
+      "mobile"
+    ],
+    "knownFollowUps": [
+      "Sign In / Error alert lost its leading '×'/warning icon glyph during a detach-instance edit; text-only alert still satisfies DESIGN.md (text always shown) but icon reinforcement could be restored by frontend/design pass.",
+      "Disabled-state screens not separately designed: auth forms have no persistent disabled state beyond button loading (covered by button component's own Disabled variant, already in the design system)."
+    ]
+  },
+  "changedFiles": [
+    "state/modules/M01.json",
+    ".gitignore",
+    "package.json",
+    "apps/web/package.json",
+    "apps/web/tsconfig.json",
+    "apps/web/next.config.mjs",
+    "apps/web/next-env.d.ts",
+    "apps/web/tailwind.config.ts",
+    "apps/web/postcss.config.js",
+    "apps/web/.eslintrc.json",
+    "apps/web/vitest.config.ts",
+    "apps/web/.env.example",
+    "apps/web/app/globals.css",
+    "apps/web/app/layout.tsx",
+    "apps/web/app/providers.tsx",
+    "apps/web/app/page.tsx",
+    "apps/web/app/(auth)/admin-sign-in/page.tsx",
+    "apps/web/app/(auth)/unauthorized/page.tsx",
+    "apps/web/app/(auth)/session-expired/page.tsx",
+    "apps/web/app/(protected)/admin/page.tsx",
+    "apps/web/app/api/auth/[...nextauth]/route.ts",
+    "apps/web/middleware.ts",
+    "apps/web/components/ui/button.tsx",
+    "apps/web/components/ui/input.tsx",
+    "apps/web/components/ui/alert.tsx",
+    "apps/web/components/ui/badge.tsx",
+    "apps/web/components/ui/spinner.tsx",
+    "apps/web/components/auth/auth-card.tsx",
+    "apps/web/lib/db.ts",
+    "apps/web/lib/auth.ts",
+    "apps/web/lib/admin-credentials.ts",
+    "apps/web/lib/admin-credentials.test.ts",
+    "apps/web/lib/audit.ts",
+    "apps/web/lib/authorize.ts",
+    "apps/web/types/next-auth.d.ts",
+    "apps/web/prisma/schema.prisma",
+    "apps/web/prisma/seed.ts",
+    "apps/web/prisma/migrations/20260817050000_remove_user_oauth_and_token_ownership/migration.sql",
+    "docs/PRODUCT_SOURCE_OF_TRUTH.md"
+  ],
+  "changeLog": [
+    {
+      "date": "2026-08-17",
+      "summary": "DOCUMENTATION/RECORD CORRECTION PASS (this pass) — not a re-implementation. This module's original changedFiles/backend/frontend/checks below described the OAuth-based per-user auth flow (GitHub OAuth sign-in + /dashboard as a real authenticated-user landing target) that a later, separately-authorized product scope correction (2026-08-17, migration 20260817050000_remove_user_oauth_and_token_ownership) removed from the live codebase. This pass corrects the record to match what is ACTUALLY implemented and running today: admin-only Credentials auth, no end-user OAuth/session/dashboard of any kind. No auth logic itself was changed in this pass beyond documentation/state accuracy — apps/web/lib/auth.ts, middleware.ts, and the (auth) route group were already in their current (correct, admin-only) form before this pass began; this pass only removed stale references to deleted files (app/(auth)/sign-in/page.tsx, app/(protected)/dashboard/page.tsx) from changedFiles/figma/checks/backend/frontend text and corrected docs/PRODUCT_SOURCE_OF_TRUTH.md's stale USER-role/per-user-dashboard language to match."
+    }
+  ],
+  "checks": [
+    {
+      "name": "No Figma Sections used",
+      "status": "PASS"
+    },
+    {
+      "name": "No overlapping frames, 120px+ gaps maintained",
+      "status": "PASS",
+      "note": "Verified programmatically: 0 overlap pairs across 8 frames."
+    },
+    {
+      "name": "Correct [AREA] / [SCREEN] / [STATE] naming",
+      "status": "PASS"
+    },
+    {
+      "name": "Existing components/variables reused (no manual duplication)",
+      "status": "PASS"
+    },
+    {
+      "name": "Raw secrets/tokens never shown",
+      "status": "PASS",
+      "note": "Password fields use masked dot placeholders; no plaintext tokens anywhere."
+    },
+    {
+      "name": "States covered: default/loading/error/mobile",
+      "status": "PASS"
+    },
+    {
+      "name": "Figma design visual audit",
+      "status": "PASS",
+      "note": "Design-phase screenshot audit (prior pass) plus structural re-verification during implementation: get_design_context pulled node-for-node reference for 13:2 (Sign In/Default), 13:4 (Sign In/Error), 13:5 (Admin Sign In/Default), 13:6 (Admin Sign In/Error), 13:9 (Sign In/Mobile); screenshots reviewed for 13:3, 13:7, 13:8. All copy strings, layout, tokens, and component reuse (Button/Input/Alert/Badge/Spinner) matched in implementation. NOTE (2026-08-17 record correction): 13:2/13:3/13:4/13:9 (the GitHub-OAuth 'Sign In' frames) describe a flow removed from the live product by the 2026-08-17 scope correction — see figma.supersededByScopeCorrection above. This check's PASS reflects the audit as originally performed against the then-current scope; it is not a claim that the OAuth sign-in screen exists in the codebase today."
+    },
+    {
+      "name": "TypeScript typecheck",
+      "status": "PASS",
+      "note": "Re-verified 2026-08-17 against the current admin-only codebase: tsc --noEmit clean (0 errors) across apps/web and apps/worker."
+    },
+    {
+      "name": "ESLint (next/core-web-vitals)",
+      "status": "PASS",
+      "note": "Re-verified 2026-08-17: next lint — 0 warnings/errors."
+    },
+    {
+      "name": "Unit tests",
+      "status": "PASS",
+      "note": "Re-verified 2026-08-17: vitest lib/admin-credentials.test.ts — 5/5 passed (covers null user, USER-role rejection, ADMIN with no password hash, wrong password, correct password). Full apps/web suite: 186/186 passed across 18 files; apps/worker suite: 34/34 passed across 4 files."
+    },
+    {
+      "name": "Production build",
+      "status": "PASS",
+      "note": "Re-verified 2026-08-17: npx next build succeeds (exit 0). Route list confirms no /dashboard, no /sign-in, no /tokens (user-facing) routes exist — only /admin-sign-in, /admin/*, /submit-token, /unauthorized, /session-expired, matching the current admin-only, no-login product model. One pre-existing, unrelated warning (bullmq -> @valkey/valkey-glide optional dep)."
+    },
+    {
+      "name": "Migration status",
+      "status": "PASS",
+      "note": "2026-08-17: all 7 migrations (including 20260817050000_remove_user_oauth_and_token_ownership, which drops Account/Session/VerificationToken and GithubToken.userId/User.githubId) applied against the local dev Postgres; `npx prisma migrate status` reports 'Database schema is up to date!'. See M03.json's migration notes for the drift-resolution detail (schema objects were already live from a prior direct-push; `prisma migrate resolve --applied` was used to correct bookkeeping only, no destructive SQL executed by this pass)."
+    },
+    {
+      "name": "Security self-review",
+      "status": "PASS",
+      "note": "No console logging of passwords/tokens/secrets anywhere in lib/ or app/. Admin credential failures return generic 'Invalid email or password' without revealing which check failed (unknown account vs wrong password), though audit log internally distinguishes for operator visibility. Passwords hashed with bcrypt (cost 12 in seed, default in compare). Role stored server-side in JWT/session, never trusted from client. middleware.ts's matcher is now ['/admin/:path*'] only (no /dashboard route exists to protect); lib/authorize.ts provides matching server-side requireSession/requireAdmin guards for API routes (defense in depth beyond middleware). .env.local (dummy dev values) and all .env* files gitignored. No raw PATs/GitHub tokens handled in this module (GithubToken model is global/ownerless per M03, populated via the public submit-token flow, not touched here)."
+    }
+  ],
+  "backend": {
+    "status": "DONE",
+    "summary": "CURRENT STATE (corrected 2026-08-17): apps/web (Next.js 14 App Router, TypeScript, Tailwind). Prisma User model represents ONLY admin accounts (passwordHash, bcrypt-hashed, set only via prisma/seed.ts from SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD — no self-serve signup) plus AuditLog for signin/signout/admin-signin-failure events. There is no Account/Session/VerificationToken model (Auth.js Prisma adapter tables) — they were dropped by migration 20260817050000_remove_user_oauth_and_token_ownership, since Credentials-only NextAuth v4 with JWT sessions does not use PrismaAdapter. Auth.js (NextAuth v4) is configured with exactly one provider: a Credentials provider ('admin-credentials') gated to role=ADMIN accounts with a set passwordHash — no GitHub OAuth provider exists. middleware.ts's matcher is ['/admin/:path*'] only; any /admin/* request requires an authenticated session, and role!==ADMIN redirects to /unauthorized.",
+    "supersededSummary": "ORIGINAL (2026-08-16, now inaccurate) description, kept for history: 'Prisma schema: User/Account/Session/VerificationToken (Auth.js adapter models) + GithubToken/Finding/Flag/MessageTemplate/ScanRule/AuditLog per ARCHITECTURE.md... Auth.js (NextAuth v4) configured with GitHub OAuth provider (users, JWT session) and a separate admin-credentials Credentials provider... middleware.ts enforces route protection: any /dashboard or /admin route requires a session...' — the GitHub OAuth provider and /dashboard route no longer exist in the live codebase as of the 2026-08-17 scope correction."
+  },
+  "frontend": {
+    "status": "DONE",
+    "summary": "CURRENT STATE (corrected 2026-08-17): 3 auth states remain live and implemented: Admin Sign In (default/error, apps/web/app/(auth)/admin-sign-in/page.tsx), Unauthorized (403), and Session Expired — via a shared AuthCard shell (components/auth/auth-card.tsx). Reusable design-system components (Button, Input, Alert, Badge, Spinner) remain in use. The GitHub-OAuth 'Sign In' screen (default/loading/error/mobile) and apps/web/app/(protected)/dashboard/page.tsx were deleted from the codebase by the 2026-08-17 scope correction — there is no end-user sign-in screen or dashboard landing target because there are no end-user accounts. apps/web/app/(protected)/admin/page.tsx remains as a minimal stub landing target (full Admin Overview UI is out of this module's scope).",
+    "supersededSummary": "ORIGINAL (2026-08-16, now inaccurate) description, kept for history: 'All 7 Figma auth states implemented... Sign In (default/loading/error)... Dashboard/Admin landing stubs added only as real redirect targets...' — 4 of those 7 states (the Sign In states) and the Dashboard stub no longer exist in the live codebase."
+  },
+  "integration": {
+    "status": "DONE",
+    "summary": "CURRENT STATE (corrected 2026-08-17): admin-sign-in page wired to real signIn('admin-credentials') with inline error handling; session-expired/unauthorized pages are real middleware redirect targets, not mockups; SessionProvider wraps the app root; the /admin stub reads the real server session via getServerSession. There is no signIn('github') call anywhere in the codebase (grep-confirmed) — the original integration summary's claim of a wired GitHub OAuth sign-in no longer reflects reality."
+  },
+  "testStatus": "PASS — typecheck, lint, full vitest suite (186 web + 34 worker), and production build all green as of the 2026-08-17 re-verification pass.",
+  "securityStatus": "PASS — see security self-review check above.",
+  "knownIssues": [
+    "No E2E/browser test coverage exists for the admin Credentials sign-in round-trip in a real browser — unit coverage (lib/admin-credentials.test.ts) handles the auth-decision logic itself.",
+    "Sign In / Error alert's leading icon glyph (noted as a Figma known-follow-up in the now-removed OAuth Sign In screen) is moot — that screen no longer exists in the product.",
+    "docs/PRODUCT_SOURCE_OF_TRUTH.md's stale USER-role/per-user-dashboard/OAuth-sign-in language was corrected as part of this pass (see docs/PRODUCT_SOURCE_OF_TRUTH.md's 2026-08-17 scope-correction note) — this module's own JSON record is now internally consistent with that doc."
+  ],
+  "notes": [
+    "M00 had produced Figma design system only (zero repository code) despite being marked DONE — confirmed with the user before bootstrapping apps/web as part of this module, since M01 cannot exist without an app shell.",
+    "Figma design was already complete for this module (built by a prior figma-designer session) — reused as-is, no redesign performed.",
+    "Reset 10 other modules' figma-designer-* claims to AVAILABLE before claiming M01 as implementation-agent@M01, per operating-rules override authority over design-only agent claims.",
+    "Lock cleared manually by user-authorized action on 2026-08-17: rescope-agent lock (PID from lockfile) confirmed dead via independent Get-Process check before deletion. state/locks/M01.lock removed, owner/claimedAt reset to null. Module status field left as-is pending follow-up work.",
+    "2026-08-17 DOCUMENTATION/RECORD CORRECTION PASS (orchestrator-agent@M01M03): re-claimed M01 after the user-authorized lock clearing above, independently re-verified the live source tree (grep-confirmed no signIn('github') call, no app/(auth)/sign-in or app/(protected)/dashboard files, middleware.ts matcher is admin-only), corrected changedFiles/figma/checks/backend/frontend/integration/knownIssues to describe reality, and re-ran the full verification suite (typecheck/lint/tests/build) against the current codebase — all green. Did not re-implement or change any auth logic; this was a documentation/record accuracy pass only, per the task's explicit scope."
+  ]
+}

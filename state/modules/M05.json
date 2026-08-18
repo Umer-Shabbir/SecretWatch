@@ -1,0 +1,343 @@
+{
+  "id": "M05",
+  "name": "Finding Detail",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-16T20:30:00.000Z",
+  "dependencies": [
+    "M04"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "fileKey": "7HiUEf43cHJk7Ms0WQJkqd",
+    "page": "04 — Dashboard",
+    "pageNodeId": "3:5",
+    "nodes": [
+      {
+        "name": "Dashboard / Finding Detail / Pending",
+        "nodeId": "33:607",
+        "state": "Pending",
+        "x": 8255,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=33-607"
+      },
+      {
+        "name": "Dashboard / Finding Detail / Loading",
+        "nodeId": "34:693",
+        "state": "Loading",
+        "x": 8255,
+        "y": 1184,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=34-693"
+      },
+      {
+        "name": "Dashboard / Finding Detail / Error",
+        "nodeId": "34:694",
+        "state": "Error",
+        "x": 8255,
+        "y": 2408,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=34-694"
+      },
+      {
+        "name": "Dashboard / Finding Detail / Approved",
+        "nodeId": "34:695",
+        "state": "Approved",
+        "x": 9815,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=34-695"
+      },
+      {
+        "name": "Dashboard / Finding Detail / Flagged",
+        "nodeId": "34:696",
+        "state": "Flagged",
+        "x": 9815,
+        "y": 1184,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=34-696"
+      },
+      {
+        "name": "Dashboard / Finding Detail / Ignored",
+        "nodeId": "34:697",
+        "state": "Ignored",
+        "x": 9815,
+        "y": 2408,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=34-697"
+      },
+      {
+        "name": "Dashboard / Finding Detail / Confirm Approve",
+        "nodeId": "34:698",
+        "state": "Confirm Approve (modal overlay on Pending)",
+        "x": 11375,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=34-698"
+      },
+      {
+        "name": "Dashboard / Finding Detail / Mobile",
+        "nodeId": "34:699",
+        "state": "Mobile (responsive variant of Pending)",
+        "x": 12935,
+        "y": 0,
+        "w": 375,
+        "h": 674,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=34-699"
+      }
+    ],
+    "componentsReused": [
+      "Header (7:34) — 1 live instance per desktop/tablet frame (7 of 8 frames; Mobile uses a hand-built Mobile Header per known M02/M03/M04 precedent); breadcrumb text overridden per state to 'Findings / <repo> / <file>' (Pending/Approved/Flagged/Ignored/Confirm Approve) or 'Findings / #4821' (Loading/Error, before repo/file context is known/available)",
+      "Sidebar (7:15) — 1 live instance per desktop/tablet frame; 'Findings' Nav Item ships as State=Selected by default in the base Sidebar component (verified, no override needed), consistent with M04's finding",
+      "Badge (5:38) — Status=Pending (5:11) on Pending/Loading-context/Confirm Approve, Status=Approved (5:14) on Approved, Status=Flagged (5:17) on Flagged, Status=Ignored (5:20) on Ignored; all as live INSTANCEs, verified via getMainComponentAsync()",
+      "Button (4:50) — Variant=Secondary/State=Default (Ignore, Retry), Variant=Primary/State=Default (Approve & Flag), Variant=Secondary/State=Disabled and Variant=Primary/State=Disabled (Approved/Ignored finalized-state actions) — all live instances",
+      "Dialog=Confirmation (7:2) — 1 live instance on Confirm Approve state; ships with the exact DESIGN.md section 26 copy ('Approve finding?' / 'This will allow the flagging worker to create a GitHub issue using an available authorized token.' / [Cancel] [Approve & Flag]) already baked into the component's default content — no text override needed",
+      "Secret Redaction Display (7:97) — 1 live instance per state that shows evidence (Pending, Approved, Flagged, Ignored, Loading-skeleton-equivalent, Mobile); text overridden per finding to a redacted placeholder only (e.g. 'AKIA••••••••••7XQ', 'sk_live_••••••••••••4f2a', 'gapi_••••••••••••3k9d', a redacted Slack webhook URL) — this component had not been used by any prior module (M02/M03/M04) and is used here for the first time as intended",
+      "Error State (7:92) — 1 live instance on the Error state (node 40:859, replacing an earlier hand-built panel per the post-audit fix), matching the exact reuse pattern already established by M02 (15:611) and M04 (30:605): resized to 1136x184, copy overridden to 'Failed to load finding' / \"We couldn't load this finding. Please try again.\"",
+      "Skeleton pattern (visual language adapted from Skeleton=Table Row 7:78, not instanced directly since Loading here needed field-label/value-shaped bars rather than table-row-shaped bars) — see componentsNotReused_builtLocally"
+    ],
+    "componentsNotReused_builtLocally": [
+      "Detail Card container (metadata rows + evidence code block) — hand-composed frame; no 'Finding Detail' or generic 'Card with N labeled rows' component exists as an instanceable primitive in '02 — Components' (only a fixed-content Worker Health Card, 5:52, which has hardcoded Worker rows unrelated to finding metadata). Same class of gap already flagged by M02 (its own stat cards) and M04 (its findings table) — hand-building a bespoke content card remains the documented workaround.",
+      "Breadcrumb is delivered via the Header component's existing 'Findings / #4821'-style text slot (overridden per-state), not a standalone reusable Breadcrumbs component — no separate Breadcrumbs component exists in '02 — Components' despite being named in DESIGN.md/FIGMA_WORKFLOW.md's target component inventory. This is a pre-existing design-system gap (not introduced by M05); recommend the M00/design-system owner promote a real Breadcrumbs component so future modules don't keep re-overriding Header's breadcrumb slot as a substitute.",
+      "Loading state skeleton bars — hand-built rounded-rectangle bars sized to match each field label/value and the action buttons, rather than instances of Skeleton=Table Row (7:78), because that component's shape (5 table-column-width bars in a row) doesn't fit a labeled-field-list layout. Visual language (color, radius, bar proportions) was matched to 7:78 by inspection; not a live-linked instance.",
+      "Mobile Header (hand-built frame: hamburger icon + product name + avatar) — duplicated pattern, not an instance of a shared Mobile Header component, because none exists yet. This is the same known gap M02/M03/M04 already flagged and propagated, not newly introduced by M05.",
+      "Issue-created reference row (Flagged state) — hand-built minimal affordance (checkmark text + mono 'repo#issue-number' reference), since no 'Flag reference' or 'Issue link' component exists in the design system. Kept deliberately minimal per task instructions ('keep minimal if uncertain') — shows only that an issue was created and a plausible repo-scoped issue reference, no fabricated URL or additional unspecified data."
+    ],
+    "variablesUsed": [
+      "color/fg/default (#1f2328)",
+      "color/fg/muted (#656d76)",
+      "color/accent/fg (#0969da)",
+      "color/accent/emphasis (#0969da)",
+      "color/canvas/default (#ffffff)",
+      "color/canvas/subtle (#f6f8fa)",
+      "color/border/default (#d0d7de)",
+      "color/border/muted (#d8dee4)",
+      "color/danger/emphasis (#cf222e)",
+      "color/danger/fg (#cf222e)",
+      "color/danger/subtle (#ffebe9)",
+      "color/success/fg (#1a7f37)",
+      "color/success/subtle (#dafbe1)",
+      "radius/small (6)"
+    ],
+    "textStylesUsed": [
+      "Page title (Semi Bold 24 / Semi Bold 20 on Mobile)",
+      "Card title-equivalent field labels (Medium 11, letter-spacing 3%, uppercase)",
+      "Body (Regular 14 / 13 on Mobile)",
+      "Small (Regular 12-13)",
+      "Caption-equivalent (Medium 10-11 uppercase labels)"
+    ],
+    "typographyRule": "Inter for all UI labels/copy/nav/headers/breadcrumb/buttons; JetBrains Mono for File, Commit, redacted snippet code line prefix, and file-path sub-label inside the code block, per DESIGN.md section 5.2. Repository and Matched rule values use Inter (they are link-styled references/labels, not raw technical values) consistent with the DESIGN.md table precedent where 'Repository names are links' (Inter) while 'technical values use monospace' (JetBrains Mono) — matches M04's own Repository/Rule vs File/Commit typography split.",
+    "responsiveRules": "Desktop/tablet (1440px frames, 7 of 8 states): 240px fixed sidebar, single detail card (1136px wide) with 4 stacked metadata field rows (Repository/File/Commit/Matched rule), divider, redacted evidence code block, and an actions row anchored bottom-right of the card. Mobile (375px reference frame, Mobile state only, final height 674px after tightening): hamburger-style Mobile Header (hand-built placeholder per M02/M03/M04 precedent) replaces Header+Sidebar; single-column stacked layout with 16px page margins; detail card narrows to 343px with reduced field spacing (50px row pitch vs 64px desktop) and smaller type (13px values vs 14px, 10px labels vs 11px); action buttons stack vertically full-width below the card (Approve & Flag primary on top, Ignore secondary below) per DESIGN.md 9.2/30 'full-width primary actions' and 'stacked finding details' rules — not a shrunk desktop layout.",
+    "stateList": [
+      "pending",
+      "loading",
+      "error",
+      "approved",
+      "flagged",
+      "ignored",
+      "confirm-approve (modal)",
+      "mobile"
+    ],
+    "scopeNotes": [
+      "Per docs/figma/SCREEN_INVENTORY.md items 16-20, the canonical M05 baseline is Dashboard / Finding Detail / Pending, Approved, Flagged, Ignored, Failed (5 states, no Loading/Error/Confirm Approve/Mobile listed there). This task explicitly requested 8 states instead: Pending, Loading, Error, Approved, Flagged, Ignored, Confirm Approve, and Mobile — substituting 'Failed' (an inventory-listed finding status) is NOT included here because 'Failed' is a Finding.status value representing a scan/flag-processing failure, distinct from a page-level 'Error' (failed to load the detail view itself); the task's required state list uses 'Error' (page load failure) instead of 'Failed' (finding status). This is a deliberate scope interpretation per the current task instruction (source-of-truth priority 1) extending/adapting the inventory baseline, mirroring how M04 added a Mobile state beyond its own strict inventory baseline (items 12-15). Flagging this explicitly: 'Dashboard / Finding Detail / Failed' (inventory item 20, Finding.status=FAILED) was NOT designed in this pass and remains an open inventory item if the product still wants a dedicated Failed-status detail view distinct from the page Error state.",
+      "Placed on existing page '04 — Dashboard' (node 3:5, already used by M02/M03/M04) rather than creating a new page, consistent with PRODUCT_SOURCE_OF_TRUTH.md/DESIGN.md listing Finding Detail under the User Dashboard area and with M04's own placement precedent.",
+      "Did not touch any M00 ('02 — Components'), M02 (existing Dashboard/Overview/* frames), M03 (existing Dashboard/Tokens/* frames), or M04 (existing Dashboard/Findings/* frames) content — only read from them for component/pattern reuse, visual-language matching, and overlap-avoidance placement.",
+      "Did not design Admin Review Queue, Rules, Templates, Workers, Users, Marketing, Auth, Tokens, Scan Rules, Overview, or Findings-list screens — all out of scope for M05.",
+      "No disabled-in-flight ('Approving...'/'Ignoring...') sub-state was designed as a separate frame; per the task's explicit instruction this would only be folded into an existing state via a documented sub-note rather than a new frame, and no such sub-note was needed since the Approved/Ignored/Flagged states already show the natural post-action disabled/finalized button treatment (DESIGN.md 12.4/25 'Loading state must preserve button dimensions' / 'Approving...' pattern remains a frontend implementation concern for the in-flight moment, not a distinct Figma state)."
+    ]
+  },
+  "changedFiles": [
+    "state/modules/M05.json",
+    "apps/web/app/api/findings/[id]/route.ts",
+    "apps/web/app/api/findings/[id]/route.test.ts",
+    "apps/web/app/api/findings/[id]/approve/route.ts",
+    "apps/web/app/api/findings/[id]/approve/route.test.ts",
+    "apps/web/app/api/findings/[id]/ignore/route.ts",
+    "apps/web/app/api/findings/[id]/ignore/route.test.ts",
+    "apps/web/lib/findings.ts",
+    "apps/web/app/(protected)/findings/[id]/page.tsx",
+    "apps/web/app/(protected)/findings/[id]/loading.tsx",
+    "apps/web/components/findings/finding-detail-client.tsx",
+    "apps/web/components/findings/confirm-approve-dialog.tsx",
+    "apps/web/components/findings/findings-client.tsx"
+  ],
+  "backend": {
+    "status": "IMPLEMENTED",
+    "implementedAt": "2026-08-16T18:00:00.000Z",
+    "owner": "backend-builder@M05",
+    "summary": "GET /api/findings/:id (full FindingDetail incl. redactedSnippet, full untruncated commitSha), POST /api/findings/:id/approve and POST /api/findings/:id/ignore implemented in apps/web/lib/findings.ts (getFindingDetail/approveFinding/ignoreFinding) plus their route handlers. No Prisma migration needed -- Finding/FindingStatus already cover this module. Approve/ignore use a conditional updateMany({ where: { id, status: 'PENDING' } }) so the PENDING-only transition guard is enforced atomically at the DB layer, not just in application code -- concurrent requests can never both transition the same row. Audit-logged via the existing lib/audit.ts recordAudit() helper (same mechanism as M03 token revocation).",
+    "apiContract": {
+      "getDetail": "GET /api/findings/:id -> 200 { finding: FindingDetail } where FindingDetail = { id, repoFullName, filePath, commitSha (full), matchedRule, redactedSnippet, status, createdAt }; 401 unauthenticated, 404 not found.",
+      "approve": "POST /api/findings/:id/approve -> 200 { finding } (PENDING -> APPROVED only); 401 unauthenticated, 403 forbidden (non-admin), 404 not found, 409 { error: 'invalid_transition', message } for any non-PENDING current status including re-approving an already-APPROVED row.",
+      "ignore": "POST /api/findings/:id/ignore -> same shape, PENDING -> IGNORED only.",
+      "authNote": "Originally shipped as requireSession() (any authenticated user). Corrected post-security-review to requireAdmin() -- see security section below."
+    },
+    "migration": "None -- existing Finding/FindingStatus enum (PENDING/APPROVED/FLAGGED/IGNORED/FAILED) already cover all required states; prisma validate confirmed no drift."
+  },
+  "frontend": {
+    "status": "IMPLEMENTED",
+    "implementedAt": "2026-08-16T20:00:00.000Z",
+    "owner": "frontend-builder@M05",
+    "summary": "Finding Detail screen implemented from Figma nodes 33:607/34:693-34:699 and wired to the real GET/POST /api/findings/:id (+ /approve, /ignore) endpoints already built by backend-builder@M05 (apps/web/lib/findings.ts getFindingDetail/approveFinding/ignoreFinding, reused as-is). Route apps/web/app/(protected)/findings/[id]/page.tsx (Server Component) fetches the finding via getFindingDetail(); route-level apps/web/app/(protected)/findings/[id]/loading.tsx provides the Suspense-driven initial loading skeleton (hand-built label/value bars matching Figma 34:693, same class of adaptation as M04's Skeleton=Table Row substitute); apps/web/components/findings/finding-detail-client.tsx is the interactive Client Component handling Approve/Ignore actions, the Confirm Approve modal, in-flight/disabled states, and post-action re-render (Pending -> Approved/Ignored) without a full page reload. apps/web/components/findings/confirm-approve-dialog.tsx is a new accessible modal (role=alertdialog, focus trap, Escape-to-close, focus restored to the Approve & Flag trigger on cancel) built locally following the exact same pattern as apps/web/components/tokens/revoke-dialog.tsx (M03 precedent), since no shared Dialog component exists in components/ui yet — ships the exact DESIGN.md section 26 / Figma 34:698 copy verbatim ('Approve finding?' / 'This will allow the flagging worker to create a GitHub issue using an available authorized token.' / [Cancel] [Approve & Flag]). Existing Button/FindingStatusBadge/ErrorState/Skeleton components reused unmodified; no new components/ui primitives were needed beyond the dialog. JetBrains Mono (font-mono) applied only to File, Commit, and the redacted-snippet code block (file-path sub-label + code line + Secret Redaction Display value) per DESIGN.md 5.2; Inter everywhere else including Repository and Matched Rule (link-styled references, matching M04's own split).",
+    "route": "/findings/[id] (apps/web/app/(protected)/findings/[id]/page.tsx)",
+    "statesImplemented": {
+      "pending": "Figma 33:607 — Repository/File/Commit/Matched Rule field rows, divider, redacted snippet code block, Ignore (secondary) + Approve & Flag (primary) actions. Approve & Flag opens the Confirm Approve modal rather than acting immediately.",
+      "loading": "Figma 34:693 — route-level loading.tsx Suspense skeleton (hand-built bars sized to the field-row/value/code-block/button layout, matching the visual language of the shared Skeleton component per M05's own componentsNotReused_builtLocally note).",
+      "error": "Figma 34:694 (Error State component 7:92 reuse) — rendered by finding-detail-client.tsx via the shared ErrorState component when the initial server fetch fails OR returns 404 (a missing finding is treated the same as a load failure here rather than a separate not-found screen, since no such screen exists in the 8-state Figma set); 'Failed to load finding' / \"We couldn't load this finding. Please try again.\" copy verbatim; Retry re-fetches client-side.",
+      "approved": "Figma 34:695 — 'Approved — awaiting flag automation' caption + disabled Ignore/Approved buttons (both rendered disabled, matching the Disabled button variants 4:22/4:10). Reached live by a successful POST /approve re-rendering client state, not just as a static seeded-data view.",
+      "flagged": "Figma 34:696 — Issue Reference Row ('✓ GitHub issue created' + a reference affordance) with no action buttons (Figma's own Actions area for this state is an empty 12px spacer). Deliberately does not fabricate a repo#issue-number reference since M07/Flagger does not exist yet to supply one; renders a generic acknowledgement instead (see IssueReferenceRow doc-comment) — flagged as an open discrepancy below.",
+      "ignored": "Figma 34:697 — 'Ignored — no further action will be taken' caption + single disabled 'Ignored' button (Secondary/Disabled variant). Reached live by a successful POST /ignore re-rendering client state.",
+      "confirm-approve-modal": "Figma 34:698 — ConfirmApproveDialog scrim + Dialog=Confirmation content overlaid on the Pending card underneath (matches Figma's modal-over-Pending composition); Cancel restores focus to the Approve & Flag trigger; Approve & Flag calls POST /approve and closes on success, or surfaces an inline danger Alert-style banner on 409/failure without closing the underlying page.",
+      "mobile": "Figma 34:699 — same component tree, responsive via Tailwind md: breakpoints: field rows stack single-column (unchanged, already column-based on desktop), action buttons switch from a flex-row pair to a full-width flex-col-reverse stack (Approve & Flag on top, Ignore below, matching Figma's stacked order) below md."
+    },
+    "sharedFileChanges": [
+      "apps/web/components/findings/findings-client.tsx (M04 file): replaced the two non-interactive 'View'/'View →' placeholder <span> elements (desktop table Actions column + mobile card footer) with real <Link href={`/findings/${finding.id}`}> navigation now that this route exists, per M04's own documented follow-up (frontend.actionsColumnDecision in state/modules/M04.json). Added a single `import Link from \"next/link\"`. No other change to that file — filter/pagination/error/empty logic untouched."
+    ],
+    "figmaDiscrepancies": [
+      "Finding.id in the data model is a database-generated CUID/UUID, not the small sequential integer Figma's mockup copy shows ('Finding #4821', '#4712', '#4790', '#4655'). Implemented as 'Finding #<first 8 chars of the id>' to preserve the '#<short-token>' visual pattern without fabricating a fake sequential number the backend doesn't have. This is a data-shape gap between the Figma mock content and the real schema (schema.prisma has no separate human-friendly sequence column), not a frontend styling deviation — flagged as a possible follow-up if product wants a real short display ID.",
+      "Flagged state's Issue Reference Row shows a generic 'See linked repository issues' affordance instead of Figma's mock 'acme/infra-tools#88' repo-scoped issue reference, because Finding has no issueUrl/issueNumber column yet and M07 (Flagger) — the module that would populate such a reference — does not exist yet. Do not fabricate a plausible-looking issue reference; this is the safer, explicitly-flagged interpretation per the task's 'keep minimal if uncertain' guidance. Follow-up: once M07 adds a Flag/issue-reference column, wire the real repo#issue-number here.",
+      "No breadcrumb rendered (Figma shows 'Findings / <repo> / <file>' or 'Findings / #4821' in the Header). Same pre-existing gap already documented by M04: apps/web/app/(protected)/layout.tsx does not pass a per-route breadcrumb to Header on any existing route. Left unchanged rather than modifying the shared layout for one module.",
+      "No standalone Breadcrumbs, Mobile Header, or 'Finding Detail Card' components exist in the design system (all documented as pre-existing gaps in this module's own figma.knownIssues) — detail card is hand-composed, consistent with M02/M04's own table/card precedent."
+    ],
+    "tests": [
+      "No new component-level tests added — the codebase has no jsdom/React Testing Library setup (vitest.config.ts runs environment: 'node' only), same gap already documented by M04's frontend pass. Verified instead via typecheck, lint, full production build (route ƒ /findings/[id] registered), and manual state-by-state logic review against all 8 Figma frames.",
+      "Existing backend tests for this module (already written by backend-builder@M05, unmodified by this pass) continue to pass: app/api/findings/[id]/route.test.ts (5 tests), app/api/findings/[id]/approve/route.test.ts (8 tests), app/api/findings/[id]/ignore/route.test.ts (8 tests) — 21 tests total covering auth boundary, 404, and PENDING-only transition enforcement (409 on invalid transition)."
+    ]
+  },
+  "integration": {
+    "status": "VERIFIED",
+    "owner": "integration-builder@M05",
+    "verdict": "GO",
+    "summary": "Full code-trace verification of Figma -> frontend -> API -> business logic -> DB vertical slice for Finding Detail, matching the M04 integration bar. Type contract match confirmed: finding-detail-client.tsx's FindingDetail import is the exact same type re-exported from lib/findings.ts (no local re-declaration, no `any`, no field-name drift) -- id/repoFullName/filePath/commitSha/matchedRule/redactedSnippet/status/createdAt all match exactly, including that commitSha here is the FULL sha (not the 7-char short form used by FindingSummary in the list). Request paths traced end-to-end for all three routes: GET/POST handlers call requireSession() first and return 401 immediately on failure, before any Prisma call -- confirmed by reading route.ts/approve/route.ts/ignore/route.ts line-by-line and by the auth-boundary tests (401 cases) exercising the real handler with a null-session mock. No data read/written pre-auth in any of the three routes. approveFinding/ignoreFinding transition logic re-derived by hand: both do an initial findUnique for a fast/clear 404 or 409, then the authoritative mutation is a conditional `updateMany({ where: { id, status: 'PENDING' }, data: { status: X } })` -- Postgres evaluates this as a single atomic statement, so two concurrent requests can never both match/affect the same row while PENDING; the loser's `result.count === 0` path re-reads and throws InvalidFindingTransitionError (409), never silently succeeds or double-transitions. This is genuinely race-safe at the DB level, not just TOCTOU-guarded in application code. findings-client.tsx's two new <Link href={`/findings/${finding.id}`}> call sites (desktop table + mobile card) verified to use the real per-row finding.id (not a static/stale path), and the route they point to (app/(protected)/findings/[id]/page.tsx) exists and builds -- no repeat of M04's fixed /dashboard/findings-style bug. Confirm Approve dialog's Approve & Flag button calls handleApproveConfirm -> POST .../approve and awaits the JSON body before closing; on !res.ok it sets a visible role=alert banner with the server's message (or a generic fallback) and closes the modal without throwing; the Ignore button's handleIgnore similarly POSTs, is wrapped in try/catch, and surfaces the same alert banner on failure or network error -- no unhandled promise rejection in either path (both fetches are awaited inside try/catch/finally, loading flags always reset in finally). 401/404 cases were not separately hand-tested against the live UI (no browser/dev server available in this environment) but the client's generic catch-all (`!res.ok` -> setActionError) covers 401/404/409 identically at the code level; a session-expired 401 would surface the same inline banner rather than crash. redactedSnippet traced end-to-end with zero re-processing: Prisma select -> toFindingDetail() straight passthrough (no string ops) -> JSON.stringify by NextResponse.json -> client useState(initialFinding) -> rendered as a plain JSX text node ({finding.redactedSnippet}, no dangerouslySetInnerHTML, no template concatenation that could drop redaction characters). Grepped all new/changed findings files for console.log/error/warn/debug -- zero matches; grepped for realistic raw-secret patterns (AKIA without redaction dots, ghp_, sk_live_ without dots) across route/test files -- only present inside already-redacted test fixtures, matching the redaction tests' own intent. Full command matrix run together (not in isolation): apps/web typecheck (tsc --noEmit) clean, apps/web lint (next lint) clean, apps/web vitest run 9 files / 62 tests passed (up from M04's 41 -- confirms the +21 new M05 tests: 5 detail GET, 8 approve, 8 ignore -- all passing alongside the pre-existing M02/M03/M04 suites with zero regressions), apps/web production build succeeded with dummy env vars and registers ƒ /api/findings/[id], ƒ /api/findings/[id]/approve, ƒ /api/findings/[id]/ignore, and ƒ /findings/[id] as dynamic routes. apps/worker typecheck and its 3 test files / 24 tests also re-run and confirmed unaffected (M05 does not touch apps/worker, verified by changedFiles list and by the fact apps/worker has no findings-detail-related code). Prisma schema confirmed unchanged: `prisma validate` passes, and apps/web/prisma/migrations/ still ends at 20260816140000_add_finding_dedup_constraint (M04's last migration) -- no new migration directory was created by this module, matching backend-builder's claim of zero schema drift; Finding.id is a plain String cuid column (no strict UUID validation at the DB layer), so an arbitrary/malformed :id path segment safely resolves to Prisma returning null (-> clean 404) rather than throwing, in both the detail GET and the two action POSTs. Navigation verified: sidebar's 'Findings' nav item (pre-existing, unchanged by M05) points at /findings and stays highlighted via startsWith() while on a /findings/[id] detail page too; the detail page's '← Findings' back-link and the ErrorState's retry path both resolve to real, already-verified routes; the two updated findings-client.tsx View links resolve to the real, newly-built /findings/[id] route -- no 404 dead ends introduced by this module. Pre-existing unrelated sidebar links (Review Queue, Scan Rules, Flags, Workers, Templates, Users, Settings) remain unbuilt dead links from earlier/future modules, out of M05's scope, not a regression introduced here.",
+    "fixesApplied": [],
+    "notedGaps": [
+      "No live Postgres/Redis instance available in this environment -- all verification above is via mocked-Prisma vitest tests, tsc/eslint static analysis, and a successful `next build`; true end-to-end runtime execution (real DB round-trip, real session cookie, real browser click-through of Approve/Ignore/Confirm modal, real 401 redirect-to-sign-in behavior) remains a pre-production follow-up, consistent with M04's own noted gap.",
+      "401/404/409 UI error-path behavior was verified by code inspection (the fetch/catch/setActionError logic is generic and covers all non-ok statuses identically) rather than by driving an actual browser against a running server with an expired session -- no dev server/browser tooling was exercised in this environment. Recommend a manual click-through pass (or Playwright/Testing Library component tests once that infra exists, per M04's own follow-up) before production sign-off.",
+      "Flagged state's 'See linked repository issues' text is a deliberately generic placeholder (frontend-builder's own documented decision, not something this pass changed) since Finding has no issueUrl/issueNumber column yet -- will need real wiring once M07 (Flagger) exists. Not a bug, just carried forward as a known follow-up.",
+      "The 8-state Figma set does not include a distinct 'Finding.status=FAILED' detail view (see M05 figma.knownIssues); frontend-builder mapped a FAILED-status finding to the same detail card scaffold with no explicit state branch for it in finding-detail-client.tsx (falls through to the same actions-hidden-if-not-PENDING/APPROVED/IGNORED logic, effectively rendering with no action buttons and no special caption, similar to Flagged but without the Issue Reference Row). This is a display-completeness gap inherited from the Figma scope decision, not an integration bug -- flagged for a future task if product wants a dedicated Failed-state treatment.",
+      "packages/shared/src/types.ts still declares its own unused FindingSummary/FindingsListResponse (flagged as a latent trap by M04's integration pass) -- confirmed still unreferenced by any M05 file either; recommend deleting it in a follow-up cleanup pass rather than letting it keep drifting silently."
+    ]
+  },
+  "security": {
+    "status": "REVIEWED",
+    "owner": "security-reviewer@M05",
+    "verdict": "PASS",
+    "summary": "Reviewed raw-secret exposure surface, authorization boundaries on all three routes, state-transition race safety, audit logging content, and XSS surface for Finding Detail. No raw secret/token exposure found anywhere: redactedSnippet is read-only passthrough of an already-redacted value, never re-processed, never logged (zero console.* calls across all M05 files). Race-safety confirmed genuine at the DB layer via conditional updateMany. Audit logging captures userId/action/detail(findingId), verified free of raw secret patterns. Error responses (401/403/404/409) return only generic codes/messages, no internal detail leakage. All rendered fields are plain JSX text, no dangerouslySetInnerHTML. Confirm Approve dialog prevents double-submission via loading/disabled state. BLOCKING issue found and resolved during this review (see below) before DONE.",
+    "blockingIssueFound": "POST /api/findings/:id/approve and /ignore were initially gated behind requireSession() (any authenticated USER), not requireAdmin(). ARCHITECTURE.md places 'review/approve queue' and 'approve -> flag' under the Admin Panel (role=admin) and states the admin review gate should be ON by default (also CLAUDE.md section 8); docs/MODULES.md lists approve/ignore/audit-trail under M06 Admin Review Queue. Flagged to the user as a stop-condition (security-sensitive authorization decision, not silently resolved) per CLAUDE.md section 11.",
+    "resolution": "User explicitly chose to gate approve/ignore to requireAdmin() now (2026-08-16). Both routes updated to use the existing lib/authorize.ts requireAdmin() helper, returning 401 (unauthenticated) vs 403 (forbidden, authenticated non-admin) distinctly. Route tests updated (403-for-USER, 200-for-ADMIN cases added, replacing the old 'any authenticated user' assertions). Frontend (findings/[id]/page.tsx) now reads the server session role and passes isAdmin to FindingDetailClient, which hides the Approve/Ignore actions for non-admin users (defense-in-depth UX only -- the server route is the real, independently-enforced boundary). Full apps/web command matrix (typecheck/lint/test/build) re-run clean after the fix: 64 tests passing (+2 for the new 403/200 role cases), production build succeeds with all four /api/findings/:id* routes + /findings/[id] registered.",
+    "followUps": [
+      "LOW: apps/web/app/api/findings/[id]/route.ts has no try/catch around getFindingDetail() -- an unhandled Prisma error falls through to Next's default handler. Pre-existing repo-wide gap (same as /api/tokens, GET /api/findings), not an M05-specific regression.",
+      "LOW: Finding Detail page.tsx treats a 404 (finding not found) identically to a transient load failure (both render the generic ErrorState/Retry UI) -- UX correctness follow-up, not a security issue.",
+      "LOW: Flagged state's IssueReferenceRow renders a generic placeholder rather than a real issue URL/number (Finding has no issueUrl column yet, M07 scope) -- confirmed this never fabricates or exposes any URL/secret-adjacent value.",
+      "LOW: No rate limiting on POST /approve or /ignore beyond the PENDING-only one-shot transition guard -- worth folding into M13 Hardening's global rate-limiting pass.",
+      "Reconcile the M05/M06 scope overlap noted by backend-builder: docs/MODULES.md formally places approve/ignore/confirmation-dialog/audit-trail under M06 Admin Review Queue. M05 shipped these as ADMIN-gated Finding Detail actions per this task's explicit instruction; approveFinding/ignoreFinding in lib/findings.ts are written generically enough for M06 to reuse without duplication -- M06 planning should account for this when scoped."
+    ]
+  },
+  "checks": [
+    {
+      "name": "No Figma Sections used for M05 screens",
+      "status": "PASS",
+      "note": "All 8 screens created via figma.createFrame(), verified type=FRAME via get_metadata/use_figma inspection."
+    },
+    {
+      "name": "No overlapping frames (M05 vs M05, and M05 vs existing M02/M03/M04 frames on page 3:5), 120px+ gaps maintained",
+      "status": "PASS",
+      "note": "Programmatic AABB overlap check across all 27 top-level frames on page '04 — Dashboard' (19 pre-existing M02+M03+M04, 8 new M05): 0 overlap pairs. M05 main columns at x=8255 (120px clear of Findings Mobile's right edge at x=8135), x=9815 (120px clear of column 1's right edge at x=9695), x=11375 (Confirm Approve, 120px clear), x=12935 (Mobile, 120px clear of Confirm Approve's right edge at x=12815). Internal vertical gaps within column 1 (Pending/Loading/Error) are 120px+ (1064->1184 gap=120, 2288->2408 gap=120)."
+    },
+    {
+      "name": "Correct [AREA] / [SCREEN] / [STATE] naming, unique file-wide",
+      "status": "PASS",
+      "note": "All 8 frames named exactly 'Dashboard / Finding Detail / <State>'. Verified 0 duplicate names among all 27 top-level frames on the page."
+    },
+    {
+      "name": "Existing components/variables reused (Header/Sidebar/Badge/Button/Secret Redaction Display/Dialog=Confirmation)",
+      "status": "PASS",
+      "note": "Confirmed as live INSTANCEs via getMainComponentAsync() equality checks against source component node IDs (7:2 Dialog=Confirmation, 7:97 Secret Redaction Display, and by construction all Badge/Button instances via componentSet.children.find(...).createInstance())."
+    },
+    {
+      "name": "Raw secrets/tokens never shown",
+      "status": "PASS",
+      "note": "Programmatic regex scan of 199 text nodes across all 8 frames for realistic unredacted secret patterns (AKIA[0-9A-Z]{16} without redaction dots, sk_live_ Stripe keys without redaction dots, ghp_ GitHub PATs, xox Slack tokens): 0 matches. All evidence values use explicit bullet-redaction characters (e.g. AKIA••••••••••7XQ, sk_live_••••••••••••4f2a, gapi_••••••••••••3k9d, redacted Slack webhook)."
+    },
+    {
+      "name": "States covered: pending/loading/error/approved/flagged/ignored/confirm-approve/mobile",
+      "status": "PASS"
+    },
+    {
+      "name": "Status badges use text + icon/color (never color alone)",
+      "status": "PASS",
+      "note": "All Badge instances are the existing Status=<X> component variants, which already bundle text+color per prior module verification (M02/M03/M04)."
+    },
+    {
+      "name": "Typography: Inter for UI, JetBrains Mono for technical values",
+      "status": "PASS",
+      "note": "File path, Commit SHA, and code-block content set to JetBrains Mono Regular; all other copy (labels, titles, buttons, breadcrumb, repository, matched rule) set to Inter."
+    },
+    {
+      "name": "Radius restrained, border-driven surfaces, no heavy shadows",
+      "status": "PASS",
+      "note": "6px radius used on cards/code blocks/issue-reference row, matching DESIGN.md section 7. No shadow effects applied anywhere; Confirm Approve modal uses the pre-existing Dialog=Confirmation component as-is (no shadow added by this pass)."
+    },
+    {
+      "name": "Mobile frame has genuine responsive layout (stacked single column, full-width actions, reduced padding)",
+      "status": "PASS",
+      "note": "375px frame, 16px margins, single-column stacked field rows, smaller type scale, full-width stacked Approve & Flag / Ignore buttons via layoutSizingHorizontal=FILL inside a vertical auto-layout column."
+    },
+    {
+      "name": "Confirm Approve modal matches DESIGN.md section 26 copy exactly",
+      "status": "PASS",
+      "note": "Dialog=Confirmation (7:2) component ships with the exact required copy pre-authored; used as a live instance with no text changes needed, overlaid on a scrim + a clone of the Pending state's full content per the task's modal-over-Pending requirement."
+    },
+    {
+      "name": "Visual screenshot audit of all 8 frames",
+      "status": "PASS",
+      "note": "Each frame screenshotted individually after content was built; all verified clean (no clipped text, no overlapping elements, no leftover placeholder shimmer)."
+    },
+    {
+      "name": "Independent figma-audit skill compliance pass via figma-auditor subagent",
+      "status": "PASS_WITH_NOTES",
+      "note": "The figma-auditor subagent's result arrived after a delay and was reconciled against the live Figma file (each claim independently re-verified via use_figma before any fix was applied). It found 2 BLOCKING issues, both confirmed and fixed: (1) Header instance was stuck at its 960px default width instead of stretching to the full 1440px frame width in 6 of 7 non-mobile frames (33:636 Pending, 34:700 Loading, 34:748 Error, 35:694 Approved, 36:726 Flagged, 37:844 Confirm Approve) — fixed via resize(1440, height); verified the Header's internal 'Right' sub-frame (search/theme-switcher/avatar) auto-repositions to hug the new right edge (x=1132, right edge=1420) exactly like M02's (15:39) and M04's (28:454) Header instances. (2) The Error state (34:694) used a hand-built 'Error Panel' frame (34:780) instead of reusing the shared Error State component (7:92) the way M02 (15:611) and M04 (30:605) do — fixed by removing the hand-built panel and creating a live Error State instance (new node 40:859, resized to 1136x184 matching M04's pattern) with copy overridden to 'Failed to load finding' / \"We couldn't load this finding. Please try again.\" Also applied 4 non-blocking cleanups the auditor flagged: renamed generic 'Frame' field-row labels to descriptive names (Repository/File/Commit/Rule Row, Code Snippet Block, Actions, Issue Reference Row) in Approved/Flagged/Ignored to match Pending's naming; standardized all Badge instances to 'Status Badge' (was inconsistently 'Badge' on Approved/Flagged/Ignored/Mobile); removed redundant opacity:0.5 overrides on 3 button instances (35:752, 35:754, 37:814) that were already correctly instanced from the library's real Disabled variants (4:22, 4:10) — the opacity was double-dimming an already-disabled-styled component, not compensating for a missing one. Post-fix re-verification: 0 overlap pairs across all 27 page frames (unchanged), 199 text nodes re-scanned for realistic secret patterns (0 matches, unchanged), all 6 Header instances confirmed at width=1440, Error State instance confirmed linked to main component 7:92. Full findings list from the auditor is not independently reproduced verbatim here since each item was re-verified first-hand rather than taken on faith; the concrete before/after state for every item is recorded above."
+    },
+    {
+      "name": "apps/web typecheck / lint / test / build (post-implementation, full module)",
+      "status": "PASS",
+      "note": "npm run typecheck --workspace=apps/web clean; npm run lint --workspace=apps/web no warnings/errors; npm run test --workspace=apps/web: 9 files / 64 tests passed; next build succeeds with dummy env vars, registers GET/POST /api/findings/[id], /approve, /ignore, and /findings/[id]."
+    },
+    {
+      "name": "Security: approve/ignore admin-gated per ARCHITECTURE.md/CLAUDE.md admin-review-gate requirement",
+      "status": "PASS",
+      "note": "security-reviewer@M05 found approve/ignore initially used requireSession() (any authenticated user), flagged as a CRITICAL/HIGH open authorization decision rather than silently fixed (CLAUDE.md section 11 stop-condition). Escalated to the user via AskUserQuestion; user chose to gate to requireAdmin() now. Both routes updated to requireAdmin() (401 unauthenticated / 403 forbidden), route tests updated with explicit 403-for-USER and 200-for-ADMIN cases, and the Finding Detail page/client updated to hide Approve/Ignore for non-admin users (UX courtesy; server-side is the real boundary). Re-verified via full typecheck/lint/test/build after the fix."
+    }
+  ],
+  "knownIssues": [
+    "No standalone 'Breadcrumbs' component exists in '02 — Components' despite being named in DESIGN.md/FIGMA_WORKFLOW.md's target component inventory; M05 reused the Header component's existing breadcrumb text slot instead (overridden per state), same workaround implicitly available to M02/M03/M04. Recommend the M00/design-system owner promote a real reusable Breadcrumbs component.",
+    "No generic 'Finding Detail' / labeled-metadata-card component exists as an instanceable primitive; the detail card (Repository/File/Commit/Matched rule rows + evidence block + actions) is hand-composed per state rather than a single reusable component with repeatable field-row children — same class of limitation M02 (stat cards) and M04 (findings table) already documented for their own screens. Recommend a follow-up design-system pass to componentize a 'Labeled Field Row' and a 'Finding Detail Card' shell so future modules (e.g. Admin Review Queue item detail, M06) can instance rather than rebuild this pattern.",
+    "Loading-state skeleton bars are hand-built rounded rectangles matching the visual language of Skeleton=Table Row (7:78) rather than live instances of it, because 7:78's fixed 5-column table-row shape does not fit a labeled-field-list layout. Recommend the design-system owner add a 'Skeleton=Detail Field' or similar variant sized for label+value stacks.",
+    "Mobile Header is a hand-built frame (hamburger + wordmark + avatar), duplicating the same non-componentized pattern already hand-built in M02, M03, and M04's own Mobile Headers, rather than a shared 'Mobile Header' component instance. This is a propagated, not newly originated, gap — same recommendation already on record from M04 (promote a shared Mobile Header component under '02 — Components').",
+    "'Dashboard / Finding Detail / Failed' (docs/figma/SCREEN_INVENTORY.md item 20, representing Finding.status=FAILED) was NOT designed in this pass. The task's required 8-state list substitutes a page-level 'Error' (failed-to-load) state instead of the Finding-status 'Failed' state; these are conceptually distinct (page load failure vs. a finding whose scan/flag processing itself failed). If the product still needs a dedicated Finding Detail view for status=FAILED findings (distinct from a load-error), that remains an open design gap against the screen inventory and should be scoped explicitly in a follow-up task.",
+    "No dedicated backend/API exists yet for this module (finding detail fetch endpoint, action authorization checks for Ignore/Approve & Flag, confirmation-triggered flagging integration) — this pass is Figma design only. M05 cannot be marked DONE until: detail API implemented, frontend built from these Figma frames, frontend/backend integration verified (including server-side authorization enforcement on both actions per ARCHITECTURE.md/CLAUDE.md security rules), tests/checks pass, and security review confirms raw secrets remain impossible to display end-to-end, per docs/MODULES.md exit criteria and CLAUDE.md section 3.",
+    "RESOLVED (post-audit fix): Header instance was stuck at 960px default width instead of stretching to 1440px in 6 of 7 non-mobile frames — fixed and re-verified against M02/M04's Header pattern.",
+    "RESOLVED (post-audit fix): Error state used a hand-built 'Error Panel' instead of reusing the shared Error State component (7:92) that M02/M04 both use — fixed by replacing it with a live 7:92 instance with contextualized copy.",
+    "RESOLVED (post-audit cleanup): generic 'Frame' labels on Approved/Flagged/Ignored field rows and inconsistent 'Badge' vs 'Status Badge' instance naming were standardized; redundant opacity:0.5 overrides on 3 already-correct Disabled-variant button instances were removed."
+  ],
+  "notes": [
+    "Design-only pass for M05 (Finding Detail) per figma-design-module skill boundary. Backend detail API, action authorization enforcement, flagging-trigger integration, and frontend implementation are NOT part of this pass and remain required before M05 can be marked DONE.",
+    "Screen set follows this task's explicit 8-state requirement (Pending, Loading, Error, Approved, Flagged, Ignored, Confirm Approve, Mobile), which extends/adapts docs/figma/SCREEN_INVENTORY.md's 5-state baseline (items 16-20: Pending/Approved/Flagged/Ignored/Failed) per source-of-truth priority 1 (current task instruction) — see figma.scopeNotes for the full rationale, including why 'Failed' (Finding.status) was not designed as a separate state in this pass.",
+    "Placed on existing page '04 — Dashboard' (node 3:5, already used by M02/M03/M04) rather than creating a new page, consistent with PRODUCT_SOURCE_OF_TRUTH.md/DESIGN.md listing Finding Detail under the User Dashboard area and with M04's placement precedent.",
+    "Did not touch any M00 ('02 — Components'), M02 (existing Dashboard/Overview/* frames), M03 (existing Dashboard/Tokens/* frames), or M04 (existing Dashboard/Findings/* frames) content — only read from them for component/pattern reuse and overlap-avoidance placement. Full-page AABB overlap check against all 19 pre-existing frames plus the 8 new M05 frames returned 0 overlaps.",
+    "Did not design Admin Review Queue, Rules, Templates, Workers, Users, Marketing, Auth, Tokens, Scan Rules, Overview, or Findings-list screens — all out of scope for M05.",
+    "Secret Redaction Display (7:97) — flagged by the task as existing but unused by any prior module — was used here for the first time as intended, across 5 of the 8 states (Pending, Approved, Flagged, Ignored, Mobile) plus visually referenced (not instanced) in the Loading skeleton and Confirm Approve clone.",
+    "A figma-auditor subagent was launched after the design pass for independent read-only verification. Its result arrived after a delay, past the point where this file had first been finalized with an 'UNAVAILABLE' audit status. Once received, each of its claims was independently re-verified live against the Figma file (not taken on faith) before any correction was made. It surfaced 2 real BLOCKING issues (Header instances stuck at 960px instead of stretching to 1440px in 6 frames; Error state using a hand-built panel instead of the shared Error State component 7:92 that M02/M04 both reuse) plus 4 non-blocking cleanups (generic 'Frame' row names, inconsistent Badge instance naming, redundant opacity overrides on already-correct Disabled button variants). All 2 blocking issues were fixed and re-verified (screenshot + overlap check + component-link check); all viable non-blocking cleanups were applied. See checks[] (Independent figma-audit... entry) for the full before/after detail and node IDs touched.",
+    "Module remains CLAIMED, not DONE — this pass intentionally stops at Figma design completion per the one-module rule (CLAUDE.md section 3) and the task's explicit scope boundary (design-only; no frontend/backend code written).",
+    "Backend (backend-builder@M05), frontend (frontend-builder@M05), integration (integration-builder@M05, verdict GO), and security (security-reviewer@M05) passes all completed in this session, completing the vertical slice. Security review surfaced one CRITICAL/HIGH authorization gap (approve/ignore not admin-gated, contradicting ARCHITECTURE.md/CLAUDE.md/docs/MODULES.md's admin-review-gate-by-default requirement) -- this was NOT silently resolved; it was escalated to the user per CLAUDE.md section 11's stop-condition for unclear security-sensitive behavior. User chose 'gate to requireAdmin() now'. Fix applied: both routes switched to requireAdmin() (401/403 distinct), tests updated, frontend hides the actions for non-admins. Full apps/web command matrix re-verified clean after the fix (typecheck/lint/64 tests/build). Module marked DONE."
+  ]
+}

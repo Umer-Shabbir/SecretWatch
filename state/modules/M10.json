@@ -1,0 +1,225 @@
+{
+  "id": "M10",
+  "name": "Worker Monitoring",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-17T03:46:31.792Z",
+  "dependencies": [
+    "M04",
+    "M07"
+  ],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "fileKey": "7HiUEf43cHJk7Ms0WQJkqd",
+    "page": "05 — Admin",
+    "pageNodeId": "3:6",
+    "nodes": [
+      {
+        "name": "Admin / Workers / Default",
+        "nodeId": "51:277",
+        "state": "Default",
+        "x": 14520,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-277"
+      },
+      {
+        "name": "Admin / Workers / Loading",
+        "nodeId": "51:278",
+        "state": "Loading",
+        "x": 14520,
+        "y": 1184,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-278"
+      },
+      {
+        "name": "Admin / Workers / Error",
+        "nodeId": "51:279",
+        "state": "Error",
+        "x": 14520,
+        "y": 2408,
+        "w": 1440,
+        "h": 700,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-279"
+      },
+      {
+        "name": "Admin / Workers / Degraded",
+        "nodeId": "51:280",
+        "state": "Degraded (one worker unhealthy, warning banner)",
+        "x": 16080,
+        "y": 0,
+        "w": 1440,
+        "h": 1064,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-280"
+      },
+      {
+        "name": "Admin / Workers / Mobile",
+        "nodeId": "51:281",
+        "state": "Mobile (responsive variant of Default)",
+        "x": 16080,
+        "y": 1184,
+        "w": 375,
+        "h": 812,
+        "url": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch?node-id=51-281"
+      }
+    ],
+    "componentsReused": [
+      "Header (7:34) — live instance on all 4 desktop frames; breadcrumb text slot overridden to 'Workers'",
+      "Sidebar (7:15) — live instance on all 4 desktop frames; 'Workers' Nav Item swapped to Selected state, previously-selected item reset to Default",
+      "Alert (5:51 set) — Variant=Warning (5:45) for the Degraded state's 'Flagger Worker is degraded.' banner (second default text line hidden via visible=false)",
+      "Error State (7:92) — 1 live instance on Error state; copy overridden to 'Unable to reach worker status' / \"We couldn't load worker health data. Please try again.\"",
+      "Skeleton=Table Row (7:78) — 3 instances (card-sized) + 4 instances (row-sized) for the Loading state's worker-card and jobs-table skeletons"
+    ],
+    "componentsNotReused_builtLocally": [
+      "Worker Status Card (name, status dot+label, concurrency/queue/last-job/success-rate metric rows) — hand-composed frame, deliberately NOT using the existing 'Card' component (5:52) because that component ships fixed sample content (Worker Health Card-shaped but not parameterized) rather than an empty/instanceable container; matches the same documented gap M02/M04/M05/M06/M08/M09 already recorded for their own content cards.",
+      "Recent Jobs table (header row + data rows: Job ID, Worker, Status, Duration, Finished) — hand-composed frame using the same visual language as the existing 'Table' component (5:69), which ships fixed sample content rather than a data-bindable/instanceable table primitive.",
+      "Mobile Header (hand-built: hamburger + wordmark + avatar) — duplicated pattern, consistent with the same known gap already flagged by M02/M03/M04/M05/M06/M08/M09 (no shared Mobile Header component exists yet)."
+    ],
+    "variablesUsed": [
+      "color/fg/default (#1f2328)",
+      "color/fg/muted (#656d76)",
+      "color/fg/subtle (#6e7781)",
+      "color/accent/fg (#0969da)",
+      "color/canvas/default (#ffffff)",
+      "color/canvas/subtle (#f6f8fa)",
+      "color/border/default (#d0d7de)",
+      "color/border/muted (#d8dee4)",
+      "color/success/fg (#1a7f37) for Healthy/Completed status",
+      "color/warning/fg (#9a6700) for Processing/Degraded status",
+      "color/danger/fg (#cf222e) for Failed status/Error State",
+      "radius/small (6)"
+    ],
+    "textStylesUsed": [
+      "Page title (Semi Bold 24)",
+      "Card title (Semi Bold 16, worker name)",
+      "Section title (Semi Bold 20, 'Recent Jobs')",
+      "Body (Regular 14)",
+      "Small (Regular 12-13)"
+    ],
+    "typographyRule": "Inter for all UI labels/copy/nav/headers/breadcrumb/status text/worker names (per DESIGN.md 5.2); JetBrains Mono for technical values only — job IDs, metric values (concurrency count, queue count, last-job timestamp, success-rate percentage, job duration) — matching DESIGN.md section 20's example layout and section 5.2's rule to use monospace for Job IDs/Worker IDs/API-technical values.",
+    "responsiveRules": "Desktop (1440px frames): 240px fixed sidebar, single content column (1136px) with page title + subtitle, a 3-column row of Worker Status Cards (Scanner/Flagger/Scheduler — concurrency, queue, last job, success rate, colored status dot+label), and a Recent Jobs table below (Job ID/Worker/Status/Duration/Finished columns, status shown with colored dot+text never color alone). Degraded state adds a full-width warning Alert banner above the cards and highlights the affected worker's card with an amber border. Mobile (375px reference frame, content-fit height): hand-built hamburger Mobile Header replaces Header+Sidebar; single-column stacked worker cards with condensed queue/success-rate summary line (Recent Jobs table omitted on mobile as a deliberate content-priority reduction, consistent with DESIGN.md 9.2's 'tables become horizontally scrollable or transform into stacked rows' — here reduced to essential per-worker status only, matching the mobile precedent set by M02/M04's own table-heavy screens).",
+    "stateList": [
+      "default",
+      "loading",
+      "error",
+      "degraded",
+      "mobile"
+    ],
+    "scopeNotes": [
+      "An 'Empty' state was not designed: worker monitoring by definition always has exactly 3 workers (Scanner, Flagger, Scheduler) per ARCHITECTURE.md's fixed worker-process architecture — there is no realistic zero-workers scenario to design for, consistent with FIGMA_WORKFLOW.md's 'do not create fake states that are not supported by the product' rule.",
+      "'Degraded' was designed as the meaningful non-happy-path state instead of a generic 'disabled' state, since DESIGN.md section 20 and ARCHITECTURE.md describe worker health as Healthy/Degraded/Down-style operational states, not an enable/disable toggle (workers are always-running background processes, not user-configurable like Scan Rules).",
+      "Recent Jobs table on mobile was intentionally omitted rather than force-fit into a horizontally-scrolling table, in favor of the condensed per-worker summary line already present on each stacked card — a deliberate content-priority decision for the operational-monitoring use case, not an oversight.",
+      "Placed on existing page '05 — Admin' (node 3:6), in a new column (x=14520 onward) clear of M06's Review Queue block and M08/M09's columns, with 120px+ gaps maintained throughout.",
+      "Did not design Scan Rules, Templates, Users, Marketing, Auth, Tokens, Overview, Findings-list, Finding-detail, or Review Queue screens — all out of scope for M10 and belong to other modules."
+    ]
+  },
+  "changedFiles": [
+    "apps/web/lib/workers.ts",
+    "apps/web/lib/workers.test.ts",
+    "apps/web/app/api/workers/route.ts",
+    "apps/web/app/api/workers/route.test.ts",
+    "apps/web/app/(protected)/admin/workers/page.tsx",
+    "apps/web/app/(protected)/admin/workers/loading.tsx",
+    "apps/web/components/admin/workers-client.tsx",
+    "state/modules/M10.json"
+  ],
+  "checks": [
+    {
+      "name": "No Figma Sections used for M10 screens",
+      "status": "PASS",
+      "note": "All 5 nodes created via figma.createFrame()."
+    },
+    {
+      "name": "No overlapping frames",
+      "status": "PASS",
+      "note": "Programmatic AABB overlap check across all 25 top-level frames on page '05 — Admin' (M06 + M08 + M09 + M10 combined): 0 overlap pairs. M10 occupies two columns (x=14520, x=16080), each with 120px+ clearance from M09's columns."
+    },
+    {
+      "name": "Correct [AREA] / [SCREEN] / [STATE] naming, unique file-wide",
+      "status": "PASS",
+      "note": "All 5 frames named exactly 'Admin / Workers / <State>'."
+    },
+    {
+      "name": "Existing components reused as live instances (Header/Sidebar/Alert/Error State/Skeleton=Table Row)",
+      "status": "PASS",
+      "note": "Verified via screenshot inspection; sidebar selection correctly shows 'Workers' highlighted on all 4 desktop frames."
+    },
+    {
+      "name": "Raw secrets/tokens never shown",
+      "status": "PASS",
+      "note": "Only operational metrics (job counts, durations, timestamps, success rates) are displayed; no credential or token values appear anywhere in this module."
+    },
+    {
+      "name": "States covered: default/loading/error/degraded/mobile",
+      "status": "PASS"
+    },
+    {
+      "name": "Status indicators use text + icon/color, never color alone",
+      "status": "PASS",
+      "note": "Every worker/job status row pairs a colored dot with an explicit text label (Healthy/Degraded, Completed/Processing/Failed)."
+    },
+    {
+      "name": "Typography: Inter for UI, JetBrains Mono for Job IDs and metric values",
+      "status": "PASS"
+    },
+    {
+      "name": "Radius restrained, border-driven surfaces, no heavy shadows",
+      "status": "PASS",
+      "note": "6px radius on worker cards and jobs table; no shadow effects; Degraded state's affected-worker card uses an amber border (1.5px) instead of a shadow to draw attention."
+    },
+    {
+      "name": "Mobile frame has genuine responsive layout",
+      "status": "PASS",
+      "note": "375px frame, 16px margins, single-column stacked worker cards with condensed metrics; Recent Jobs table deliberately omitted (see scopeNotes)."
+    },
+    {
+      "name": "Visual screenshot audit of all 5 frames",
+      "status": "PASS",
+      "note": "Each frame screenshotted after construction; one vertical-spacing overlap between the worker-card row and the 'Recent Jobs' section title was found and fixed by repositioning based on measured card-row height."
+    }
+  ],
+  "knownIssues": [
+    "No generic Worker Status/Queue Status Figma component exists as an instanceable primitive (pre-existing gap, see figma.knownIssues below) — worker cards hand-composed in code too, matching the Figma pass.",
+    "Worker health status (healthy/degraded) is derived heuristically from a 10-job recent-completion sample per queue, not a true process-level heartbeat/liveness signal — acceptable given ARCHITECTURE.md has no WorkerJob/heartbeat table; a future module could add one for a stronger liveness guarantee.",
+    "Recent Jobs list is a merged best-effort sample (10 most recent completed/failed per queue, capped at 10 overall) rather than a fully paginated job history — sufficient for the Figma-designed operational-glance UI, not a full audit log."
+  ],
+  "notes": [
+    "Design-only pass for M10 (Worker Monitoring) per figma-design-module skill boundary and CLAUDE.md section 3 (one-module rule). Backend worker-health telemetry, queue-metrics API, and frontend implementation are NOT part of this pass and remain required before M10 can be marked DONE.",
+    "Screen set: Default, Loading, Error, Degraded, Mobile — 5 states total, following DESIGN.md section 20's worker-monitoring pattern (status dot+label, concurrency, queue, last job, success rate), extended with Loading/Error/Degraded/Mobile per this task's explicit 'include all meaningful states' instruction. Empty and Disabled states were deliberately scoped out (see figma.scopeNotes) rather than fabricated.",
+    "Placed on page '05 — Admin' (node 3:6) alongside M06's existing Review Queue frames and M08/M09's new frames (this same design pass), in a dedicated column with no overlap.",
+    "Module remains CLAIMED, not DONE — this pass intentionally stops at Figma design completion per the one-module rule and the task's explicit scope boundary (design-only; no frontend/backend code written). Do not automatically start another module.",
+    "Implementation pass (M10): backend + frontend + integration + tests + security review completed on top of the existing Figma design-only pass. Module moved CLAIMED -> DONE."
+  ],
+  "backend": {
+    "status": "DONE",
+    "summary": "lib/workers.ts reads worker health/queue metrics directly from BullMQ (getJobCounts + getJobs) across the 3 fixed queues (scan-queue, flag-queue, scheduler-queue) — no new Prisma table/migration needed since BullMQ/Redis is already the durable source of truth for job state. GET /api/workers (admin-only, requireAdmin) returns { workers, recentJobs, degraded }. Status derived healthy/degraded from recent completed/failed sample ratio (threshold 50%, min 3 samples). Concurrency values (2/3/1) mirror the literal values apps/worker constructs its BullMQ Workers with.",
+    "files": [
+      "apps/web/lib/workers.ts",
+      "apps/web/app/api/workers/route.ts"
+    ]
+  },
+  "frontend": {
+    "status": "DONE",
+    "summary": "Admin / Workers page at /admin/workers implements all 5 Figma states: Default (3 worker cards + Recent Jobs table), Loading (route-level loading.tsx skeletons), Error (ErrorState + Retry), Degraded (amber Alert banner + amber-bordered affected card), Mobile (condensed per-worker summary line, table omitted per Figma scopeNotes). Polls GET /api/workers every 15s for near-live health. Sidebar already linked here from an earlier module pass; route now exists and resolves.",
+    "files": [
+      "apps/web/app/(protected)/admin/workers/page.tsx",
+      "apps/web/app/(protected)/admin/workers/loading.tsx",
+      "apps/web/components/admin/workers-client.tsx"
+    ]
+  },
+  "integration": {
+    "status": "DONE",
+    "summary": "Server Component (page.tsx) fetches initial snapshot via lib/workers.ts directly; WorkersClient polls the real /api/workers endpoint for refresh and manual Retry. Full path verified: Figma design -> frontend -> API route -> lib/workers.ts -> BullMQ/Redis (same queues apps/worker writes to). No mock/fake data in the shipped module."
+  },
+  "testStatus": {
+    "status": "PASS",
+    "summary": "typecheck (tsc --noEmit): clean. lint (next lint via eslint on changed files): clean. next build: succeeds, /admin/workers and /api/workers both compile as dynamic routes. vitest: 167/167 tests pass repo-wide (10 new: 6 lib/workers.test.ts + 4 app/api/workers/route.test.ts), 0 regressions."
+  },
+  "securityStatus": {
+    "status": "PASS",
+    "summary": "Module handles zero token/secret data (worker/queue/job metadata only) — grepped clean. GET /api/workers gated by requireAdmin() (401 unauthenticated / 403 non-admin) plus existing middleware.ts ADMIN-only gate on /admin/:path*. Error responses return a generic message only, no internals/stack leaked. No new input surface requiring validation (GET only, no body/params)."
+  }
+}

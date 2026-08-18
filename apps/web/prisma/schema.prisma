@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum FindingStatus {
+  PENDING
+  APPROVED
+  FLAGGED
+  IGNORED
+  FAILED
+}
+
+// User model now exists ONLY to represent admin accounts (Credentials
+// sign-in). There are no end-user accounts, no GitHub OAuth login, and no
+// per-user ownership of tokens/findings/flags as of the 2026-08-17 scope
+// correction — see docs/PRODUCT_SOURCE_OF_TRUTH.md.
+model User {
+  id           String   @id @default(cuid())
+  username     String?
+  email        String?  @unique
+  // Only set for ADMIN accounts using credential sign-in.
+  passwordHash String?
+  role         Role     @default(USER)
+  image        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs AuditLog[]
+}
+
+model GithubToken {
+  id                 String    @id @default(cuid())
+  // No userId/user relation — GithubToken is a global model like
+  // Finding/Flag. Tokens are submitted publicly (no login) via
+  // POST /api/public/tokens; only admins can view/manage them.
+  // AES-256-GCM ciphertext. Never store the raw token value.
+  encrypted          String
+  // Display-safe masked value (e.g. "ghp_••••••••••••••••••••••••abcd"),
+  // computed once at connect-time from the plaintext before it is discarded.
+  // API responses read this column directly — never decrypted for display.
+  // Nullable for backward compatibility with any pre-existing rows.
+  maskedIdentifier   String?
+  // Where the token value originated: "oauth" (derived server-side from the
+  // linked Account.access_token) or "pat" (user-pasted personal access token).
+  source             String    @default("pat")
+  scopes             String[]
+  lastUsedAt         DateTime?
+  rateLimitRemaining Int?
+  active             Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+
+  @@index([active])
+}
+
+model Finding {
+  id              String        @id @default(cuid())
+  repoFullName    String
+  filePath        String
+  commitSha       String
+  matchedRule     String
+  redactedSnippet String
+  status          FindingStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  flag            Flag?
+
+  // M07 (Flagger): plain-text reason a flag attempt failed (e.g. "GitHub API
+  // rate limit (403)", "Issue creation failed: repo archived"). Only ever
+  // set alongside status=FAILED. Never contains a token value or raw secret
+  // — see apps/worker/src/flagger.worker.ts for what strings are allowed
+  // here.
+  failureReason String?
+
+  // Scanner idempotency (M04): re-scanning the same commit/file/rule must not
+  // create duplicate Finding rows. Additive, non-destructive constraint.
+  @@unique([repoFullName, filePath, commitSha, matchedRule], name: "Finding_dedup_key")
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Flag {
+  id          String   @id @default(cuid())
+  findingId   String   @unique
+  finding     Finding  @relation(fields: [findingId], references: [id])
+  issueUrl    String
+  usedTokenId String
+  templateId  String
+  postedAt    DateTime @default(now())
+
+  @@index([postedAt])
+}
+
+model MessageTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  body      String
+  isDefault Boolean  @default(false)
+  // M09 (Message Templates): additive columns, DEFAULT-backfilled for any
+  // pre-existing rows, no data loss. Mirrors ScanRule.createdAt's precedent
+  // (see 20260816160000_add_scan_rule_created_at). updatedAt uses Prisma's
+  // @updatedAt, matching User.updatedAt's existing convention in this schema.
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // --- Template variants (2026-08-17 addition) ---
+  // Both fields are optional/nullable classification metadata: a template
+  // with severity/secretType unset behaves exactly as before (backward
+  // compatible with every existing row and with the flagger worker's
+  // getOrCreateDefaultTemplate lookup, which only ever filters on
+  // isDefault). Nothing currently auto-selects a template by these fields —
+  // they exist so an admin can author/organize severity- and
+  // secret-type-specific variants; wiring the flagger worker to pick a
+  // variant automatically is an explicit follow-up, not done here (would
+  // touch M07's file boundary).
+  severity   TemplateSeverity?
+  secretType TemplateSecretType?
+
+  // Optional, admin-toggleable soft attribution line appended to the
+  // rendered body (never forced/auto-appended — off by default for every
+  // existing and new row unless the admin explicitly turns it on). The
+  // fixed line text lives in packages/shared/src/template.ts
+  // (ATTRIBUTION_LINE) — never a per-template freeform value, so it cannot
+  // be abused to inject arbitrary links.
+  includeAttributionLine Boolean @default(false)
+
+  @@index([severity])
+  @@index([secretType])
+}
+
+enum TemplateSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum TemplateSecretType {
+  AWS_KEY
+  GITHUB_TOKEN
+  GENERIC_API_KEY
+  DB_CONNECTION_STRING
+}
+
+model ScanRule {
+  id        String   @id @default(cuid())
+  name      String
+  pattern   String
+  enabled   Boolean  @default(true)
+  // M08 (Scan Rules): additive column so the Rule Row card can show a
+  // "created" date per state/modules/M08.json's Figma componentsReused
+  // notes. Backfilled to now() for any pre-existing rows by the migration's
+  // DEFAULT, so no existing data is lost or altered.
+  createdAt DateTime @default(now())
+
+  @@index([enabled])
+}
+
+// Auditable record of security-sensitive actions (sign-in, flag creation,
+// token revocation, admin review decisions). Never write raw secrets here.
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  detail    String?
+  createdAt DateTime @default(now())
+}

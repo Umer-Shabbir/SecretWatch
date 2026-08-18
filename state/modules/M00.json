@@ -1,0 +1,231 @@
+{
+  "id": "M00",
+  "name": "Foundation + Figma Design System",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-15T00:00:00.000Z",
+  "dependencies": [],
+  "figma": {
+    "fileUrl": "https://www.figma.com/design/7HiUEf43cHJk7Ms0WQJkqd/SecretWatch",
+    "fileKey": "7HiUEf43cHJk7Ms0WQJkqd",
+    "pages": [
+      {
+        "name": "00 — Cover / Product Map",
+        "nodeId": "0:1"
+      },
+      {
+        "name": "01 — Foundations",
+        "nodeId": "3:2"
+      },
+      {
+        "name": "02 — Components",
+        "nodeId": "3:3"
+      },
+      {
+        "name": "03 — Marketing",
+        "nodeId": "3:4",
+        "note": "empty placeholder"
+      },
+      {
+        "name": "04 — Dashboard",
+        "nodeId": "3:5",
+        "note": "empty placeholder"
+      },
+      {
+        "name": "05 — Admin",
+        "nodeId": "3:6",
+        "note": "empty placeholder"
+      },
+      {
+        "name": "06 — Flows / States",
+        "nodeId": "3:7",
+        "note": "empty placeholder"
+      },
+      {
+        "name": "07 — Archive",
+        "nodeId": "3:8",
+        "note": "empty placeholder"
+      }
+    ],
+    "coverFrames": [
+      {
+        "name": "Cover / Product Map / Default",
+        "nodeId": "7:99"
+      },
+      {
+        "name": "Cover / Product Map / Overview",
+        "nodeId": "7:106"
+      }
+    ],
+    "variableCollections": [
+      {
+        "name": "Primitives",
+        "id": "VariableCollectionId:3:9",
+        "modes": [
+          "Value"
+        ],
+        "variableCount": 45
+      },
+      {
+        "name": "Color",
+        "id": "VariableCollectionId:3:55",
+        "modes": [
+          "Light",
+          "Dark"
+        ],
+        "variableCount": 23
+      },
+      {
+        "name": "Spacing",
+        "id": "VariableCollectionId:3:79",
+        "modes": [
+          "Value"
+        ],
+        "variableCount": 10
+      },
+      {
+        "name": "Radius",
+        "id": "VariableCollectionId:3:90",
+        "modes": [
+          "Value"
+        ],
+        "variableCount": 2
+      }
+    ],
+    "textStyles": [
+      "Display",
+      "Page title",
+      "Section title",
+      "Card title",
+      "Body",
+      "Small",
+      "Caption"
+    ],
+    "components": [
+      {
+        "name": "Button",
+        "nodeId": "4:50",
+        "type": "set",
+        "variants": "4 variants x 3 states x 2 sizes = 24"
+      },
+      {
+        "name": "Input",
+        "nodeId": "5:10",
+        "type": "set",
+        "variants": "Default/Focus/Error/Disabled"
+      },
+      {
+        "name": "Badge",
+        "nodeId": "5:38",
+        "type": "set",
+        "variants": "9 status variants"
+      },
+      {
+        "name": "Alert",
+        "nodeId": "5:51",
+        "type": "set",
+        "variants": "Info/Success/Warning/Error"
+      },
+      {
+        "name": "Card",
+        "nodeId": "5:52"
+      },
+      {
+        "name": "Table",
+        "nodeId": "5:69"
+      },
+      {
+        "name": "Dialog",
+        "nodeId": "7:2"
+      },
+      {
+        "name": "Nav Item",
+        "nodeId": "7:14",
+        "type": "set",
+        "variants": "Default/Selected"
+      },
+      {
+        "name": "Sidebar",
+        "nodeId": "7:15"
+      },
+      {
+        "name": "Header",
+        "nodeId": "7:34"
+      },
+      {
+        "name": "Tab Item",
+        "nodeId": "7:50",
+        "type": "set",
+        "variants": "Default/Selected"
+      },
+      {
+        "name": "Tabs (usage example)",
+        "nodeId": "7:51"
+      },
+      {
+        "name": "Pagination",
+        "nodeId": "7:67"
+      },
+      {
+        "name": "Skeleton",
+        "nodeId": "7:78"
+      },
+      {
+        "name": "Spinner",
+        "nodeId": "7:84"
+      },
+      {
+        "name": "Empty State",
+        "nodeId": "7:87"
+      },
+      {
+        "name": "Error State",
+        "nodeId": "7:92"
+      },
+      {
+        "name": "Secret Redaction Display",
+        "nodeId": "7:97",
+        "note": "masked placeholder text REDACTED_....XXXX, intentionally non-plausible/non-real, no raw secret ever shown"
+      }
+    ]
+  },
+  "changedFiles": [
+    "state/modules/M00.json"
+  ],
+  "checks": [
+    {
+      "name": "No Figma Sections used for pages/screens",
+      "status": "PASS"
+    },
+    {
+      "name": "No overlapping frames, 120px+ gap maintained",
+      "status": "PASS",
+      "note": "initial audit found 2 violations (Tab Item->Tabs, Skeleton->Spinner at 40px), fixed and re-audited to 0 issues"
+    },
+    {
+      "name": "Light/Dark mode color tokens match DESIGN.md 4.1/4.2",
+      "status": "PASS",
+      "note": "23/23 tokens verified in both modes"
+    },
+    {
+      "name": "Inter + JetBrains Mono fonts available and applied",
+      "status": "PASS"
+    },
+    {
+      "name": "Screenshot visual review vs GitHub Native design system",
+      "status": "PASS"
+    },
+    {
+      "name": "Pages 03-07 left empty (no premature app screens)",
+      "status": "PASS"
+    }
+  ],
+  "knownIssues": [],
+  "notes": [
+    "File found blank prior to this work; no prior structure to reconcile.",
+    "No GitHub Native library match found in get_libraries; foundation built directly from DESIGN.md.",
+    "Pages 03 Marketing, 04 Dashboard, 05 Admin, 06 Flows/States, 07 Archive are intentionally empty placeholders for future modules M01+.",
+    "Do not start M01 automatically per one-module rule."
+  ]
+}

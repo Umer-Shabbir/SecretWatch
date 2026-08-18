@@ -1,0 +1,26 @@
+{
+  "id": "M13",
+  "name": "Hardening + Deployment",
+  "status": "BLOCKED",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": null,
+  "dependencies": [
+    "M01",
+    "M04",
+    "M07",
+    "M10",
+    "M11",
+    "M12"
+  ],
+  "figma": {
+    "fileUrl": null,
+    "nodes": []
+  },
+  "changedFiles": [],
+  "checks": [],
+  "knownIssues": [],
+  "notes": [
+    "2026-08-17: Claimed then released by implementation-agent@M13 — blocked, dependencies M11 and M12 not DONE (both status BLOCKED)."
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@secretwatch/worker",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Standalone Node worker process: scanner + scheduler (ARCHITECTURE.md section 6). Flagger worker is out of scope for M04 (M07).",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prisma:generate": "prisma generate --schema=../web/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@octokit/rest": "^21.1.1",
+    "@prisma/client": "^5.20.0",
+    "@secretwatch/shared": "*",
+    "bullmq": "^5.21.2",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.11",
+    "prisma": "^5.20.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.2"
+  }
+}
