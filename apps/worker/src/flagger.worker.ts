@@ -9,6 +9,7 @@ import {
   type FlagJobData,
 } from "@secretwatch/shared";
 import { prisma } from "./db";
+import { getSystemSettings } from "./system-settings";
 import { createGithubIssue, GithubApiError } from "./github-client";
 
 /**
@@ -36,11 +37,11 @@ import { createGithubIssue, GithubApiError } from "./github-client";
  * only Finding.id/repoFullName/filePath and the thrown error's message.
  */
 
-/** Findings near-zero rate limit are skipped in favor of the next candidate token, per ARCHITECTURE.md §5/§8. */
-const RATE_LIMIT_SKIP_THRESHOLD = 5;
+/** Default rate-limit skip threshold when no admin override is set, per ARCHITECTURE.md §5/§8. */
+const DEFAULT_RATE_LIMIT_SKIP_THRESHOLD = 5;
 
-/** Picks the least-recently-used active token that isn't near its rate limit. Falls back to any active token if all are low (better to attempt with backoff than to never flag). */
-async function pickFlaggingToken() {
+/** Picks the least-recently-used active token that isn't near its rate limit. Falls back to any active token if all are low (better to attempt with backoff than to never flag). Threshold is the admin-configured flagRateLimitThreshold. */
+async function pickFlaggingToken(threshold: number) {
   const candidates = await prisma.githubToken.findMany({
     where: { active: true },
     orderBy: { lastUsedAt: "asc" },
@@ -48,7 +49,7 @@ async function pickFlaggingToken() {
   });
 
   const healthy = candidates.find(
-    (t) => t.rateLimitRemaining === null || t.rateLimitRemaining > RATE_LIMIT_SKIP_THRESHOLD
+    (t) => t.rateLimitRemaining === null || t.rateLimitRemaining > threshold
   );
   return healthy ?? candidates[0] ?? null;
 }
@@ -70,6 +71,15 @@ async function getOrCreateDefaultTemplate() {
  * concurrent job attempts for the same finding cannot both succeed.
  */
 export async function runFlagForFinding(findingId: string): Promise<{ outcome: "flagged" | "failed" | "skipped"; reason?: string }> {
+  // Master flagger switch (dashboard toggle). When off, skip WITHOUT marking
+  // the finding FAILED — the finding stays APPROVED and gets flagged once the
+  // switch is turned back on. A disabled subsystem is not a failure. Fails
+  // OPEN (see system-settings.ts) on DB error.
+  const { flaggerEnabled, flagRateLimitThreshold } = await getSystemSettings();
+  if (!flaggerEnabled) {
+    return { outcome: "skipped", reason: "flagger disabled" };
+  }
+
   const finding = await prisma.finding.findUnique({ where: { id: findingId } });
   if (!finding) {
     return { outcome: "skipped", reason: "finding not found" };
@@ -80,7 +90,7 @@ export async function runFlagForFinding(findingId: string): Promise<{ outcome: "
     return { outcome: "skipped", reason: `finding is ${finding.status}` };
   }
 
-  const token = await pickFlaggingToken();
+  const token = await pickFlaggingToken(flagRateLimitThreshold ?? DEFAULT_RATE_LIMIT_SKIP_THRESHOLD);
   if (!token) {
     const reason = "No authorized GitHub token available to flag with";
     await markFailed(findingId, reason);

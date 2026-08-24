@@ -1,10 +1,11 @@
 {
   "id": "M02",
   "name": "User Overview",
-  "status": "CLAIMED",
+  "status": "REMOVED",
   "owner": null,
   "claimedAt": null,
   "completedAt": "2026-08-16T00:00:00.000Z",
+  "removedAt": "2026-08-17T00:00:00.000Z",
   "dependencies": [
     "M00",
     "M01"
@@ -95,6 +96,8 @@
     "'Scan frequency' and 'Repositories monitored' fields from the Figma mock are intentionally omitted from the real UI — no backing data model exists yet (scan scheduling config is M04/M08 scope)."
   ],
   "notes": [
+    "REMOVED: superseded by the 2026-08-17 scope correction (no end-user accounts, no per-user dashboard). This module was fully implemented (see backend/frontend/integration sections below, retained for history) and then reverted out of the codebase along with the per-user product model — the files under changedFiles (e.g. app/(protected)/dashboard/*, lib/dashboard.ts, lib/format-relative-time.ts) no longer exist on disk. The prior status of CLAIMED with owner=null was a stale, contradictory leftover of that reversal and has been corrected to REMOVED to match M11.",
+    "Do not rebuild the User Overview / Dashboard screens. There is no per-user session or per-user data surface in the current product; the only authenticated area is Admin.",
     "Implementation-agent pass (override of prior figma-designer-only claim per orchestration rules). Figma design was already DONE from a prior design-only pass; this pass added backend data layer, app shell, and full frontend implementation, then verified against the existing Figma screens.",
     "Findings/Flags/ScanRule are global platform state per the Prisma schema (no per-user foreign key) — overview shows the same operational data to any signed-in user; only GitHub account/token status is user-scoped.",
     "Lock cleared manually by user-authorized action on 2026-08-17: rescope-agent lock (PID from lockfile) confirmed dead via independent Get-Process check before deletion. state/locks/M02.lock removed, owner/claimedAt reset to null. Module status field left as-is pending follow-up work."

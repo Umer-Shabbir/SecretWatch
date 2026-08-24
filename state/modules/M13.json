@@ -10,7 +10,6 @@
     "M04",
     "M07",
     "M10",
-    "M11",
     "M12"
   ],
   "figma": {
@@ -21,6 +20,7 @@
   "checks": [],
   "knownIssues": [],
   "notes": [
-    "2026-08-17: Claimed then released by implementation-agent@M13 — blocked, dependencies M11 and M12 not DONE (both status BLOCKED)."
+    "2026-08-17: Claimed then released by implementation-agent@M13 — blocked, dependencies M11 and M12 not DONE (both status BLOCKED).",
+    "2026-08-24: M11 dropped from dependencies — M11 is REMOVED (no end-user accounts). Only remaining blocker is M12 (Marketing Site) reaching DONE."
   ]
 }

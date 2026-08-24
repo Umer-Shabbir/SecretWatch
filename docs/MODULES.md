@@ -5,7 +5,7 @@
 ```text
 M00 Foundation
  ├── M01 Authentication
- ├── M02 User Overview
+ ├── M02 User Overview            [REMOVED — 2026-08-17 scope correction]
  ├── M03 Token & GitHub Authorization
  │    └── M04 Scanner + Findings
  │         ├── M05 Finding Detail
@@ -14,10 +14,15 @@ M00 Foundation
  ├── M08 Scan Rules
  ├── M09 Message Templates
  ├── M10 Worker Monitoring
- ├── M11 User Management
+ ├── M11 User Management          [REMOVED — 2026-08-17 scope correction]
  └── M12 Marketing Site
       └── M13 Hardening + Deployment
 ```
+
+> **Scope note (2026-08-17):** SecretWatch has no end-user accounts. M02 (User
+> Overview) and M11 (User Management) were removed with the per-user product
+> model — see `docs/PRODUCT_SOURCE_OF_TRUTH.md`. They are retained here for
+> history only; do not build them. Remaining open work: **M12**, then **M13**.
 
 ## M00 — Foundation + Figma Design System
 
@@ -62,9 +67,10 @@ Exit:
 - unauthorized routes are protected
 - Figma auth states match implementation
 
-## M02 — User Overview
+## M02 — User Overview  [REMOVED]
 
-Scope:
+Removed by the 2026-08-17 scope correction — no end-user accounts, no per-user
+dashboard. Do not build. Original scope (historical):
 
 - dashboard overview
 - scan status
@@ -72,12 +78,6 @@ Scope:
 - flag summary
 - token/account status
 - scan controls
-
-Exit:
-
-- real data or explicit empty/loading/error states
-- responsive
-- wired to backend
 
 ## M03 — GitHub Token & Authorization
 
@@ -196,9 +196,11 @@ Scope:
 - rate-limit metrics
 - operational states
 
-## M11 — User Management
+## M11 — User Management  [REMOVED]
 
-Scope:
+Removed by the 2026-08-17 scope correction — there are no end-user accounts to
+manage. The only "user management" surface is the admin-only Tokens view. Do
+not build. Original scope (historical):
 
 - admin user list
 - role

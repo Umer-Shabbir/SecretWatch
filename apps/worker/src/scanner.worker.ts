@@ -1,6 +1,7 @@
 import { Worker, type Job } from "bullmq";
 import { QUEUE_NAMES, getRedisConnectionOptions } from "@secretwatch/shared";
 import { prisma } from "./db";
+import { getSystemSettings } from "./system-settings";
 import { searchCode } from "./github-client";
 import { evaluateAllRules, type EvaluableRule } from "./rules/engine";
 
@@ -27,6 +28,12 @@ export interface ScanJobData {
 }
 
 const DEFAULT_SEARCH_PAGE_SIZE = 30;
+
+/** GitHub code-search caps per_page at 100; keep at least 1 result per request. Guards against an out-of-range admin setting reaching the API. */
+function clampPageSize(n: number): number {
+  if (!Number.isFinite(n) || n < 1) return DEFAULT_SEARCH_PAGE_SIZE;
+  return Math.min(100, Math.floor(n));
+}
 
 /** Builds a GitHub code search query string for a rule's characteristic prefix, to shard scans (ARCHITECTURE.md §5). */
 function buildQueryForRule(rule: { name: string }): string {
@@ -59,6 +66,15 @@ function toCommitSha(sha: string): string {
 }
 
 export async function runScanForRule(ruleId: string, queryOverride?: string): Promise<{ created: number; skipped: number }> {
+  // Per-job defense against the master scanner switch (dashboard toggle). The
+  // scheduler already skips enqueueing when off, but a job could have been
+  // enqueued before the switch flipped, or triggered manually — so re-check
+  // here. Fails OPEN (see system-settings.ts) on DB error.
+  const { scannerEnabled, scanResultsPerRule } = await getSystemSettings();
+  if (!scannerEnabled) {
+    return { created: 0, skipped: 0 };
+  }
+
   const rule = await prisma.scanRule.findUnique({ where: { id: ruleId } });
   if (!rule || !rule.enabled) {
     return { created: 0, skipped: 0 };
@@ -75,7 +91,7 @@ export async function runScanForRule(ruleId: string, queryOverride?: string): Pr
   const evaluable: EvaluableRule = { name: rule.name, pattern: rule.pattern, kind: inferKind(rule.name) };
   const query = queryOverride ?? buildQueryForRule(rule);
 
-  const results = await searchCode(token.encrypted, query, 1, DEFAULT_SEARCH_PAGE_SIZE);
+  const results = await searchCode(token.encrypted, query, 1, clampPageSize(scanResultsPerRule));
 
   await prisma.githubToken.update({
     where: { id: token.id },

@@ -3,6 +3,17 @@ import { QUEUE_NAMES, getRedisConnectionOptions } from "@secretwatch/shared";
 import type { FlagJobData } from "@secretwatch/shared";
 
 /**
+ * Scan-queue job payload. Structurally matches apps/worker's ScanJobData
+ * (copy-not-import precedent — apps/worker never shares a module with
+ * apps/web). Only `ruleId` is required; the worker derives the search query
+ * from the rule when `query` is omitted.
+ */
+export interface ScanJobData {
+  ruleId: string;
+  query?: string;
+}
+
+/**
  * Web-side BullMQ producer (M07). Next.js API routes enqueue jobs here;
  * apps/worker/src/flagger.worker.ts consumes them. Mirrors
  * apps/worker/src/scheduler.ts's Queue construction but lives in apps/web
@@ -14,7 +25,10 @@ import type { FlagJobData } from "@secretwatch/shared";
  * lib/db.ts's Prisma client) so Next.js's dev-mode module reloading doesn't
  * leak duplicate BullMQ connections.
  */
-const globalForQueue = globalThis as unknown as { flagQueue?: Queue<FlagJobData> };
+const globalForQueue = globalThis as unknown as {
+  flagQueue?: Queue<FlagJobData>;
+  scanQueue?: Queue<ScanJobData>;
+};
 
 function getFlagQueue(): Queue<FlagJobData> {
   if (!globalForQueue.flagQueue) {
@@ -23,6 +37,15 @@ function getFlagQueue(): Queue<FlagJobData> {
     });
   }
   return globalForQueue.flagQueue;
+}
+
+function getScanQueue(): Queue<ScanJobData> {
+  if (!globalForQueue.scanQueue) {
+    globalForQueue.scanQueue = new Queue<ScanJobData>(QUEUE_NAMES.SCAN, {
+      connection: getRedisConnectionOptions(),
+    });
+  }
+  return globalForQueue.scanQueue;
 }
 
 /**
@@ -46,4 +69,50 @@ export async function enqueueFlagJob(findingId: string): Promise<void> {
       removeOnFail: { count: 500 },
     }
   );
+}
+
+/**
+ * Enqueues one scan-queue job per rule id (manual "Run Scanner" trigger from
+ * the admin dashboard). Mirrors the scheduler's per-rule fan-out and job
+ * options so a manual run behaves identically to a scheduled tick. The
+ * worker's own per-job switch check (scanner.worker.ts) still applies, so a
+ * manual run enqueued while the scanner switch is off is a safe no-op.
+ * Returns the number of jobs enqueued.
+ */
+export async function enqueueScanJobs(ruleIds: string[]): Promise<number> {
+  const queue = getScanQueue();
+  for (const ruleId of ruleIds) {
+    await queue.add(
+      "scan-rule",
+      { ruleId },
+      {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 5_000 },
+        removeOnComplete: { count: 500 },
+        removeOnFail: { count: 500 },
+      }
+    );
+  }
+  return ruleIds.length;
+}
+
+/**
+ * Enqueues flag-queue jobs for many findings at once (manual "Run Flagger"
+ * trigger). Same job options as enqueueFlagJob. Returns the count enqueued.
+ */
+export async function enqueueFlagJobs(findingIds: string[]): Promise<number> {
+  const queue = getFlagQueue();
+  for (const findingId of findingIds) {
+    await queue.add(
+      "flag-finding",
+      { findingId },
+      {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 5_000 },
+        removeOnComplete: { count: 500 },
+        removeOnFail: { count: 500 },
+      }
+    );
+  }
+  return findingIds.length;
 }

@@ -8,8 +8,12 @@ import path from "node:path";
  * but that check is a heuristic, not a proof. This timeout is the actual
  * security boundary: no pattern, however it is shaped, can hang the scanner
  * worker beyond this budget.
+ * process.env.REGEX_TIMEOUT_MS overrides it (used by the test suite, which
+ * runs test files in parallel worker processes and needs headroom so a
+ * CPU-starved thread round-trip isn't mistaken for a hostile regex). The
+ * production default stays 250ms — the real security boundary is unchanged.
  */
-const REGEX_TIMEOUT_MS = 250;
+const REGEX_TIMEOUT_MS = Number(process.env.REGEX_TIMEOUT_MS) || 250;
 
 let sharedWorker: Worker | null = null;
 /** Resolves once the current sharedWorker has finished spinning up (tsx/cjs

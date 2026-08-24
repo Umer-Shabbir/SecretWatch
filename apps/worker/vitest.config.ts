@@ -31,6 +31,11 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    env: loadDotEnvTest(),
+    // Give the regex sandbox a wide budget under test: files run in parallel
+    // worker processes, so a benign regex round-trip through the worker_thread
+    // can exceed the 250ms production budget purely from CPU contention and
+    // spuriously resolve null. Real .env.test still overrides. Prod default
+    // (250ms) is untouched — see src/rules/safe-exec.ts.
+    env: { REGEX_TIMEOUT_MS: "2000", ...loadDotEnvTest() },
   },
 });

@@ -36,6 +36,10 @@ export function AdminTokensClient({
   const [refetching, setRefetching] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [newToken, setNewToken] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addSuccess, setAddSuccess] = useState<string | null>(null);
   const requestId = useRef(0);
 
   const fetchTokens = useCallback(async () => {
@@ -62,6 +66,43 @@ export function AdminTokensClient({
 
   function handleRetry() {
     fetchTokens();
+  }
+
+  /**
+   * Admin manual token add (2026-08-24). POSTs the raw token to /api/tokens,
+   * which encrypts+masks it server-side. The raw value is cleared from state
+   * immediately on success and never logged/echoed. On success we refetch the
+   * list so the new row (with server-computed masked value + source=manual)
+   * shows without guessing its shape client-side.
+   */
+  async function handleAddToken(e: React.FormEvent) {
+    e.preventDefault();
+    const value = newToken.trim();
+    if (!value) return;
+
+    setAdding(true);
+    setAddError(null);
+    setAddSuccess(null);
+    try {
+      const res = await fetch("/api/tokens", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: value }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        const issues = Array.isArray(body?.issues) ? body.issues.join(" ") : null;
+        setAddError(issues ?? "Could not add this token. Check the format and try again.");
+        return;
+      }
+      setNewToken("");
+      setAddSuccess(`Token added (${body?.token?.maskedIdentifier ?? "masked"}).`);
+      await fetchTokens();
+    } catch {
+      setAddError("Could not add this token. Please try again.");
+    } finally {
+      setAdding(false);
+    }
   }
 
   async function handleDeactivate(id: string) {
@@ -98,6 +139,42 @@ export function AdminTokensClient({
           </p>
         )}
       </div>
+
+      <form
+        onSubmit={handleAddToken}
+        className="flex w-full flex-col gap-2 rounded-small border border-border-default p-4 sm:p-5"
+      >
+        <label htmlFor="add-token" className="text-sm font-medium text-fg-default">
+          Add a token manually
+        </label>
+        <p className="text-xs text-fg-muted">
+          Paste a GitHub personal access token. It is encrypted at rest and only its masked
+          identifier is ever displayed.
+        </p>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            id="add-token"
+            type="password"
+            autoComplete="off"
+            spellCheck={false}
+            value={newToken}
+            onChange={(e) => setNewToken(e.target.value)}
+            placeholder="ghp_…"
+            className="h-9 flex-1 rounded-small border border-border-default bg-canvas-default px-3 font-mono text-sm text-fg-default placeholder:text-fg-subtle focus:border-accent-emphasis focus:outline-none"
+          />
+          <Button type="submit" className="w-auto" loading={adding} disabled={adding || newToken.trim() === ""}>
+            Add token
+          </Button>
+        </div>
+        {addError && (
+          <p role="alert" className="text-sm text-danger-fg">
+            {addError}
+          </p>
+        )}
+        {addSuccess && (
+          <p className="text-sm text-success-fg">{addSuccess}</p>
+        )}
+      </form>
 
       {actionError && (
         <div role="alert" className="w-full rounded-small border border-danger-emphasis/30 bg-danger-subtle px-3 py-2 text-sm text-danger-fg">

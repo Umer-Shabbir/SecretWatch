@@ -77,9 +77,15 @@ vi.mock("@/lib/queue", () => ({
   enqueueFlagJob: (findingId: string) => enqueueFlagJobMock(findingId),
 }));
 
+let autoFlagEnabled = true;
+vi.mock("@/lib/system-settings", () => ({
+  getSystemSettings: vi.fn(async () => ({ autoFlagEnabled })),
+}));
+
 beforeEach(() => {
   currentSessionUserId = "admin-a";
   currentSessionRole = "ADMIN";
+  autoFlagEnabled = true;
   recordAuditMock.mockClear();
   enqueueFlagJobMock.mockClear();
   resetFakeDb([makeRow({ id: "f1", status: "PENDING" })]);
@@ -161,6 +167,17 @@ describe("POST /api/findings/:id/approve — valid transition", () => {
       params: { id: "f1" },
     });
     expect(enqueueFlagJobMock).toHaveBeenCalledWith("f1");
+  });
+
+  it("does NOT enqueue a flag job when autoFlagEnabled is off (still approves)", async () => {
+    autoFlagEnabled = false;
+    const { POST } = await import("./route");
+    const res = await POST(new Request("http://localhost/api/findings/f1/approve", { method: "POST" }), {
+      params: { id: "f1" },
+    });
+    expect(res.status).toBe(200);
+    expect(rows.find((r) => r.id === "f1")?.status).toBe("APPROVED");
+    expect(enqueueFlagJobMock).not.toHaveBeenCalled();
   });
 
   it("still returns 200 when enqueueing the flag job fails (M07)", async () => {

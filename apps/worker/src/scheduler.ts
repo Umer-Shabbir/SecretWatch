@@ -6,6 +6,7 @@ import {
   getRedisConnectionOptions,
 } from "@secretwatch/shared";
 import { prisma } from "./db";
+import { getSystemSettings } from "./system-settings";
 import type { ScanJobData } from "./scanner.worker";
 
 /**
@@ -27,6 +28,14 @@ function getIntervalMinutes(): number {
 }
 
 export async function enqueueScansForEnabledRules(scanQueue: Queue<ScanJobData>): Promise<number> {
+  // Master scanner switch (admin dashboard). When off, enqueue nothing — the
+  // scheduler tick becomes a no-op until an admin re-enables scanning. Read
+  // fresh each tick so a toggle takes effect on the next tick with no restart.
+  const { scannerEnabled } = await getSystemSettings();
+  if (!scannerEnabled) {
+    return 0;
+  }
+
   const enabledRules = await prisma.scanRule.findMany({
     where: { enabled: true },
     select: { id: true },

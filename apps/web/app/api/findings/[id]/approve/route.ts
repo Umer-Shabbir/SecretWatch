@@ -7,6 +7,7 @@ import {
 } from "@/lib/findings";
 import { recordAudit } from "@/lib/audit";
 import { enqueueFlagJob } from "@/lib/queue";
+import { getSystemSettings } from "@/lib/system-settings";
 
 /**
  * POST /api/findings/:id/approve
@@ -60,12 +61,18 @@ export async function POST(_request: Request, { params }: { params: { id: string
       detail: `findingId=${finding.id}`,
     });
 
-    try {
-      await enqueueFlagJob(finding.id);
-    } catch (enqueueErr) {
-      // Never let a queue outage turn a successful approval into a 500 —
-      // log and continue. Never log finding.redactedSnippet or any token.
-      console.error(`[findings] failed to enqueue flag job for ${finding.id}:`, enqueueErr instanceof Error ? enqueueErr.message : enqueueErr);
+    // autoFlagEnabled (admin system control): when off, approval no longer
+    // auto-enqueues — the finding stays APPROVED and waits for a manual "Run
+    // Flagger". When on (default), keep the M07 behavior of enqueueing now.
+    const { autoFlagEnabled } = await getSystemSettings();
+    if (autoFlagEnabled) {
+      try {
+        await enqueueFlagJob(finding.id);
+      } catch (enqueueErr) {
+        // Never let a queue outage turn a successful approval into a 500 —
+        // log and continue. Never log finding.redactedSnippet or any token.
+        console.error(`[findings] failed to enqueue flag job for ${finding.id}:`, enqueueErr instanceof Error ? enqueueErr.message : enqueueErr);
+      }
     }
 
     return NextResponse.json({ finding });

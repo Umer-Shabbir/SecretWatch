@@ -164,6 +164,44 @@ model ScanRule {
   @@index([enabled])
 }
 
+// Singleton system-wide switches (2026-08-24 admin-control addition). A
+// single row (id = "singleton") holds the master on/off toggles the admin
+// dashboard exposes for the two background subsystems:
+//   - scannerEnabled: when false, the scheduler enqueues no scan jobs and the
+//     scanner worker no-ops any job it still receives (defense-in-depth).
+//   - flaggerEnabled: when false, the flagger worker skips every job without
+//     marking the finding FAILED, so approved findings simply wait.
+// Both processes (apps/web to read/write, apps/worker to read) reach the same
+// row via their own PrismaClient — the cross-process source of truth for the
+// switches, so a toggle in the dashboard takes effect on the next tick/job
+// with no restart. Defaults are ON so existing worker behavior is unchanged
+// for any deployment that never touches the switches.
+model SystemSetting {
+  id             String   @id @default("singleton")
+  scannerEnabled Boolean  @default(true)
+  flaggerEnabled Boolean  @default(true)
+
+  // Whole-system tuning knobs (2026-08-24 admin-control addition). All are
+  // read fresh per job/request by the worker + approve route, so an admin
+  // change takes effect on the next tick with no worker restart. Additive,
+  // all defaulted — backward compatible with the original two-switch row.
+
+  // When false, approving a finding no longer auto-enqueues a flag job; the
+  // admin must trigger flagging manually via "Run Flagger". Approve route
+  // reads this per request.
+  autoFlagEnabled Boolean @default(true)
+
+  // How many GitHub code-search results the scanner pulls per rule per scan
+  // (GitHub search per_page max is 100). Scanner reads this per job.
+  scanResultsPerRule Int @default(30)
+
+  // Flagger skips any token whose known rateLimitRemaining is at or below
+  // this value, in favor of the next candidate. Flagger reads this per job.
+  flagRateLimitThreshold Int @default(5)
+
+  updatedAt DateTime @updatedAt
+}
+
 // Auditable record of security-sensitive actions (sign-in, flag creation,
 // token revocation, admin review decisions). Never write raw secrets here.
 model AuditLog {

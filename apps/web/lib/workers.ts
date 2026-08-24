@@ -86,6 +86,25 @@ function jobFinishedAtMs(job: { finishedOn?: number; processedOn?: number }): nu
 }
 
 /**
+ * Live per-queue depth for the Overview activity panels: how many jobs are
+ * currently being processed (active) vs. waiting/delayed to run. Reuses the
+ * same cached Queue instances as getWorkerMonitoringSnapshot (no extra Redis
+ * connections). Throws if Redis is unreachable — callers surface that.
+ */
+export async function getLiveQueueCounts(
+  queueKey: WorkerHealth["key"]
+): Promise<{ active: number; waiting: number }> {
+  const def = WORKER_DEFS.find((d) => d.key === queueKey);
+  if (!def) return { active: 0, waiting: 0 };
+  const queue = getQueue(def.queueName);
+  const counts = await queue.getJobCounts("waiting", "active", "delayed");
+  return {
+    active: counts.active ?? 0,
+    waiting: (counts.waiting ?? 0) + (counts.delayed ?? 0),
+  };
+}
+
+/**
  * Builds the full worker monitoring snapshot: per-worker health (status,
  * concurrency, queue depth, last job time, success rate) plus a combined
  * "recent jobs" table across all 3 queues, sorted newest-first.
