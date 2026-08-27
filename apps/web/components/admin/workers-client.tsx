@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
+import { useSSE } from "@/lib/use-sse";
 import type { WorkerMonitoringSnapshot, WorkerHealth, RecentJob } from "@/lib/workers";
 
 /**
@@ -19,10 +20,10 @@ import type { WorkerMonitoringSnapshot, WorkerHealth, RecentJob } from "@/lib/wo
  *     per-worker summary line, Recent Jobs table omitted — see
  *     state/modules/M10.json figma.scopeNotes)
  *
- * Polls GET /api/workers every 15s so operators see near-live health
- * without a manual refresh, mirroring the "operational monitoring" intent
- * of this module (ARCHITECTURE.md §5/§6) — polling stops on unmount and is
- * paused while a request is already in flight.
+ * Real-time updates via SSE (/api/admin/events). Falls back to polling
+ * GET /api/workers every 2s if SSE fails, so operators always see near-live
+ * health without a manual refresh — mirroring the "operational monitoring"
+ * intent of this module (ARCHITECTURE.md §5/§6).
  */
 
 const STATUS_DOT: Record<WorkerHealth["status"], string> = {
@@ -61,7 +62,7 @@ const JOB_STATUS_LABEL: Record<RecentJob["status"], string> = {
   waiting: "Waiting",
 };
 
-const POLL_INTERVAL_MS = 15_000;
+const POLL_INTERVAL_MS = 2_000;
 
 function formatRelative(iso: string | null, now: number): string {
   if (!iso) return "—";
@@ -97,9 +98,30 @@ export function WorkersClient({
   const [loadFailed, setLoadFailed] = useState(initialLoadFailed);
   const [refetching, setRefetching] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [sseConnected, setSseConnected] = useState(false);
 
   const requestId = useRef(0);
   const inFlight = useRef(false);
+
+  // SSE: real-time worker updates
+  const sseState = useSSE({
+    onWorkers: useCallback((data: unknown) => {
+      const snap = data as WorkerMonitoringSnapshot;
+      setSnapshot(snap);
+      setLoadFailed(false);
+      setNow(Date.now());
+    }, []),
+  });
+
+  useEffect(() => {
+    setSseConnected(sseState.connected);
+  }, [sseState.connected]);
+
+  // Tick the clock every second for relative timestamps
+  useEffect(() => {
+    const tick = setInterval(() => setNow(Date.now()), 1_000);
+    return () => clearInterval(tick);
+  }, []);
 
   const fetchSnapshot = useCallback(async () => {
     if (inFlight.current) return;
@@ -131,12 +153,14 @@ export function WorkersClient({
     fetchSnapshot();
   }
 
+  // Fallback polling: only runs when SSE is not connected
   useEffect(() => {
+    if (sseConnected) return;
     const interval = setInterval(() => {
       fetchSnapshot();
     }, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [fetchSnapshot]);
+  }, [fetchSnapshot, sseConnected]);
 
   const workers = snapshot?.workers ?? [];
   const recentJobs = snapshot?.recentJobs ?? [];
@@ -144,9 +168,19 @@ export function WorkersClient({
 
   return (
     <div className="flex w-full flex-col gap-6 p-4 sm:p-8">
-      <div>
-        <h1 className="text-2xl font-semibold leading-8 text-fg-default">Workers</h1>
-        <p className="mt-1 text-sm text-fg-muted">Scanner, flagger, and scheduler health</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold leading-8 text-fg-default">Workers</h1>
+          <p className="mt-1 text-sm text-fg-muted">Scanner, flagger, and scheduler health</p>
+        </div>
+        <span className="inline-flex items-center gap-1.5 text-xs text-fg-muted">
+          <span
+            className={`size-2 shrink-0 rounded-full ${
+              sseConnected ? "animate-pulse bg-success-emphasis" : "bg-fg-subtle"
+            }`}
+          />
+          {sseConnected ? "Live" : "Polling"}
+        </span>
       </div>
 
       {loadFailed ? (
@@ -160,7 +194,7 @@ export function WorkersClient({
           }
         />
       ) : (
-        <div className={`flex w-full flex-col gap-6 ${refetching ? "opacity-60" : ""}`}>
+        <div className="flex w-full flex-col gap-6">
           {degradedWorkers.length > 0 && (
             <Alert variant="warning">
               {degradedWorkers.map((w) => `${w.name} Worker is degraded.`).join(" ")}
@@ -171,7 +205,7 @@ export function WorkersClient({
             {workers.map((worker) => (
               <div
                 key={worker.key}
-                className={`flex w-full flex-col gap-3 rounded-small border p-5 sm:w-[360px] ${
+                className={`flex w-full flex-col gap-3 rounded-small border p-5 sm:w-[360px] transition-all duration-300 ${
                   worker.status === "degraded"
                     ? "border-[1.5px] border-warning-emphasis"
                     : "border-border-default"
@@ -191,7 +225,11 @@ export function WorkersClient({
                 </div>
                 <div className="flex items-center justify-between text-[13px]">
                   <span className="text-fg-muted">Queue</span>
-                  <span className="font-mono text-fg-default">{worker.queueCount} pending</span>
+                  <span className={`font-mono transition-colors duration-300 ${
+                    worker.queueCount > 0 ? "text-accent-fg font-medium" : "text-fg-default"
+                  }`}>
+                    {worker.queueCount} pending
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-[13px] sm:flex hidden">
                   <span className="text-fg-muted">Last job</span>
@@ -234,7 +272,7 @@ export function WorkersClient({
                   </thead>
                   <tbody>
                     {recentJobs.map((job) => (
-                      <tr key={job.id} className="border-t border-border-muted">
+                      <tr key={job.id} className="border-t border-border-muted transition-colors duration-300">
                         <td className="px-4 py-2 font-mono text-fg-default">{job.id}</td>
                         <td className="px-4 py-2 capitalize text-fg-default">{job.worker}</td>
                         <td className="px-4 py-2">

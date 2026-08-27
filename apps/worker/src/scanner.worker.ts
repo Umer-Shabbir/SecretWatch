@@ -140,6 +140,22 @@ export async function upsertFinding(data: {
   matchedRule: string;
   redactedSnippet: string;
 }): Promise<boolean> {
+  const existing = await prisma.finding.findUnique({
+    where: {
+      Finding_dedup_key: {
+        repoFullName: data.repoFullName,
+        filePath: data.filePath,
+        commitSha: data.commitSha,
+        matchedRule: data.matchedRule,
+      }
+    },
+    select: { id: true }, // lightweight select
+  });
+
+  if (existing) {
+    return false;
+  }
+
   try {
     await prisma.finding.create({
       data: {

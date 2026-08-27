@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import type { SystemSettings } from "@/lib/system-settings";
 
@@ -16,6 +17,7 @@ import type { SystemSettings } from "@/lib/system-settings";
  * switch is off is a reported no-op, never a bypass.
  */
 export function DashboardControls({ initialSettings }: { initialSettings: SystemSettings }) {
+  const router = useRouter();
   const [settings, setSettings] = useState<SystemSettings>(initialSettings);
   const [toggling, setToggling] = useState<null | "scanner" | "flagger" | "autoFlag">(null);
   const [running, setRunning] = useState<null | "scan" | "flag">(null);
@@ -50,6 +52,7 @@ export function DashboardControls({ initialSettings }: { initialSettings: System
         return false;
       }
       setSettings(body.settings);
+      router.refresh();
       return true;
     } catch {
       setError("Could not update settings. Please try again.");
@@ -59,8 +62,12 @@ export function DashboardControls({ initialSettings }: { initialSettings: System
 
   async function toggle(which: "scanner" | "flagger") {
     const key = which === "scanner" ? "scannerEnabled" : "flaggerEnabled";
+    const turningOn = !settings[key];
     setToggling(which);
-    await patchSettings({ [key]: !settings[key] });
+    const ok = await patchSettings({ [key]: turningOn });
+    if (ok && turningOn) {
+      setNotice(`${which === "scanner" ? "Scanner" : "Flagger"} enabled — jobs are being enqueued now.`);
+    }
     setToggling(null);
   }
 
@@ -108,6 +115,7 @@ export function DashboardControls({ initialSettings }: { initialSettings: System
         );
       } else {
         setNotice(`Enqueued ${body.enqueued} ${which === "scan" ? "scan job(s)" : "flag job(s)"}.`);
+        router.refresh();
       }
     } catch {
       setError("Could not start the run. Please try again.");

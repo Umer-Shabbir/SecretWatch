@@ -3,6 +3,8 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/authorize";
 import { recordAudit } from "@/lib/audit";
 import { getSystemSettings, updateSystemSettings } from "@/lib/system-settings";
+import { prisma } from "@/lib/db";
+import { enqueueScanJobs, enqueueFlagJobs } from "@/lib/queue";
 
 /**
  * GET/PATCH /api/system/settings (2026-08-24 admin-control addition).
@@ -62,6 +64,17 @@ export async function PATCH(request: NextRequest) {
   }
 
   const settings = await updateSystemSettings(parsed.data);
+
+  // If a subsystem was turned ON, trigger it to run immediately
+  if (parsed.data.scannerEnabled === true) {
+    const rules = await prisma.scanRule.findMany({ where: { enabled: true }, select: { id: true } });
+    await enqueueScanJobs(rules.map(r => r.id)).catch(() => {});
+  }
+
+  if (parsed.data.flaggerEnabled === true) {
+    const findings = await prisma.finding.findMany({ where: { status: "APPROVED" }, select: { id: true } });
+    await enqueueFlagJobs(findings.map(f => f.id)).catch(() => {});
+  }
 
   await recordAudit({
     userId: session!.user.id,

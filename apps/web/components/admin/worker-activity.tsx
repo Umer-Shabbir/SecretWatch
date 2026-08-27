@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSSE } from "@/lib/use-sse";
 import type { LiveActivity, ScannerFind, FlaggerFlag, FlaggerFailure, QueueDepth } from "@/lib/activity";
 
 /**
@@ -9,13 +10,14 @@ import type { LiveActivity, ScannerFind, FlaggerFlag, FlaggerFailure, QueueDepth
  * right now — live queue depth plus a feed of the most recent findings the
  * scanner wrote and the most recent flags/failures the flagger produced.
  *
- * Polls GET /api/admin/activity every 8s (paused while a request is already
- * in flight; stops on unmount), mirroring the Workers page's polling pattern.
- * A transient fetch failure keeps the last-known feed on screen and shows a
- * small stale marker rather than blanking the panels.
+ * Real-time updates via SSE (/api/admin/events). Falls back to polling
+ * GET /api/admin/activity every 2s if SSE is not connected, so operators
+ * always see what the workers are doing without a manual refresh. A transient
+ * fetch failure keeps the last-known feed on screen and shows a small stale
+ * marker rather than blanking the panels.
  */
 
-const POLL_INTERVAL_MS = 8_000;
+const POLL_INTERVAL_MS = 2_000;
 
 const FINDING_STATUS_TEXT: Record<string, string> = {
   PENDING: "text-warning-fg",
@@ -56,12 +58,26 @@ function QueueBadge({ queue }: { queue: QueueDepth | null }) {
 export function WorkerActivity({ initial }: { initial: LiveActivity }) {
   const [activity, setActivity] = useState<LiveActivity>(initial);
   const [stale, setStale] = useState(false);
+  const [sseConnected, setSseConnected] = useState(false);
   // Seed `now` from generatedAt so the first server render and the first
   // client render produce identical relative-time text (both "0s ago"),
   // avoiding a hydration mismatch. The real clock is applied after mount.
   const [now, setNow] = useState(() => new Date(initial.generatedAt).getTime());
 
   const inFlight = useRef(false);
+
+  // SSE: real-time activity updates
+  const sseState = useSSE({
+    onActivity: useCallback((data: unknown) => {
+      setActivity(data as LiveActivity);
+      setStale(false);
+      setNow(Date.now());
+    }, []),
+  });
+
+  useEffect(() => {
+    setSseConnected(sseState.connected);
+  }, [sseState.connected]);
 
   const fetchActivity = useCallback(async () => {
     if (inFlight.current) return;
@@ -84,15 +100,19 @@ export function WorkerActivity({ initial }: { initial: LiveActivity }) {
 
   useEffect(() => {
     // Apply the real client clock after mount (post-hydration), then keep
-    // the relative-time labels ticking without waiting on the 8s poll.
+    // the relative-time labels ticking without waiting on the poll.
     setNow(Date.now());
     const tick = setInterval(() => setNow(Date.now()), 1_000);
-    const interval = setInterval(fetchActivity, POLL_INTERVAL_MS);
+    // Fallback polling: only active when SSE is not connected
+    let interval: ReturnType<typeof setInterval> | null = null;
+    if (!sseConnected) {
+      interval = setInterval(fetchActivity, POLL_INTERVAL_MS);
+    }
     return () => {
       clearInterval(tick);
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
     };
-  }, [fetchActivity]);
+  }, [fetchActivity, sseConnected]);
 
   const { scanner, flagger } = activity;
 
@@ -100,8 +120,21 @@ export function WorkerActivity({ initial }: { initial: LiveActivity }) {
     <section className="flex w-full flex-col gap-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-fg-default">Live worker activity</h2>
-        <span className="text-xs text-fg-muted">
-          {stale ? "Reconnecting…" : `Updated ${formatRelative(activity.generatedAt, now)}`}
+        <span className="inline-flex items-center gap-1.5 text-xs text-fg-muted">
+          <span
+            className={`size-2 shrink-0 rounded-full ${
+              sseConnected
+                ? "animate-pulse bg-success-emphasis"
+                : stale
+                  ? "bg-warning-emphasis"
+                  : "bg-fg-subtle"
+            }`}
+          />
+          {sseConnected
+            ? "Live"
+            : stale
+              ? "Reconnecting…"
+              : `Updated ${formatRelative(activity.generatedAt, now)}`}
         </span>
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { FindingStatusBadge } from "@/components/ui/finding-status-badge";
 import { ErrorState } from "@/components/ui/error-state";
@@ -47,6 +48,7 @@ export function ReviewQueueClient({
   initialLoadFailed: boolean;
   isAdmin: boolean;
 }) {
+  const router = useRouter();
   const [page, setPage] = useState(initialResult?.page ?? 1);
   const [result, setResult] = useState<FindingsListResult | null>(initialResult);
   const [loadFailed, setLoadFailed] = useState(initialLoadFailed);
@@ -123,6 +125,9 @@ export function ReviewQueueClient({
             }
           : prev
       );
+      // Refresh server data so navigation to other pages (e.g. admin
+      // overview stat cards, sidebar badges) reflects the updated counts.
+      router.refresh();
     } catch {
       setActionError(`Could not ${action} this finding. Please try again.`);
     } finally {
