@@ -19,6 +19,7 @@ const mockSystemSettings = {
   scannerEnabled: false,
   flaggerEnabled: false,
   autoFlagEnabled: false,
+  autoApproveEnabled: false,
   scanResultsPerRule: 10,
   flagRateLimitThreshold: 10,
   updatedAt: new Date().toISOString(),

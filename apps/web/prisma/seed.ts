@@ -85,58 +85,90 @@ const SEVERITY_TEMPLATE_VARIANTS = [
   {
     name: "Severity: Critical",
     severity: "CRITICAL" as const,
-    body: `**CRITICAL: Immediate action required.**
+    body: `## 🚨 Critical Secret Exposure Detected by SecretWatch
 
-A potential leaked secret was detected in this repository by automated scanning. This class of finding is treated as critical because it typically grants direct, high-impact access if genuine.
+SecretWatch has identified a **critical** potential leaked credential in **{{repo}}**. This class of finding typically grants direct, high-impact access if genuine — immediate action is strongly recommended.
 
-- **File:** \`{{file}}\`
-- **Rule matched:** {{rule}}
+| Detail | Value |
+|--------|-------|
+| **Repository** | \`{{repo}}\` |
+| **File** | \`{{file}}\` |
+| **Rule matched** | {{rule}} |
+| **Severity** | Critical |
 
-The actual secret value is not included in this issue. Please rotate/revoke the credential immediately if it is genuine, then remove it from source control (e.g. via git history rewrite + secret rotation).
+### What you should do
 
-_This issue was opened automatically by SecretWatch on behalf of an authorized user. Repository: {{repo}}._`,
+1. **Rotate or revoke** the credential immediately with the issuing provider — do not wait to verify first.
+2. **Remove** the secret from source control using \`git filter-repo\`, \`BFG Repo-Cleaner\`, or a history rewrite (a simple delete commit is not enough).
+3. **Audit** for unauthorized usage of this credential since its exposure.
+4. **Prevent recurrence** by using environment variables or a secrets manager, and enabling a pre-commit secret scanning hook.
+
+The actual secret value is not included in this issue for safety. This issue was opened automatically by [SecretWatch](https://github.com/TODO-project-org/secretwatch). If you believe this is a false positive, you can close this issue.`,
   },
   {
     name: "Severity: High",
     severity: "HIGH" as const,
-    body: `**High severity finding.**
+    body: `## ⚠️ High-Severity Secret Detected by SecretWatch
 
-A potential leaked secret was detected in this repository by automated scanning.
+SecretWatch has identified a **high-severity** potential leaked credential in **{{repo}}**.
 
-- **File:** \`{{file}}\`
-- **Rule matched:** {{rule}}
+| Detail | Value |
+|--------|-------|
+| **Repository** | \`{{repo}}\` |
+| **File** | \`{{file}}\` |
+| **Rule matched** | {{rule}} |
+| **Severity** | High |
 
-The actual secret value is not included in this issue. Please prioritize rotating/revoking the credential if it is genuine, then remove it from source control.
+### What you should do
 
-_This issue was opened automatically by SecretWatch on behalf of an authorized user. Repository: {{repo}}._`,
+1. **Verify** whether the detected value is a genuine credential.
+2. **Rotate or revoke** the credential promptly if it is real.
+3. **Remove** the secret from source control using a history rewrite tool (\`git filter-repo\` or \`BFG Repo-Cleaner\`).
+4. **Prevent recurrence** by using environment variables or a secrets manager.
+
+The actual secret value is not included in this issue for safety. This issue was opened automatically by [SecretWatch](https://github.com/TODO-project-org/secretwatch). If you believe this is a false positive, you can close this issue.`,
   },
   {
     name: "Severity: Medium",
     severity: "MEDIUM" as const,
-    body: `**Medium severity finding.**
+    body: `## ⚠️ Medium-Severity Secret Detected by SecretWatch
 
-A potential leaked secret was detected in this repository by automated scanning.
+SecretWatch has identified a **medium-severity** potential leaked credential in **{{repo}}**.
 
-- **File:** \`{{file}}\`
-- **Rule matched:** {{rule}}
+| Detail | Value |
+|--------|-------|
+| **Repository** | \`{{repo}}\` |
+| **File** | \`{{file}}\` |
+| **Rule matched** | {{rule}} |
+| **Severity** | Medium |
 
-The actual secret value is not included in this issue. When convenient, please verify whether this credential is genuine and rotate it if so, then remove it from source control.
+### What you should do
 
-_This issue was opened automatically by SecretWatch on behalf of an authorized user. Repository: {{repo}}._`,
+1. **Verify** whether the detected value is a genuine credential (it may be a test fixture or example).
+2. **Rotate** the credential if genuine, then remove it from source control.
+3. **Prevent recurrence** by adding the file to \`.gitignore\` and using environment variables.
+
+The actual secret value is not included in this issue for safety. This issue was opened automatically by [SecretWatch](https://github.com/TODO-project-org/secretwatch). If you believe this is a false positive, you can close this issue.`,
   },
   {
     name: "Severity: Low",
     severity: "LOW" as const,
-    body: `**Low severity finding — for awareness.**
+    body: `## ℹ️ Low-Severity Finding by SecretWatch
 
-A potential secret-shaped string was detected in this repository by automated scanning; it may be a false positive, a test fixture, or low-risk.
+SecretWatch has identified a potential secret-shaped string in **{{repo}}**. This may be a false positive, a test fixture, or a low-risk value — no immediate action is required.
 
-- **File:** \`{{file}}\`
-- **Rule matched:** {{rule}}
+| Detail | Value |
+|--------|-------|
+| **Repository** | \`{{repo}}\` |
+| **File** | \`{{file}}\` |
+| **Rule matched** | {{rule}} |
+| **Severity** | Low |
 
-The actual matched value is not included in this issue. No immediate action is required, but please confirm this isn't a genuine credential and remove it from source control if so.
+### Recommended action
 
-_This issue was opened automatically by SecretWatch on behalf of an authorized user. Repository: {{repo}}._`,
+Please confirm this is not a genuine credential. If it is, rotate it and remove it from source control. If it is a test value or false positive, no action is needed — you can close this issue.
+
+The actual matched value is not included in this issue for safety. This issue was opened automatically by [SecretWatch](https://github.com/TODO-project-org/secretwatch).`,
   },
 ];
 
@@ -144,50 +176,90 @@ const SECRET_TYPE_TEMPLATE_VARIANTS = [
   {
     name: "Secret type: AWS Access Key",
     secretType: "AWS_KEY" as const,
-    body: `A potential AWS access key was detected in this repository by automated scanning.
+    body: `## ⚠️ Potential AWS Access Key Detected by SecretWatch
 
-- **File:** \`{{file}}\`
-- **Rule matched:** {{rule}}
+SecretWatch has identified a potential **AWS access key** in **{{repo}}**.
 
-The actual key value is not included in this issue. If genuine: deactivate/rotate the key in the AWS IAM console immediately, review CloudTrail for unauthorized usage, then remove it from source control.
+| Detail | Value |
+|--------|-------|
+| **Repository** | \`{{repo}}\` |
+| **File** | \`{{file}}\` |
+| **Rule matched** | {{rule}} |
 
-_This issue was opened automatically by SecretWatch on behalf of an authorized user. Repository: {{repo}}._`,
+### What you should do
+
+1. **Deactivate/rotate** the key in the [AWS IAM console](https://console.aws.amazon.com/iam/) immediately.
+2. **Review CloudTrail** logs for any unauthorized usage since the key was exposed.
+3. **Remove** the key from source control using a history rewrite tool (\`git filter-repo\` or \`BFG Repo-Cleaner\`).
+4. **Prevent recurrence** by using IAM roles, environment variables, or AWS Secrets Manager instead of hardcoded keys.
+
+The actual key value is not included in this issue for safety. This issue was opened automatically by [SecretWatch](https://github.com/TODO-project-org/secretwatch). If you believe this is a false positive, you can close this issue.`,
   },
   {
     name: "Secret type: GitHub Token",
     secretType: "GITHUB_TOKEN" as const,
-    body: `A potential GitHub token (personal access token or app token) was detected in this repository by automated scanning.
+    body: `## ⚠️ Potential GitHub Token Detected by SecretWatch
 
-- **File:** \`{{file}}\`
-- **Rule matched:** {{rule}}
+SecretWatch has identified a potential **GitHub token** (personal access token or app token) in **{{repo}}**.
 
-The actual token value is not included in this issue. If genuine: revoke the token from GitHub Settings > Developer settings immediately, then remove it from source control.
+| Detail | Value |
+|--------|-------|
+| **Repository** | \`{{repo}}\` |
+| **File** | \`{{file}}\` |
+| **Rule matched** | {{rule}} |
 
-_This issue was opened automatically by SecretWatch on behalf of an authorized user. Repository: {{repo}}._`,
+### What you should do
+
+1. **Revoke** the token from [GitHub Settings > Developer settings](https://github.com/settings/tokens) immediately.
+2. **Review** recent activity on any repositories or organizations the token had access to.
+3. **Remove** the token from source control using a history rewrite tool (\`git filter-repo\` or \`BFG Repo-Cleaner\`).
+4. **Prevent recurrence** by using environment variables and never committing tokens to source control.
+
+The actual token value is not included in this issue for safety. This issue was opened automatically by [SecretWatch](https://github.com/TODO-project-org/secretwatch). If you believe this is a false positive, you can close this issue.`,
   },
   {
     name: "Secret type: Generic API Key",
     secretType: "GENERIC_API_KEY" as const,
-    body: `A potential API key was detected in this repository by automated scanning.
+    body: `## ⚠️ Potential API Key Detected by SecretWatch
 
-- **File:** \`{{file}}\`
-- **Rule matched:** {{rule}}
+SecretWatch has identified a potential **API key** in **{{repo}}**.
 
-The actual key value is not included in this issue. If genuine: rotate the key with the issuing provider, then remove it from source control and consider adding a pre-commit secret scan.
+| Detail | Value |
+|--------|-------|
+| **Repository** | \`{{repo}}\` |
+| **File** | \`{{file}}\` |
+| **Rule matched** | {{rule}} |
 
-_This issue was opened automatically by SecretWatch on behalf of an authorized user. Repository: {{repo}}._`,
+### What you should do
+
+1. **Verify** whether the detected value is a genuine credential.
+2. **Rotate** the key with the issuing provider if it is real.
+3. **Remove** the key from source control using a history rewrite tool.
+4. **Prevent recurrence** by using environment variables or a secrets manager, and enabling a pre-commit secret scanning hook.
+
+The actual key value is not included in this issue for safety. This issue was opened automatically by [SecretWatch](https://github.com/TODO-project-org/secretwatch). If you believe this is a false positive, you can close this issue.`,
   },
   {
     name: "Secret type: Database Connection String",
     secretType: "DB_CONNECTION_STRING" as const,
-    body: `A potential database connection string (with embedded credentials) was detected in this repository by automated scanning.
+    body: `## ⚠️ Potential Database Connection String Detected by SecretWatch
 
-- **File:** \`{{file}}\`
-- **Rule matched:** {{rule}}
+SecretWatch has identified a potential **database connection string** with embedded credentials in **{{repo}}**.
 
-The actual connection string is not included in this issue. If genuine: rotate the database credential and review access logs for unauthorized connections, then remove it from source control.
+| Detail | Value |
+|--------|-------|
+| **Repository** | \`{{repo}}\` |
+| **File** | \`{{file}}\` |
+| **Rule matched** | {{rule}} |
 
-_This issue was opened automatically by SecretWatch on behalf of an authorized user. Repository: {{repo}}._`,
+### What you should do
+
+1. **Rotate** the database password immediately.
+2. **Review** database access logs for any unauthorized connections since the string was exposed.
+3. **Remove** the connection string from source control using a history rewrite tool.
+4. **Prevent recurrence** by using environment variables or a secrets manager — never hardcode database credentials.
+
+The actual connection string is not included in this issue for safety. This issue was opened automatically by [SecretWatch](https://github.com/TODO-project-org/secretwatch). If you believe this is a false positive, you can close this issue.`,
   },
 ];
 

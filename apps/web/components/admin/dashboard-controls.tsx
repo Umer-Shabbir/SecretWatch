@@ -19,7 +19,7 @@ import type { SystemSettings } from "@/lib/system-settings";
 export function DashboardControls({ initialSettings }: { initialSettings: SystemSettings }) {
   const router = useRouter();
   const [settings, setSettings] = useState<SystemSettings>(initialSettings);
-  const [toggling, setToggling] = useState<null | "scanner" | "flagger" | "autoFlag">(null);
+  const [toggling, setToggling] = useState<null | "scanner" | "flagger" | "autoFlag" | "autoApprove">(null);
   const [running, setRunning] = useState<null | "scan" | "flag">(null);
   const [savingTuning, setSavingTuning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export function DashboardControls({ initialSettings }: { initialSettings: System
 
   /** PATCHes a settings subset, updates local state, returns success. */
   async function patchSettings(
-    patch: Partial<Record<"scannerEnabled" | "flaggerEnabled" | "autoFlagEnabled" | "scanResultsPerRule" | "flagRateLimitThreshold", boolean | number>>
+    patch: Partial<Record<"scannerEnabled" | "flaggerEnabled" | "autoFlagEnabled" | "autoApproveEnabled" | "scanResultsPerRule" | "flagRateLimitThreshold", boolean | number>>
   ): Promise<boolean> {
     setError(null);
     setNotice(null);
@@ -74,6 +74,12 @@ export function DashboardControls({ initialSettings }: { initialSettings: System
   async function toggleAutoFlag() {
     setToggling("autoFlag");
     await patchSettings({ autoFlagEnabled: !settings.autoFlagEnabled });
+    setToggling(null);
+  }
+
+  async function toggleAutoApprove() {
+    setToggling("autoApprove");
+    await patchSettings({ autoApproveEnabled: !settings.autoApproveEnabled });
     setToggling(null);
   }
 
@@ -161,6 +167,27 @@ export function DashboardControls({ initialSettings }: { initialSettings: System
       </div>
 
       <div className="flex flex-col gap-4 rounded-small border border-border-muted p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-fg-default">Auto-approve findings</p>
+            <p className="text-xs text-fg-muted">
+              When on, new findings from the scanner are automatically approved without admin review.
+              Combined with auto-flag, this creates a fully automated pipeline.
+            </p>
+            {settings.autoApproveEnabled && (
+              <p className="mt-1 text-xs font-medium text-warning-fg">
+                ⚠ Admin review is bypassed — findings are approved automatically.
+              </p>
+            )}
+          </div>
+          <ToggleSwitch
+            label="Auto-approve findings"
+            enabled={settings.autoApproveEnabled}
+            disabled={busy}
+            onToggle={toggleAutoApprove}
+          />
+        </div>
+
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-fg-default">Auto-flag on approval</p>

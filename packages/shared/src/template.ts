@@ -53,14 +53,28 @@ export function findUnsupportedVariables(body: string): string[] {
 
 export const DEFAULT_TEMPLATE_NAME = "Default Secret Finding";
 
-export const DEFAULT_TEMPLATE_BODY = `A potential leaked secret was detected in this repository by automated scanning.
+export const DEFAULT_TEMPLATE_BODY = `## ⚠️ Potential Secret Detected by SecretWatch
 
-- **File:** \`{{file}}\`
-- **Rule matched:** {{rule}}
+SecretWatch has identified a potential leaked credential in **{{repo}}**.
 
-The actual secret value is not included in this issue. Please rotate/revoke the credential if it is genuine, then remove it from source control (e.g. via git history rewrite + secret rotation) and consider adding a .gitignore entry or pre-commit secret scan to prevent recurrence.
+| Detail | Value |
+|--------|-------|
+| **Repository** | \`{{repo}}\` |
+| **File** | \`{{file}}\` |
+| **Rule matched** | {{rule}} |
 
-_This issue was opened automatically by SecretWatch on behalf of an authorized user. Repository: {{repo}}._`;
+### What you should do
+
+1. **Verify** whether the detected value is a genuine credential (the actual secret is not included in this issue for safety).
+2. **Rotate or revoke** the credential immediately with the issuing provider if it is real.
+3. **Remove** the secret from source control — a simple commit deletion is not enough because the value remains in git history. Use \`git filter-repo\`, \`BFG Repo-Cleaner\`, or a history rewrite to fully purge it.
+4. **Prevent recurrence** by adding the file to \`.gitignore\`, using environment variables or a secrets manager, and enabling a pre-commit secret scanning hook.
+
+### About this issue
+
+This issue was opened automatically by [SecretWatch](https://github.com/TODO-project-org/secretwatch) — an open-source tool that scans public GitHub repositories for accidentally exposed API keys, tokens, and other secrets. SecretWatch never stores or transmits the raw secret value; only a redacted reference is kept for audit purposes.
+
+If you believe this is a false positive, you can close this issue. No further action will be taken on this finding.`;
 
 /**
  * Optional, admin-toggleable soft attribution line (2026-08-17 addition).

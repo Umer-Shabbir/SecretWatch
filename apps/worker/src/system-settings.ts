@@ -19,15 +19,20 @@ export interface WorkerSystemSettings {
   scannerEnabled: boolean;
   flaggerEnabled: boolean;
   autoFlagEnabled: boolean;
+  autoApproveEnabled: boolean;
   scanResultsPerRule: number;
   flagRateLimitThreshold: number;
 }
 
-/** Fail-open defaults: historical always-on behavior + original constants. */
+/** Fail-open defaults: historical always-on behavior + original constants.
+ *  autoApproveEnabled defaults to false (fail-closed) because auto-approve
+ *  bypasses admin review — a transient DB hiccup must not silently start
+ *  auto-approving findings (ARCHITECTURE.md §8). */
 const DEFAULTS: WorkerSystemSettings = {
   scannerEnabled: true,
   flaggerEnabled: true,
   autoFlagEnabled: true,
+  autoApproveEnabled: false,
   scanResultsPerRule: 30,
   flagRateLimitThreshold: 5,
 };
@@ -40,6 +45,7 @@ export async function getSystemSettings(): Promise<WorkerSystemSettings> {
         scannerEnabled: true,
         flaggerEnabled: true,
         autoFlagEnabled: true,
+        autoApproveEnabled: true,
         scanResultsPerRule: true,
         flagRateLimitThreshold: true,
       },
@@ -51,6 +57,7 @@ export async function getSystemSettings(): Promise<WorkerSystemSettings> {
       scannerEnabled: row.scannerEnabled,
       flaggerEnabled: row.flaggerEnabled,
       autoFlagEnabled: row.autoFlagEnabled,
+      autoApproveEnabled: row.autoApproveEnabled,
       scanResultsPerRule: row.scanResultsPerRule,
       flagRateLimitThreshold: row.flagRateLimitThreshold,
     };

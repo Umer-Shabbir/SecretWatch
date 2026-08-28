@@ -15,6 +15,7 @@ export interface SystemSettings {
   scannerEnabled: boolean;
   flaggerEnabled: boolean;
   autoFlagEnabled: boolean;
+  autoApproveEnabled: boolean;
   scanResultsPerRule: number;
   flagRateLimitThreshold: number;
   updatedAt: string; // ISO 8601
@@ -24,6 +25,7 @@ type SystemSettingRow = {
   scannerEnabled: boolean;
   flaggerEnabled: boolean;
   autoFlagEnabled: boolean;
+  autoApproveEnabled: boolean;
   scanResultsPerRule: number;
   flagRateLimitThreshold: number;
   updatedAt: Date;
@@ -34,6 +36,7 @@ function toSystemSettings(row: SystemSettingRow): SystemSettings {
     scannerEnabled: row.scannerEnabled,
     flaggerEnabled: row.flaggerEnabled,
     autoFlagEnabled: row.autoFlagEnabled,
+    autoApproveEnabled: row.autoApproveEnabled,
     scanResultsPerRule: row.scanResultsPerRule,
     flagRateLimitThreshold: row.flagRateLimitThreshold,
     updatedAt: row.updatedAt.toISOString(),
@@ -44,6 +47,7 @@ const SELECT = {
   scannerEnabled: true,
   flaggerEnabled: true,
   autoFlagEnabled: true,
+  autoApproveEnabled: true,
   scanResultsPerRule: true,
   flagRateLimitThreshold: true,
   updatedAt: true,
@@ -73,6 +77,7 @@ export async function updateSystemSettings(patch: {
   scannerEnabled?: boolean;
   flaggerEnabled?: boolean;
   autoFlagEnabled?: boolean;
+  autoApproveEnabled?: boolean;
   scanResultsPerRule?: number;
   flagRateLimitThreshold?: number;
 }): Promise<SystemSettings> {

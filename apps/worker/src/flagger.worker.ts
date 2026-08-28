@@ -110,7 +110,7 @@ export async function runFlagForFinding(findingId: string): Promise<{ outcome: "
   // existing/self-healed template, so this is a no-op unless an admin
   // explicitly opts in on a specific template).
   const body = appendAttributionLine(renderedBody, template.includeAttributionLine);
-  const title = `Potential leaked secret detected: ${finding.matchedRule}`;
+  const title = `[SecretWatch] Potential leaked secret detected: ${finding.matchedRule}`;
 
   try {
     const issue = await createGithubIssue(token.encrypted, owner, repo, title, body);

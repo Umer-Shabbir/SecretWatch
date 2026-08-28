@@ -1,5 +1,5 @@
-import { Worker, type Job } from "bullmq";
-import { QUEUE_NAMES, getRedisConnectionOptions } from "@secretwatch/shared";
+import { Queue, Worker, type Job } from "bullmq";
+import { QUEUE_NAMES, getRedisConnectionOptions, type FlagJobData } from "@secretwatch/shared";
 import { prisma } from "./db";
 import { getSystemSettings } from "./system-settings";
 import { searchCode } from "./github-client";
@@ -65,19 +65,19 @@ function toCommitSha(sha: string): string {
   return sha;
 }
 
-export async function runScanForRule(ruleId: string, queryOverride?: string): Promise<{ created: number; skipped: number }> {
+export async function runScanForRule(ruleId: string, queryOverride?: string): Promise<{ created: number; skipped: number; autoApproved: number }> {
   // Per-job defense against the master scanner switch (dashboard toggle). The
   // scheduler already skips enqueueing when off, but a job could have been
   // enqueued before the switch flipped, or triggered manually — so re-check
   // here. Fails OPEN (see system-settings.ts) on DB error.
-  const { scannerEnabled, scanResultsPerRule } = await getSystemSettings();
+  const { scannerEnabled, scanResultsPerRule, autoApproveEnabled, autoFlagEnabled } = await getSystemSettings();
   if (!scannerEnabled) {
-    return { created: 0, skipped: 0 };
+    return { created: 0, skipped: 0, autoApproved: 0 };
   }
 
   const rule = await prisma.scanRule.findUnique({ where: { id: ruleId } });
   if (!rule || !rule.enabled) {
-    return { created: 0, skipped: 0 };
+    return { created: 0, skipped: 0, autoApproved: 0 };
   }
 
   const token = await pickActiveToken();
@@ -85,7 +85,7 @@ export async function runScanForRule(ruleId: string, queryOverride?: string): Pr
     // No usable credential yet (e.g. fresh install, no user has connected a
     // token) — nothing to scan with. Not an error condition worth failing
     // the job over; just no-op.
-    return { created: 0, skipped: 0 };
+    return { created: 0, skipped: 0, autoApproved: 0 };
   }
 
   const evaluable: EvaluableRule = { name: rule.name, pattern: rule.pattern, kind: inferKind(rule.name) };
@@ -100,26 +100,67 @@ export async function runScanForRule(ruleId: string, queryOverride?: string): Pr
 
   let created = 0;
   let skipped = 0;
+  let autoApproved = 0;
+  const newFindingIds: string[] = [];
 
   for (const result of results) {
     for (const fragment of result.fragments) {
       const matches = await evaluateAllRules([evaluable], fragment);
       for (const match of matches) {
         const commitSha = toCommitSha(result.sha);
-        const wasCreated = await upsertFinding({
+        const findingResult = await upsertFinding({
           repoFullName: result.repoFullName,
           filePath: result.filePath,
           commitSha,
           matchedRule: match.ruleName,
           redactedSnippet: match.redactedSnippet,
+          status: autoApproveEnabled ? "APPROVED" : "PENDING",
         });
-        if (wasCreated) created++;
-        else skipped++;
+        if (findingResult.wasCreated) {
+          created++;
+          if (autoApproveEnabled) {
+            autoApproved++;
+            if (findingResult.id) newFindingIds.push(findingResult.id);
+          }
+        } else {
+          skipped++;
+        }
       }
     }
   }
 
-  return { created, skipped };
+  // When auto-approve + auto-flag are both on, enqueue flag jobs for newly
+  // auto-approved findings so the full pipeline (scan → approve → flag) runs
+  // without any manual intervention. Failure to enqueue is non-fatal — the
+  // findings stay APPROVED and can be flagged by a manual "Run Flagger".
+  if (autoApproveEnabled && autoFlagEnabled && newFindingIds.length > 0) {
+    try {
+      const flagQueue = new Queue<FlagJobData>(QUEUE_NAMES.FLAG, {
+        connection: getRedisConnectionOptions(),
+      });
+      try {
+        for (const findingId of newFindingIds) {
+          await flagQueue.add("flag-finding", { findingId }, {
+            attempts: 5,
+            backoff: { type: "exponential", delay: 10_000 },
+            removeOnComplete: { count: 500 },
+            removeOnFail: { count: 500 },
+          });
+        }
+      } finally {
+        await flagQueue.close();
+      }
+    } catch (err) {
+      // Non-fatal: findings remain APPROVED and will be picked up by a future
+      // manual "Run Flagger" or scheduler tick. Never log secrets.
+      console.error(
+        `[scanner] failed to enqueue ${newFindingIds.length} auto-flag jobs:`,
+        err instanceof Error ? err.message : err
+      );
+    }
+  }
+
+  return { created, skipped, autoApproved };
 }
 
 function inferKind(ruleName: string): "regex" | "entropy" {
@@ -130,8 +171,8 @@ function inferKind(ruleName: string): "regex" | "entropy" {
  * Idempotent Finding creation. Relies on the DB unique constraint
  * (repoFullName, filePath, commitSha, matchedRule) so concurrent/repeated
  * scans of the same commit never create duplicate rows, even under race
- * conditions between worker instances. Returns true if a new row was
- * created, false if it already existed (skipped).
+ * conditions between worker instances. Returns { wasCreated: true, id }
+ * if a new row was created, { wasCreated: false } if it already existed.
  */
 export async function upsertFinding(data: {
   repoFullName: string;
@@ -139,7 +180,8 @@ export async function upsertFinding(data: {
   commitSha: string;
   matchedRule: string;
   redactedSnippet: string;
-}): Promise<boolean> {
+  status?: "PENDING" | "APPROVED";
+}): Promise<{ wasCreated: boolean; id?: string }> {
   const existing = await prisma.finding.findUnique({
     where: {
       Finding_dedup_key: {
@@ -153,25 +195,27 @@ export async function upsertFinding(data: {
   });
 
   if (existing) {
-    return false;
+    return { wasCreated: false };
   }
 
   try {
-    await prisma.finding.create({
+    const finding = await prisma.finding.create({
       data: {
         repoFullName: data.repoFullName,
         filePath: data.filePath,
         commitSha: data.commitSha,
         matchedRule: data.matchedRule,
         redactedSnippet: data.redactedSnippet,
+        status: data.status ?? "PENDING",
       },
+      select: { id: true },
     });
-    return true;
+    return { wasCreated: true, id: finding.id };
   } catch (err: unknown) {
     // Prisma unique constraint violation code P2002 -> already scanned this
     // exact commit/file/rule combination. Anything else re-throws.
     if (isUniqueConstraintError(err)) {
-      return false;
+      return { wasCreated: false };
     }
     throw err;
   }

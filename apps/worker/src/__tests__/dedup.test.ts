@@ -30,6 +30,17 @@ function resetFakeDb() {
   idCounter = 0;
   const client = {
     finding: {
+      findUnique: vi.fn(async ({ where }: any) => {
+        if (where.Finding_dedup_key) {
+          const { repoFullName, filePath, commitSha, matchedRule } = where.Finding_dedup_key;
+          const key = `${repoFullName}::${filePath}::${commitSha}::${matchedRule}`;
+          const found = rows.find(
+            (r) => `${r.repoFullName}::${r.filePath}::${r.commitSha}::${r.matchedRule}` === key
+          );
+          return found ? { id: found.id } : null;
+        }
+        return null;
+      }),
       create: vi.fn(async ({ data }: any) => {
         const key = `${data.repoFullName}::${data.filePath}::${data.commitSha}::${data.matchedRule}`;
         const exists = rows.find(
@@ -46,7 +57,7 @@ function resetFakeDb() {
           commitSha: data.commitSha,
           matchedRule: data.matchedRule,
           redactedSnippet: data.redactedSnippet,
-          status: "PENDING",
+          status: data.status ?? "PENDING",
           createdAt: new Date(),
         };
         rows.push(row);
@@ -71,14 +82,15 @@ beforeEach(() => {
 describe("upsertFinding idempotency", () => {
   it("creates a new Finding row on first scan of a commit/file/rule", async () => {
     const { upsertFinding } = await import("../scanner.worker");
-    const created = await upsertFinding({
+    const result = await upsertFinding({
       repoFullName: "acme/widgets",
       filePath: "config/prod.env",
       commitSha: "abc1234",
       matchedRule: "AWS Access Key",
       redactedSnippet: FAKE_SNIPPET,
     });
-    expect(created).toBe(true);
+    expect(result.wasCreated).toBe(true);
+    expect(result.id).toBeDefined();
     expect(rows).toHaveLength(1);
   });
 
@@ -94,8 +106,8 @@ describe("upsertFinding idempotency", () => {
     const first = await upsertFinding(params);
     const second = await upsertFinding(params);
 
-    expect(first).toBe(true);
-    expect(second).toBe(false); // skipped, not a duplicate row
+    expect(first.wasCreated).toBe(true);
+    expect(second.wasCreated).toBe(false); // skipped, not a duplicate row
     expect(rows).toHaveLength(1);
   });
 
@@ -137,5 +149,20 @@ describe("upsertFinding idempotency", () => {
     });
 
     expect(rows).toHaveLength(2);
+  });
+
+  it("creates a finding with APPROVED status when status is specified", async () => {
+    const { upsertFinding } = await import("../scanner.worker");
+    const result = await upsertFinding({
+      repoFullName: "acme/widgets",
+      filePath: "config/prod.env",
+      commitSha: "abc1234",
+      matchedRule: "AWS Access Key",
+      redactedSnippet: FAKE_SNIPPET,
+      status: "APPROVED",
+    });
+    expect(result.wasCreated).toBe(true);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].status).toBe("APPROVED");
   });
 });

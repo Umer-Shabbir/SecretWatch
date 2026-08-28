@@ -22,6 +22,7 @@ const patchSchema = z
     scannerEnabled: z.boolean().optional(),
     flaggerEnabled: z.boolean().optional(),
     autoFlagEnabled: z.boolean().optional(),
+    autoApproveEnabled: z.boolean().optional(),
     // GitHub code-search per_page max is 100; keep at least 1.
     scanResultsPerRule: z.number().int().min(1).max(100).optional(),
     // rateLimitRemaining is 0..~5000; a threshold of 0..1000 covers any sane
@@ -81,7 +82,8 @@ export async function PATCH(request: NextRequest) {
     action: "system_settings_updated",
     detail:
       `scannerEnabled=${settings.scannerEnabled} flaggerEnabled=${settings.flaggerEnabled} ` +
-      `autoFlagEnabled=${settings.autoFlagEnabled} scanResultsPerRule=${settings.scanResultsPerRule} ` +
+      `autoFlagEnabled=${settings.autoFlagEnabled} autoApproveEnabled=${settings.autoApproveEnabled} ` +
+      `scanResultsPerRule=${settings.scanResultsPerRule} ` +
       `flagRateLimitThreshold=${settings.flagRateLimitThreshold}`,
   });
 

@@ -12,6 +12,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 let scannerEnabled = true;
 let flaggerEnabled = true;
+let autoApproveEnabled = false;
 let scanResultsPerRule = 30;
 let flagRateLimitThreshold = 5;
 
@@ -20,6 +21,7 @@ vi.mock("../system-settings", () => ({
     scannerEnabled,
     flaggerEnabled,
     autoFlagEnabled: true,
+    autoApproveEnabled,
     scanResultsPerRule,
     flagRateLimitThreshold,
   })),
@@ -45,6 +47,7 @@ vi.mock("../github-client", async () => {
 beforeEach(() => {
   scannerEnabled = true;
   flaggerEnabled = true;
+  autoApproveEnabled = false;
   scanResultsPerRule = 30;
   flagRateLimitThreshold = 5;
   searchCodeMock.mockReset();
@@ -56,13 +59,13 @@ describe("scanner switch gating", () => {
     sharedPrisma = {
       scanRule: { findUnique: vi.fn() },
       githubToken: { findFirst: vi.fn(), update: vi.fn() },
-      finding: { create: vi.fn() },
+      finding: { create: vi.fn(), findUnique: vi.fn() },
     };
 
     const { runScanForRule } = await import("../scanner.worker");
     const result = await runScanForRule("rule-1");
 
-    expect(result).toEqual({ created: 0, skipped: 0 });
+    expect(result).toEqual({ created: 0, skipped: 0, autoApproved: 0 });
     expect(searchCodeMock).not.toHaveBeenCalled();
     expect(sharedPrisma.scanRule.findUnique).not.toHaveBeenCalled();
   });
