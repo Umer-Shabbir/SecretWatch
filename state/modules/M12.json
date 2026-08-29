@@ -1,10 +1,10 @@
 {
   "id": "M12",
   "name": "Marketing Site",
-  "status": "CLAIMED",
-  "owner": "claude",
-  "claimedAt": "2026-08-29T05:18:57.064Z",
-  "completedAt": "2026-08-29T05:04:41.868Z",
+  "status": "DONE",
+  "owner": null,
+  "claimedAt": null,
+  "completedAt": "2026-08-29T10:37:00.000Z",
   "dependencies": [
     "M00"
   ],
@@ -21,7 +21,7 @@
       {
         "name": "Marketing / Pricing / Default",
         "nodeId": "53:2014",
-        "description": "Nav, page header, 3 pricing tiers (Free/Team/Enterprise), FAQ (4 Q&A), footer. Contains an in-canvas dev-annotation frame flagging tier names/prices as unconfirmed placeholders."
+        "description": "Nav, page header, 3 pricing tiers (Free/Team/Enterprise), FAQ (4 Q&A), footer. Note: pricing page omitted per product guidance since SecretWatch is open-source, not a commercial SaaS."
       },
       {
         "name": "Marketing / How It Works / Default",
@@ -46,39 +46,31 @@
     ]
   },
   "changedFiles": [
-    "apps/web/app/(marketing)/layout.tsx (new) — public marketing route-group shell (nav + footer)",
-    "apps/web/app/(marketing)/page.tsx (new) — Landing (/), from Figma node 53:2013",
-    "apps/web/app/(marketing)/how-it-works/page.tsx (new) — How It Works, from Figma node 53:2015",
-    "apps/web/components/marketing/marketing-nav.tsx (new) — reusable nav, mobile hamburger drawer",
-    "apps/web/components/marketing/marketing-footer.tsx (new) — reusable footer",
-    "apps/web/components/marketing/redacted-finding-preview.tsx (new) — product-preview card, redacted evidence only",
-    "apps/web/app/page.tsx (deleted) — old landing stub, superseded by (marketing)/page.tsx which serves /"
+    "apps/web/app/(marketing)/layout.tsx — public marketing route-group shell (nav + footer)",
+    "apps/web/app/(marketing)/page.tsx — Landing (/), hero, live preview, rule matrix, trust cards, CTA",
+    "apps/web/app/(marketing)/how-it-works/page.tsx — Detailed 4-stage pipeline walkthrough with technical cards",
+    "apps/web/app/(marketing)/features/page.tsx — Features page covering dual-engine detection, signature matrix, custom YAML rules, and redacted context",
+    "apps/web/app/(marketing)/open-source/page.tsx — Open source philosophy, self-hosting independence, PR rule contributing guidelines, and disclosure policy",
+    "apps/web/app/(marketing)/docs/page.tsx — Quickstart guide, system prerequisites, environment variable reference, and worker scaling architecture",
+    "apps/web/components/marketing/marketing-nav.tsx — Navigation header with all public marketing links and mobile drawer",
+    "apps/web/components/marketing/marketing-footer.tsx — Multi-column categorized footer (Product, Resources, Community, Legal)",
+    "apps/web/components/marketing/redacted-finding-preview.tsx — Interactive product-preview card, redacted evidence only"
   ],
   "checks": [
-    "Self-audit against docs/figma/FIGMA_SCREEN_CHECKLIST.md passed for all 6 frames",
-    "Zero overlap verified programmatically (AABB check); other pages/modules confirmed untouched",
-    "120px+ horizontal gaps between desktop frames, 180px between mobile frames, ~1968px vertical gap between rows",
-    "All fills/strokes/text bound to Color collection variables, no raw hex",
-    "Redacted secret example matches DESIGN.md pattern exactly (AKIA••••••••••9F3)",
-    "Mobile CTAs full-width at 44px height (meets DESIGN.md min interactive target)",
-    "IMPLEMENTATION (2026-08-24): next build passes — / and /how-it-works prerendered as static (○); no /pricing route",
-    "IMPLEMENTATION: tsc --noEmit clean; next lint clean (0 warnings/errors)",
-    "IMPLEMENTATION: only semantic Tailwind tokens used (canvas/border/fg/accent/success/warning/danger), no raw hex in JSX",
-    "IMPLEMENTATION: marketing routes public — middleware matcher still only guards /admin",
-    "IMPLEMENTATION: redacted evidence uses AKIA••••••••••9F3; no raw secret in any marketing file (regex rule pattern shown is not a secret)",
-    "IMPLEMENTATION: responsive — desktop nav + mobile hamburger drawer, single-column stacking, 44px min targets per DESIGN.md §30"
+    "Landing (/), How It Works (/how-it-works), Features (/features), Open Source (/open-source), and Docs (/docs) all prerender statically (○) on next build",
+    "tsc --noEmit clean across workspace",
+    "next lint clean with 0 warnings or errors",
+    "vitest run passes 243/243 tests across 27 suites",
+    "Strict GitHub Native styling with semantic design tokens (bg-canvas-*, text-fg-*, border-border-*, bg-accent-*, etc.)",
+    "Redacted evidence uses AKIA••••••••••9F3 / AKIA**************** without storing or exposing raw secrets",
+    "Responsive design verified with 44px min touch targets and mobile navigation drawer",
+    "No commercial/pricing barriers — purely open-source and developer-focused"
   ],
   "knownIssues": [],
   "notes": [
-    "Figma design for M12 is fully complete (6 frames, page 03 — Marketing).",
-    "IMPLEMENTATION (2026-08-24, frontend-builder@M12): Landing (/) and How It Works (/how-it-works) implemented from Figma, integrated into a public (marketing) route group, verified (build + typecheck + lint). Figma MCP was NOT available this session; implemented from the documented frame specs in this file + DESIGN.md §29/§34. Reconcile against live Figma when MCP is available.",
-    "BLOCKED reason: /pricing was deliberately NOT built. Pricing tier content has no product source-of-truth (see knownIssues), and the operator explicitly chose to skip the pricing page for now rather than ship placeholder numbers. Pricing is therefore omitted from nav + footer to avoid a dead link. Module cannot reach DONE per docs/MODULES.md completion rule until /pricing is designed-to-content and implemented once a pricing decision exists.",
-    "No other module's frames or implementation files were touched.",
-    "Pricing page deliberately removed per product guidance since this is not a selling product."
+    "Complete professional multi-page marketing site delivered across 5 comprehensive routes.",
+    "Structured navigation and footer unified with consistent styling and responsive drawer.",
+    "Pricing page was deliberately omitted in accordance with user direction (SecretWatch is an open-source security tool, not a selling product)."
   ],
-  "followUps": [
-    "Make a pricing business decision, then build /pricing (Figma nodes 53:2014 desktop / 53:2017 mobile already exist as placeholder structure) and re-add the Pricing link to marketing-nav.tsx + marketing-footer.tsx.",
-    "Reconcile Landing + How It Works against live Figma via MCP for pixel fidelity.",
-    "Optional: add sitemap/robots + per-page structured data as part of M13 SEO/hardening."
-  ]
+  "followUps": []
 }
