@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DisableRuleDialog } from "@/components/admin/disable-rule-dialog";
+import { DeleteRuleDialog } from "@/components/admin/delete-rule-dialog";
 import { formatShortDate } from "@/lib/format-date";
 import type { ScanRuleSummary } from "@/lib/scanRules";
 
@@ -77,10 +78,12 @@ export function RulesClient({
   const [refetching, setRefetching] = useState(false);
 
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<"enable" | "disable" | null>(null);
+  const [pendingAction, setPendingAction] = useState<"enable" | "disable" | "delete" | null>(null);
   const [disableTargetId, setDisableTargetId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const disableTriggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const deleteTriggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const requestId = useRef(0);
 
@@ -150,11 +153,47 @@ export function RulesClient({
     if (targetId) disableTriggerRefs.current[targetId]?.focus();
   }
 
+  async function performDelete(id: string) {
+    setPendingActionId(id);
+    setPendingAction("delete");
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/scan-rules/${id}`, { method: "DELETE" });
+      const body = await res.json();
+      if (!res.ok) {
+        setActionError(body?.message ?? "Could not delete this rule. Please try again.");
+        return;
+      }
+      setRules((prev) => (prev ? prev.filter((r) => r.id !== id) : prev));
+    } catch {
+      setActionError("Could not delete this rule. Please try again.");
+    } finally {
+      setPendingActionId(null);
+      setPendingAction(null);
+      setDeleteTargetId(null);
+    }
+  }
+
+  function handleDeleteClick(id: string) {
+    setDeleteTargetId(id);
+  }
+
+  function handleConfirmDelete() {
+    if (deleteTargetId) performDelete(deleteTargetId);
+  }
+
+  function handleCancelDelete() {
+    const targetId = deleteTargetId;
+    setDeleteTargetId(null);
+    if (targetId) deleteTriggerRefs.current[targetId]?.focus();
+  }
+
   const ruleList = rules ?? [];
   const total = ruleList.length;
   const enabledCount = ruleList.filter((r) => r.enabled).length;
   const isEmpty = !loadFailed && rules !== null && total === 0;
   const disableTarget = disableTargetId ? ruleList.find((r) => r.id === disableTargetId) : undefined;
+  const deleteTarget = deleteTargetId ? ruleList.find((r) => r.id === deleteTargetId) : undefined;
 
   return (
     <div className="flex w-full flex-col gap-6 p-4 sm:p-8">
@@ -226,6 +265,18 @@ export function RulesClient({
                   <LinkButton href={`/admin/rules/${rule.id}/edit`} variant="secondary" className="w-auto">
                     Edit
                   </LinkButton>
+                  <Button
+                    ref={(el) => {
+                      deleteTriggerRefs.current[rule.id] = el;
+                    }}
+                    variant="destructive"
+                    className="w-auto"
+                    onClick={() => handleDeleteClick(rule.id)}
+                    loading={pendingActionId === rule.id && pendingAction === "delete"}
+                    disabled={anyActionOnThisRow && pendingAction !== "delete"}
+                  >
+                    Delete
+                  </Button>
                   {rule.enabled ? (
                     <Button
                       ref={(el) => {
@@ -263,6 +314,13 @@ export function RulesClient({
         disabling={pendingAction === "disable" && pendingActionId === disableTargetId}
         onCancel={handleCancelDisable}
         onConfirm={handleConfirmDisable}
+      />
+      <DeleteRuleDialog
+        open={deleteTargetId !== null}
+        ruleName={deleteTarget?.name ?? "This rule"}
+        deleting={pendingAction === "delete" && pendingActionId === deleteTargetId}
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
+import { DeleteTemplateDialog } from "@/components/admin/delete-template-dialog";
 import type { MessageTemplateSummary } from "@/lib/messageTemplates";
 
 const SEVERITY_LABELS: Record<string, string> = {
@@ -29,13 +30,6 @@ const SECRET_TYPE_LABELS: Record<string, string> = {
   DB_CONNECTION_STRING: "DB Connection String",
 };
 
-/**
- * Link styled as a Button — mirrors components/admin/rules-client.tsx's
- * LinkButton exactly (no `asChild`/Slot support on the shared Button, and
- * no shared "link that looks like a button" primitive exists yet). Used
- * for "New Template" (Primary) navigating to the Create route and "Edit
- * Template" (Secondary) navigating to the Edit route per Figma.
- */
 function LinkButton({
   href,
   variant = "primary",
@@ -61,38 +55,45 @@ function LinkButton({
   );
 }
 
-/**
- * Template Card — hand-composed per state/modules/M09.json's
- * componentsNotReused_builtLocally (no generic content-card/"Message
- * Template Editor" primitive exists in Figma's component library). Figma
- * node 51:1894 (Default state, first card): name (Semi Bold 16), a
- * monospace preview box (canvas/subtle fill, border/muted border,
- * JetBrains Mono 13px), an "Available variables" caption row, and a
- * single "Edit Template" (Secondary/Medium) action.
- *
- * IMPORTANT — matches Figma exactly, not the task brief's assumption: the
- * preview box in both the Default (51:271) and Mobile (51:276) frames
- * renders the template body VERBATIM with its raw {{repo}}/{{file}}/
- * {{rule}} tokens still visible (e.g. "A potential {{rule}} was detected
- * in {{repo}} at {{file}}."), not a sample-substituted rendering. The
- * screenshot was inspected directly to confirm this before implementing
- * — lib/messageTemplates.ts's renderMessageTemplatePreview() exists for a
- * *future* live-preview affordance but is intentionally NOT used here,
- * since introducing a rendered preview where Figma shows raw tokens would
- * silently invent a design the spec does not show.
- *
- * No delete action exists on this card (or anywhere in the 6 captured
- * Figma states) — see templates-client.tsx module doc comment for the
- * full scope note.
- */
-function TemplateCard({ template }: { template: MessageTemplateSummary }) {
+function TemplateCard({
+  template,
+  onDeleteRequest,
+  onDeleteRef,
+  isPendingDelete,
+  hasAnyPendingAction,
+}: {
+  template: MessageTemplateSummary;
+  onDeleteRequest: (id: string) => void;
+  onDeleteRef: (el: HTMLButtonElement | null) => void;
+  isPendingDelete: boolean;
+  hasAnyPendingAction: boolean;
+}) {
   const hasVariantBadges = template.severity || template.secretType || template.includeAttributionLine;
 
   return (
     <div className="flex w-full flex-col items-start gap-3 rounded-small border border-border-default p-4 sm:p-5">
-      <div className="flex w-full flex-wrap items-center gap-2">
-        <p className="text-[15px] font-semibold text-fg-default sm:text-base">{template.name}</p>
-        {template.isDefault && <Badge status="accent">Default</Badge>}
+      <div className="flex w-full justify-between items-start gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-[15px] font-semibold text-fg-default sm:text-base">{template.name}</p>
+          {template.isDefault && <Badge status="accent">Default</Badge>}
+        </div>
+        <div className="flex items-start gap-2">
+          {!template.isDefault && (
+            <Button
+              ref={onDeleteRef}
+              variant="destructive"
+              className="w-auto h-7 text-xs px-2 sm:h-9 sm:text-sm sm:px-4"
+              onClick={() => onDeleteRequest(template.id)}
+              loading={isPendingDelete}
+              disabled={hasAnyPendingAction && !isPendingDelete}
+            >
+              Delete
+            </Button>
+          )}
+          <LinkButton href={`/admin/templates/${template.id}/edit`} variant="secondary" className="w-auto h-7 text-xs px-2 sm:h-9 sm:text-sm sm:px-4">
+            Edit
+          </LinkButton>
+        </div>
       </div>
       {hasVariantBadges && (
         <div className="flex flex-wrap items-center gap-1.5">
@@ -113,42 +114,10 @@ function TemplateCard({ template }: { template: MessageTemplateSummary }) {
         </pre>
       </div>
       <p className="whitespace-pre text-xs text-fg-subtle">{"Variables: {{repo}}  {{file}}  {{rule}}"}</p>
-      <LinkButton href={`/admin/templates/${template.id}/edit`} variant="secondary" className="w-auto">
-        Edit Template
-      </LinkButton>
     </div>
   );
 }
 
-/**
- * Client orchestrator for Admin / Templates (M09). Figma nodes:
- *   - 51:271 Default
- *   - 51:272 Loading (route-level loading.tsx handles the *initial* load;
- *     `refetching` here covers a manual Retry after a failed fetch)
- *   - 51:273 Error
- *   - 51:276 Mobile (responsive CSS on this same component, matching
- *     M08/M06's precedent of one component covering both breakpoints —
- *     no shared Mobile Header component exists yet, per Figma's own
- *     scopeNotes flagging this as a known, propagated gap)
- *
- * Create/Edit are their own routes (admin/templates/new,
- * admin/templates/[id]/edit) reusing the same TemplateForm component, per
- * the same reasoning as RuleForm/Scan Rules (see template-form.tsx doc
- * comment) — Figma's Invalid Variable/Save Success frames are both the
- * *Edit Template* screen's states, and there is no separate "New
- * Template" frame, but the Sidebar-adjacent "New Template" button on
- * Default/Mobile clearly implies a create flow using the same form shape.
- *
- * SCOPE NOTE — no Delete action: none of the 6 Figma frames (Default,
- * Mobile, or either editor state) show a Delete/Remove control on a
- * template card or in the editor's Form Actions row. The backend supports
- * DELETE /api/message-templates/:id with 409 guards
- * (cannot_delete_default / cannot_delete_last_template), but CLAUDE.md
- * section 6/7 and this task's Figma-fidelity instructions forbid
- * inventing UI that Figma does not show. No delete UI/confirmation dialog
- * is built in this pass; flagging as a known follow-up in state/modules/
- * M09.json rather than fabricating a control.
- */
 export function TemplatesClient({
   initialTemplates,
   initialLoadFailed,
@@ -159,6 +128,12 @@ export function TemplatesClient({
   const [templates, setTemplates] = useState<MessageTemplateSummary[] | null>(initialTemplates);
   const [loadFailed, setLoadFailed] = useState(initialLoadFailed);
   const [refetching, setRefetching] = useState(false);
+
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const deleteTriggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const requestId = useRef(0);
 
   const fetchTemplates = useCallback(async () => {
@@ -187,8 +162,43 @@ export function TemplatesClient({
     fetchTemplates();
   }
 
+  function handleDeleteClick(id: string) {
+    setDeleteTargetId(id);
+    setActionError(null);
+  }
+
+  function handleCancelDelete() {
+    const targetId = deleteTargetId;
+    setDeleteTargetId(null);
+    if (targetId) deleteTriggerRefs.current[targetId]?.focus();
+  }
+
+  async function performDelete(id: string) {
+    setPendingActionId(id);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/message-templates/${id}`, { method: "DELETE" });
+      const body = await res.json();
+      if (!res.ok) {
+        setActionError(body?.message ?? "Could not delete this template. Please try again.");
+        return;
+      }
+      setTemplates((prev) => (prev ? prev.filter((t) => t.id !== id) : prev));
+    } catch {
+      setActionError("Could not delete this template. Please try again.");
+    } finally {
+      setPendingActionId(null);
+      setDeleteTargetId(null);
+    }
+  }
+
+  function handleConfirmDelete() {
+    if (deleteTargetId) performDelete(deleteTargetId);
+  }
+
   const templateList = templates ?? [];
   const isEmpty = !loadFailed && templates !== null && templateList.length === 0;
+  const deleteTarget = deleteTargetId ? templateList.find((t) => t.id === deleteTargetId) : undefined;
 
   return (
     <div className="flex w-full flex-col gap-6 p-4 sm:p-8">
@@ -202,6 +212,12 @@ export function TemplatesClient({
           </LinkButton>
         )}
       </div>
+
+      {actionError && (
+        <div role="alert" className="w-full rounded-small border border-danger-emphasis/30 bg-danger-subtle px-3 py-2 text-sm text-danger-fg">
+          {actionError}
+        </div>
+      )}
 
       {loadFailed ? (
         <ErrorState
@@ -227,10 +243,27 @@ export function TemplatesClient({
       ) : (
         <div className={`flex w-full flex-col gap-4 ${refetching ? "opacity-60" : ""}`}>
           {templateList.map((template) => (
-            <TemplateCard key={template.id} template={template} />
+            <TemplateCard
+              key={template.id}
+              template={template}
+              onDeleteRequest={handleDeleteClick}
+              onDeleteRef={(el) => {
+                deleteTriggerRefs.current[template.id] = el;
+              }}
+              isPendingDelete={pendingActionId === template.id}
+              hasAnyPendingAction={pendingActionId !== null}
+            />
           ))}
         </div>
       )}
+
+      <DeleteTemplateDialog
+        open={deleteTargetId !== null}
+        templateName={deleteTarget?.name ?? "This template"}
+        deleting={pendingActionId === deleteTargetId}
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

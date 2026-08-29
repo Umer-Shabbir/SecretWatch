@@ -244,3 +244,18 @@ export async function setScanRuleEnabled(id: string, enabled: boolean): Promise<
 
   return toScanRuleSummary(row);
 }
+
+/**
+ * Deletes a scan rule by ID.
+ * Since Finding.matchedRule is a denormalized string, historical findings remain intact.
+ */
+export async function deleteScanRule(id: string): Promise<void> {
+  const existing = await prisma.scanRule.findUnique({ where: { id }, select: SCAN_RULE_SELECT });
+  if (!existing) {
+    throw new ScanRuleNotFoundError(id);
+  }
+
+  await prisma.scanRule.delete({
+    where: { id },
+  });
+}

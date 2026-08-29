@@ -1,5 +1,7 @@
+import { dispatchWebhookEvent } from "./webhooks";
 import { Queue, Worker, type Job } from "bullmq";
 import { QUEUE_NAMES, getRedisConnectionOptions, type FlagJobData } from "@secretwatch/shared";
+import { evaluateRepoFilters, type RepoFilterRule } from "@secretwatch/shared";
 import { prisma } from "./db";
 import { getSystemSettings } from "./system-settings";
 import { searchCode } from "./github-client";
@@ -98,29 +100,70 @@ export async function runScanForRule(ruleId: string, queryOverride?: string): Pr
     data: { lastUsedAt: new Date() },
   });
 
+  // Load active repository filter rules (allowlist & blocklist)
+  const activeRepoFilters: RepoFilterRule[] = await prisma.repositoryFilter.findMany({
+    where: { enabled: true },
+    select: { id: true, type: true, pattern: true, enabled: true },
+  });
+
   let created = 0;
   let skipped = 0;
   let autoApproved = 0;
   const newFindingIds: string[] = [];
 
   for (const result of results) {
+    // Check repository against allowlist and blocklist rules
+    if (activeRepoFilters.length > 0) {
+      const evaluation = evaluateRepoFilters(result.repoFullName, activeRepoFilters);
+      if (!evaluation.allowed) {
+        skipped++;
+        continue;
+      }
+    }
+
     for (const fragment of result.fragments) {
       const matches = await evaluateAllRules([evaluable], fragment);
       for (const match of matches) {
         const commitSha = toCommitSha(result.sha);
+        const severity = inferSeverityForRule(match.ruleName);
         const findingResult = await upsertFinding({
           repoFullName: result.repoFullName,
           filePath: result.filePath,
           commitSha,
           matchedRule: match.ruleName,
           redactedSnippet: match.redactedSnippet,
+          severity,
           status: autoApproveEnabled ? "APPROVED" : "PENDING",
         });
         if (findingResult.wasCreated) {
           created++;
+
+          // Dispatch finding.created webhook event
+          const eventPayload = {
+            id: findingResult.id,
+            repoFullName: result.repoFullName,
+            filePath: result.filePath,
+            matchedRule: match.ruleName,
+            severity,
+            status: autoApproveEnabled ? "APPROVED" : "PENDING",
+            autoApproved: autoApproveEnabled,
+          };
+
+          dispatchWebhookEvent("finding.created", eventPayload).catch((err) => {
+            console.error("[scanner] Webhook dispatch finding.created failed:", err);
+          });
+
           if (autoApproveEnabled) {
             autoApproved++;
-            if (findingResult.id) newFindingIds.push(findingResult.id);
+
+            // Dispatch finding.approved webhook event as it was auto-approved
+            dispatchWebhookEvent("finding.approved", eventPayload).catch((err) => {
+              console.error("[scanner] Webhook dispatch finding.approved failed:", err);
+            });
+
+            if (findingResult.id) {
+              newFindingIds.push(findingResult.id);
+            }
           }
         } else {
           skipped++;
@@ -167,6 +210,25 @@ function inferKind(ruleName: string): "regex" | "entropy" {
   return ruleName === "Generic High-Entropy String" ? "entropy" : "regex";
 }
 
+export type FindingSeverityLevel = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+
+export function inferSeverityForRule(ruleName: string): FindingSeverityLevel {
+  switch (ruleName) {
+    case "AWS Access Key":
+    case "AWS Secret Key":
+    case "GitHub Token":
+      return "CRITICAL";
+    case "Stripe Secret Key":
+      return "HIGH";
+    case "Slack Token":
+      return "MEDIUM";
+    case "Generic High-Entropy String":
+      return "LOW";
+    default:
+      return "MEDIUM";
+  }
+}
+
 /**
  * Idempotent Finding creation. Relies on the DB unique constraint
  * (repoFullName, filePath, commitSha, matchedRule) so concurrent/repeated
@@ -180,6 +242,7 @@ export async function upsertFinding(data: {
   commitSha: string;
   matchedRule: string;
   redactedSnippet: string;
+  severity?: FindingSeverityLevel | null;
   status?: "PENDING" | "APPROVED";
 }): Promise<{ wasCreated: boolean; id?: string }> {
   const existing = await prisma.finding.findUnique({
@@ -206,6 +269,7 @@ export async function upsertFinding(data: {
         commitSha: data.commitSha,
         matchedRule: data.matchedRule,
         redactedSnippet: data.redactedSnippet,
+        severity: data.severity,
         status: data.status ?? "PENDING",
       },
       select: { id: true },

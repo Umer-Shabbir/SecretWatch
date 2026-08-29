@@ -11,6 +11,7 @@ import {
 import { prisma } from "./db";
 import { getSystemSettings } from "./system-settings";
 import { createGithubIssue, GithubApiError } from "./github-client";
+import { dispatchWebhookEvent } from "./webhooks";
 
 /**
  * Flagger worker (ARCHITECTURE.md §5/§6, M07). Consumes `flag-queue` jobs.
@@ -40,6 +41,29 @@ import { createGithubIssue, GithubApiError } from "./github-client";
 /** Default rate-limit skip threshold when no admin override is set, per ARCHITECTURE.md §5/§8. */
 const DEFAULT_RATE_LIMIT_SKIP_THRESHOLD = 5;
 
+export type TemplateSecretType = "AWS_KEY" | "GITHUB_TOKEN" | "GENERIC_API_KEY" | "DB_CONNECTION_STRING";
+export type TemplateSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+
+/**
+ * Infers the template secret type from a scan rule name.
+ */
+export function inferSecretTypeFromRule(ruleName: string): TemplateSecretType {
+  const lower = ruleName.toLowerCase();
+  if (lower.includes("aws")) return "AWS_KEY";
+  if (lower.includes("github") || lower.includes("ghp_")) return "GITHUB_TOKEN";
+  if (
+    lower.includes("db") ||
+    lower.includes("database") ||
+    lower.includes("postgres") ||
+    lower.includes("mysql") ||
+    lower.includes("mongo") ||
+    lower.includes("connection")
+  ) {
+    return "DB_CONNECTION_STRING";
+  }
+  return "GENERIC_API_KEY";
+}
+
 /** Picks the least-recently-used active token that isn't near its rate limit. Falls back to any active token if all are low (better to attempt with backoff than to never flag). Threshold is the admin-configured flagRateLimitThreshold. */
 async function pickFlaggingToken(threshold: number) {
   const candidates = await prisma.githubToken.findMany({
@@ -54,12 +78,71 @@ async function pickFlaggingToken(threshold: number) {
   return healthy ?? candidates[0] ?? null;
 }
 
-async function getOrCreateDefaultTemplate() {
+export async function getOrCreateDefaultTemplate() {
   const existing = await prisma.messageTemplate.findFirst({ where: { isDefault: true } });
   if (existing) return existing;
   return prisma.messageTemplate.create({
     data: { name: DEFAULT_TEMPLATE_NAME, body: DEFAULT_TEMPLATE_BODY, isDefault: true },
   });
+}
+
+/**
+ * Resolves the best message template for a given finding based on its severity and matched rule:
+ * 1. Both severity and secretType match
+ * 2. secretType matches
+ * 3. severity matches
+ * 4. Fallback to default template (or self-heal default)
+ */
+export async function resolveTemplateForFinding(finding: {
+  severity?: TemplateSeverity | null;
+  matchedRule?: string | null;
+}) {
+  const secretType = finding.matchedRule ? inferSecretTypeFromRule(finding.matchedRule) : null;
+  const severity = finding.severity ?? null;
+
+  // 1. Match both severity & secretType
+  if (severity && secretType) {
+    const matched = await prisma.messageTemplate.findFirst({
+      where: { severity, secretType },
+      orderBy: { createdAt: "desc" },
+    });
+    if (matched) return matched;
+  }
+
+  // 2. Match secretType alone
+  if (secretType) {
+    const matched = await prisma.messageTemplate.findFirst({
+      where: { secretType, severity: null },
+      orderBy: { createdAt: "desc" },
+    });
+    if (matched) return matched;
+
+    // Also check any template matching secretType regardless of severity
+    const matchedAnySeverity = await prisma.messageTemplate.findFirst({
+      where: { secretType },
+      orderBy: { createdAt: "desc" },
+    });
+    if (matchedAnySeverity) return matchedAnySeverity;
+  }
+
+  // 3. Match severity alone
+  if (severity) {
+    const matched = await prisma.messageTemplate.findFirst({
+      where: { severity, secretType: null },
+      orderBy: { createdAt: "desc" },
+    });
+    if (matched) return matched;
+
+    // Also check any template matching severity regardless of secretType
+    const matchedAnySecretType = await prisma.messageTemplate.findFirst({
+      where: { severity },
+      orderBy: { createdAt: "desc" },
+    });
+    if (matchedAnySecretType) return matchedAnySecretType;
+  }
+
+  // 4. Default template fallback
+  return getOrCreateDefaultTemplate();
 }
 
 /**
@@ -98,7 +181,7 @@ export async function runFlagForFinding(findingId: string): Promise<{ outcome: "
     return { outcome: "failed", reason: "no active token" };
   }
 
-  const template = await getOrCreateDefaultTemplate();
+  const template = await resolveTemplateForFinding(finding);
   const [owner, repo] = finding.repoFullName.split("/");
   const renderedBody = renderTemplate(template.body, {
     repo: finding.repoFullName,
@@ -148,6 +231,14 @@ export async function runFlagForFinding(findingId: string): Promise<{ outcome: "
       detail: `findingId=${finding.id} tokenId=${token.id} templateId=${template.id} issueUrl=${issue.htmlUrl}`,
     });
 
+    dispatchWebhookEvent("finding.flagged", {
+      id: finding.id,
+      repoFullName: finding.repoFullName,
+      filePath: finding.filePath,
+      matchedRule: finding.matchedRule,
+      issueUrl: issue.htmlUrl,
+    }).catch((err) => console.error("[flagger] Webhook dispatch finding.flagged failed:", err));
+
     return { outcome: "flagged" };
   } catch (err) {
     const reason = toFailureReason(err);
@@ -156,6 +247,15 @@ export async function runFlagForFinding(findingId: string): Promise<{ outcome: "
       action: "flag_failed",
       detail: `findingId=${findingId} tokenId=${token.id} reason=${reason}`,
     });
+
+    dispatchWebhookEvent("flag.failed", {
+      id: finding.id,
+      repoFullName: finding.repoFullName,
+      filePath: finding.filePath,
+      matchedRule: finding.matchedRule,
+      reason,
+    }).catch((err) => console.error("[flagger] Webhook dispatch flag.failed failed:", err));
+
     return { outcome: "failed", reason };
   }
 }

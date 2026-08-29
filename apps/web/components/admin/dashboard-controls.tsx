@@ -31,12 +31,15 @@ export function DashboardControls({ initialSettings }: { initialSettings: System
   const [rateThresholdDraft, setRateThresholdDraft] = useState(
     String(initialSettings.flagRateLimitThreshold)
   );
+  const [scanIntervalDraft, setScanIntervalDraft] = useState(
+    String(initialSettings.scanIntervalMinutes ?? 15)
+  );
 
   const busy = toggling !== null || running !== null || savingTuning;
 
   /** PATCHes a settings subset, updates local state, returns success. */
   async function patchSettings(
-    patch: Partial<Record<"scannerEnabled" | "flaggerEnabled" | "autoFlagEnabled" | "autoApproveEnabled" | "scanResultsPerRule" | "flagRateLimitThreshold", boolean | number>>
+    patch: Partial<Record<"scannerEnabled" | "flaggerEnabled" | "autoFlagEnabled" | "autoApproveEnabled" | "scanResultsPerRule" | "flagRateLimitThreshold" | "scanIntervalMinutes", boolean | number>>
   ): Promise<boolean> {
     setError(null);
     setNotice(null);
@@ -86,6 +89,7 @@ export function DashboardControls({ initialSettings }: { initialSettings: System
   async function saveTuning() {
     const scanResults = Number(scanResultsDraft);
     const rateThreshold = Number(rateThresholdDraft);
+    const scanInterval = Number(scanIntervalDraft);
     if (!Number.isInteger(scanResults) || scanResults < 1 || scanResults > 100) {
       setError("Scan results per rule must be a whole number between 1 and 100.");
       return;
@@ -94,10 +98,15 @@ export function DashboardControls({ initialSettings }: { initialSettings: System
       setError("Flag rate-limit threshold must be a whole number between 0 and 1000.");
       return;
     }
+    if (!Number.isInteger(scanInterval) || scanInterval < 1 || scanInterval > 1440) {
+      setError("Scan interval must be a whole number of minutes between 1 and 1440 (24 hours).");
+      return;
+    }
     setSavingTuning(true);
     const ok = await patchSettings({
       scanResultsPerRule: scanResults,
       flagRateLimitThreshold: rateThreshold,
+      scanIntervalMinutes: scanInterval,
     });
     if (ok) setNotice("System settings saved.");
     setSavingTuning(false);
@@ -204,7 +213,15 @@ export function DashboardControls({ initialSettings }: { initialSettings: System
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <NumberField
+            id="scanIntervalMinutes"
+            label="Scan interval (minutes)"
+            hint="Frequency of background scans (1–1440 mins)."
+            value={scanIntervalDraft}
+            onChange={setScanIntervalDraft}
+            disabled={busy}
+          />
           <NumberField
             id="scanResultsPerRule"
             label="Scan results per rule"

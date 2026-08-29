@@ -22,6 +22,7 @@ const mockSystemSettings = {
   autoApproveEnabled: false,
   scanResultsPerRule: 10,
   flagRateLimitThreshold: 10,
+  scanIntervalMinutes: 15,
   updatedAt: new Date().toISOString(),
 };
 
@@ -33,14 +34,14 @@ vi.mock("@/lib/system-settings", () => ({
   })),
 }));
 
-const enqueueScanJobsMock = vi.fn(async () => 0);
-const enqueueFlagJobsMock = vi.fn(async () => 0);
+const enqueueScanJobsMock = vi.fn(async (args: any[]) => 0);
+const enqueueFlagJobsMock = vi.fn(async (args: any[]) => 0);
 vi.mock("@/lib/queue", () => ({
   enqueueScanJobs: (args: any) => enqueueScanJobsMock(args),
   enqueueFlagJobs: (args: any) => enqueueFlagJobsMock(args),
 }));
 
-const recordAuditMock = vi.fn(async () => undefined);
+const recordAuditMock = vi.fn(async (params: any) => undefined);
 vi.mock("@/lib/audit", () => ({
   recordAudit: (params: any) => recordAuditMock(params),
 }));

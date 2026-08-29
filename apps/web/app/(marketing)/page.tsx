@@ -79,10 +79,10 @@ export default function LandingPage() {
                 Submit a GitHub token
               </Link>
               <Link
-                href="/how-it-works"
+                href="/features"
                 className="flex h-11 items-center justify-center rounded-small border border-border-default bg-canvas-default px-5 text-sm font-medium text-fg-default transition-colors hover:bg-canvas-subtle"
               >
-                See how it works
+                Explore features
               </Link>
             </div>
           </div>
@@ -90,53 +90,116 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How scanning works */}
+      {/* Rule Coverage Matrix Preview */}
       <section className="border-t border-border-default bg-canvas-subtle">
         <div className="mx-auto max-w-6xl px-6 py-16">
-          <h2 className="text-2xl font-semibold text-fg-default">How scanning works</h2>
-          <p className="mt-2 max-w-2xl text-fg-muted">
-            Three steps from authorization to an auditable report.
-          </p>
-          <ol className="mt-8 grid gap-4 md:grid-cols-3">
-            {STEPS.map((s) => (
-              <li
-                key={s.step}
-                className="flex flex-col gap-3 rounded-medium border border-border-default bg-canvas-default p-5"
-              >
-                <span className="font-mono text-sm font-semibold text-accent-fg">{s.step}</span>
-                <h3 className="text-base font-semibold text-fg-default">{s.title}</h3>
-                <p className="text-sm text-fg-muted">{s.body}</p>
-              </li>
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <h2 className="text-2xl font-semibold text-fg-default">Comprehensive Detection</h2>
+              <p className="mt-2 text-fg-muted">
+                Backed by a dual-engine architecture using regular expressions and Shannon entropy to catch high-value secrets with minimal false positives.
+              </p>
+            </div>
+            <Link
+              href="/features"
+              className="group flex items-center gap-2 text-sm font-medium text-accent-fg hover:underline"
+            >
+              See all supported secrets
+              <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
+            </Link>
+          </div>
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4 md:grid-cols-6">
+            {["GitHub", "AWS", "Stripe", "Slack", "Google Cloud", "OpenAI"].map((provider) => (
+              <div key={provider} className="flex h-20 items-center justify-center rounded-medium border border-border-default bg-canvas-default px-4 text-center text-sm font-medium text-fg-default">
+                {provider}
+              </div>
             ))}
-          </ol>
+          </div>
         </div>
       </section>
 
-      {/* Trust / security */}
+      {/* How scanning works */}
       <section className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="text-2xl font-semibold text-fg-default">Built for trust</h2>
-        <p className="mt-2 max-w-2xl text-fg-muted">
-          Security is the product. Every design decision keeps raw secrets out of
-          storage, logs, and screens.
-        </p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {TRUST.map((t) => (
-            <div
-              key={t.title}
-              className="flex flex-col gap-2 rounded-medium border border-border-default bg-canvas-default p-5"
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold text-fg-default">How scanning works</h2>
+            <p className="mt-2 max-w-2xl text-fg-muted">
+              Three steps from authorization to an auditable report.
+            </p>
+          </div>
+          <Link
+            href="/how-it-works"
+            className="group flex items-center gap-2 text-sm font-medium text-accent-fg hover:underline"
+          >
+            Deep dive into the pipeline
+            <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
+          </Link>
+        </div>
+        <ol className="mt-8 grid gap-4 md:grid-cols-3">
+          {STEPS.map((s) => (
+            <li
+              key={s.step}
+              className="flex flex-col gap-3 rounded-medium border border-border-default bg-canvas-default p-5"
             >
-              <div className="flex items-center gap-2">
-                <span
-                  aria-hidden="true"
-                  className="flex size-6 items-center justify-center rounded-small bg-success-subtle text-xs font-bold text-success-fg"
-                >
-                  ✓
-                </span>
-                <h3 className="text-base font-semibold text-fg-default">{t.title}</h3>
-              </div>
-              <p className="text-sm text-fg-muted">{t.body}</p>
-            </div>
+              <span className="font-mono text-sm font-semibold text-accent-fg">{s.step}</span>
+              <h3 className="text-base font-semibold text-fg-default">{s.title}</h3>
+              <p className="text-sm text-fg-muted">{s.body}</p>
+            </li>
           ))}
+        </ol>
+      </section>
+
+      {/* Trust / security */}
+      <section className="border-t border-border-default bg-canvas-subtle">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <h2 className="text-2xl font-semibold text-fg-default">Built for trust</h2>
+          <p className="mt-2 max-w-2xl text-fg-muted">
+            Security is the product. Every design decision keeps raw secrets out of
+            storage, logs, and screens.
+          </p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            {TRUST.map((t) => (
+              <div
+                key={t.title}
+                className="flex flex-col gap-2 rounded-medium border border-border-default bg-canvas-default p-5"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="flex size-6 items-center justify-center rounded-small bg-success-subtle text-xs font-bold text-success-fg"
+                  >
+                    ✓
+                  </span>
+                  <h3 className="text-base font-semibold text-fg-default">{t.title}</h3>
+                </div>
+                <p className="text-sm text-fg-muted">{t.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Open Source Callout */}
+      <section className="mx-auto max-w-6xl px-6 py-16">
+        <div className="flex flex-col items-center gap-6 rounded-large border border-border-default bg-canvas-default px-6 py-12 text-center sm:px-12">
+          <h2 className="text-2xl font-semibold text-fg-default">100% Open Source</h2>
+          <p className="max-w-2xl text-fg-muted">
+            SecretWatch is built in the open. Host it yourself, audit the code, and contribute new detection rules to help secure the global open source ecosystem.
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row mt-4">
+            <Link
+              href="/docs"
+              className="flex h-11 items-center justify-center rounded-small border border-border-default bg-canvas-subtle px-5 text-sm font-medium text-fg-default transition-colors hover:bg-border-default"
+            >
+              Read the Docs
+            </Link>
+            <Link
+              href="/open-source"
+              className="flex h-11 items-center justify-center rounded-small border border-border-default bg-canvas-default px-5 text-sm font-medium text-accent-fg transition-colors hover:bg-canvas-subtle"
+            >
+              Community & Governance
+            </Link>
+          </div>
         </div>
       </section>
 

@@ -18,6 +18,7 @@ export interface SystemSettings {
   autoApproveEnabled: boolean;
   scanResultsPerRule: number;
   flagRateLimitThreshold: number;
+  scanIntervalMinutes: number;
   updatedAt: string; // ISO 8601
 }
 
@@ -28,6 +29,7 @@ type SystemSettingRow = {
   autoApproveEnabled: boolean;
   scanResultsPerRule: number;
   flagRateLimitThreshold: number;
+  scanIntervalMinutes: number;
   updatedAt: Date;
 };
 
@@ -39,6 +41,7 @@ function toSystemSettings(row: SystemSettingRow): SystemSettings {
     autoApproveEnabled: row.autoApproveEnabled,
     scanResultsPerRule: row.scanResultsPerRule,
     flagRateLimitThreshold: row.flagRateLimitThreshold,
+    scanIntervalMinutes: row.scanIntervalMinutes,
     updatedAt: row.updatedAt.toISOString(),
   };
 }
@@ -50,6 +53,7 @@ const SELECT = {
   autoApproveEnabled: true,
   scanResultsPerRule: true,
   flagRateLimitThreshold: true,
+  scanIntervalMinutes: true,
   updatedAt: true,
 } as const;
 
@@ -80,6 +84,7 @@ export async function updateSystemSettings(patch: {
   autoApproveEnabled?: boolean;
   scanResultsPerRule?: number;
   flagRateLimitThreshold?: number;
+  scanIntervalMinutes?: number;
 }): Promise<SystemSettings> {
   const row = await prisma.systemSetting.upsert({
     where: { id: SYSTEM_SETTING_ID },

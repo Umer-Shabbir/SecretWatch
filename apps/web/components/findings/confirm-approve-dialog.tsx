@@ -23,11 +23,13 @@ import { Button } from "@/components/ui/button";
 export function ConfirmApproveDialog({
   open,
   approving,
+  count = 1,
   onCancel,
   onConfirm,
 }: {
   open: boolean;
   approving: boolean;
+  count?: number;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -74,10 +76,10 @@ export function ConfirmApproveDialog({
         className="flex w-full max-w-[420px] flex-col gap-4 rounded-medium border border-border-default bg-canvas-default p-6 shadow-[0px_4px_8px_rgba(0,0,0,0.12)]"
       >
         <h2 id="confirm-approve-title" className="text-base font-semibold leading-6 text-fg-default">
-          Approve this finding?
+          Approve {count === 1 ? "this finding" : `these ${count} findings`}?
         </h2>
         <p id="confirm-approve-description" className="text-sm text-fg-muted">
-          Approving flags this finding for a GitHub issue to be opened on the affected repository using an
+          Approving flags {count === 1 ? "this finding" : "these findings"} for a GitHub issue to be opened on the affected repository using an
           authorized token. This action cannot be undone.
         </p>
         <div className="flex w-full items-start justify-end gap-2">

@@ -9,6 +9,10 @@ export type FindingStatus = "PENDING" | "APPROVED" | "FLAGGED" | "IGNORED" | "FA
 
 export const FINDING_STATUSES: FindingStatus[] = ["PENDING", "APPROVED", "FLAGGED", "IGNORED", "FAILED"];
 
+export type FindingSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+
+export const FINDING_SEVERITIES: FindingSeverity[] = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
+
 /**
  * Row shape returned by GET /api/findings.
  *
@@ -23,6 +27,7 @@ export interface FindingSummary {
   filePath: string;
   matchedRule: string;
   status: FindingStatus;
+  severity?: FindingSeverity | null;
   /** Short display form, e.g. first 7 chars of the full commit SHA. */
   commitSha: string;
   createdAt: string; // ISO 8601

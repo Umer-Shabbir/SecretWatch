@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/authorize";
 import { recordAudit } from "@/lib/audit";
-import { updateScanRule, ScanRuleNotFoundError, InvalidPatternError } from "@/lib/scanRules";
+import { updateScanRule, deleteScanRule, ScanRuleNotFoundError, InvalidPatternError } from "@/lib/scanRules";
 
 /**
  * PATCH /api/scan-rules/:id
@@ -24,13 +24,7 @@ import { updateScanRule, ScanRuleNotFoundError, InvalidPatternError } from "@/li
  *
  * Authorization: ADMIN only. Audited as scan_rule_updated.
  *
- * No DELETE route: the Figma design set for M08 (Default, Loading, Empty,
- * Error, Create Rule, Invalid Regex, Disable Confirmation, Mobile) has no
- * delete affordance or confirmation state — the designed destructive-ish
- * action is Disable, not Delete. Adding a delete-capable route beyond what
- * was designed would be inventing product behavior, which CLAUDE.md
- * section 2 prohibits.
- */
+*/
 const updateScanRuleSchema = z
   .object({
     name: z.string().trim().min(1, "Name must not be empty").max(200).optional(),
@@ -80,6 +74,38 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
     if (err instanceof InvalidPatternError) {
       return NextResponse.json({ error: "invalid_pattern", message: err.message }, { status: 409 });
+    }
+    throw err;
+  }
+}
+
+/**
+ * DELETE /api/scan-rules/:id
+ *
+ * Deletes a scan rule. Audited as scan_rule_deleted.
+ */
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const { session, error } = await requireAdmin();
+  if (error === "unauthenticated") {
+    return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  }
+  if (error === "forbidden") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
+  try {
+    await deleteScanRule(params.id);
+
+    await recordAudit({
+      userId: session!.user.id,
+      action: "scan_rule_deleted",
+      detail: `scanRuleId=${params.id}`,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    if (err instanceof ScanRuleNotFoundError) {
+      return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
     throw err;
   }

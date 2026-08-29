@@ -11,11 +11,15 @@ import Link from "next/link";
  * to a hamburger drawer on mobile per DESIGN.md §30 (drawer navigation,
  * full-width primary actions, 44px minimum interactive target).
  *
- * The /pricing link is intentionally omitted: M12's pricing content has no
- * product source-of-truth (see state/modules/M12.json knownIssues), so the
- * page is not shipped and must not be linked from nav.
+ * The /pricing link is intentionally omitted: M12's pricing content is not
+ * needed as this is not a selling product.
  */
-const NAV_LINKS = [{ href: "/how-it-works", label: "How it works" }];
+const NAV_LINKS = [
+  { href: "/features", label: "Features" },
+  { href: "/how-it-works", label: "How it works" },
+  { href: "/open-source", label: "Open Source" },
+  { href: "/docs", label: "Docs" },
+];
 
 export function MarketingNav() {
   const [open, setOpen] = useState(false);

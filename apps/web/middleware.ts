@@ -1,32 +1,37 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
+import { validateCsrfOrigin } from "@/lib/csrf";
 
-export default withAuth(
-  function middleware(req) {
-    const { pathname } = req.nextUrl;
-    const token = req.nextauth.token;
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
-    if (pathname.startsWith("/admin") && token?.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+  // 1. CSRF validation for mutating API routes
+  if (pathname.startsWith("/api/")) {
+    if (!validateCsrfOrigin(req)) {
+      return NextResponse.json(
+        { error: "invalid_csrf_origin", message: "Cross-site request forgery protection blocked this request" },
+        { status: 403 }
+      );
+    }
+  }
+
+  // 2. Auth guard for admin UI routes
+  if (pathname.startsWith("/admin")) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token) {
+      const signInUrl = new URL("/admin-sign-in", req.url);
+      signInUrl.searchParams.set("callbackUrl", req.url);
+      return NextResponse.redirect(signInUrl);
     }
 
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      // Returning false here routes the request to `pages.signIn` in
-      // lib/auth.ts rather than a raw 401 — combined with the session-expired
-      // screen below for previously-authenticated users.
-      authorized: ({ token }) => !!token,
-    },
-    pages: {
-      signIn: "/admin-sign-in",
-    },
+    if (token.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    }
   }
-);
+
+  return NextResponse.next();
+}
 
 export const config = {
-  // Only /admin/* remains protected after the 2026-08-17 scope correction —
-  // there are no end-user accounts, so /dashboard and /tokens are gone.
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/:path*"],
 };

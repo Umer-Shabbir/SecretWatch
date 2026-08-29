@@ -22,6 +22,7 @@ export interface WorkerSystemSettings {
   autoApproveEnabled: boolean;
   scanResultsPerRule: number;
   flagRateLimitThreshold: number;
+  scanIntervalMinutes: number;
 }
 
 /** Fail-open defaults: historical always-on behavior + original constants.
@@ -35,6 +36,7 @@ const DEFAULTS: WorkerSystemSettings = {
   autoApproveEnabled: false,
   scanResultsPerRule: 30,
   flagRateLimitThreshold: 5,
+  scanIntervalMinutes: 15,
 };
 
 export async function getSystemSettings(): Promise<WorkerSystemSettings> {
@@ -48,6 +50,7 @@ export async function getSystemSettings(): Promise<WorkerSystemSettings> {
         autoApproveEnabled: true,
         scanResultsPerRule: true,
         flagRateLimitThreshold: true,
+        scanIntervalMinutes: true,
       },
     });
     if (!row) {
@@ -60,6 +63,7 @@ export async function getSystemSettings(): Promise<WorkerSystemSettings> {
       autoApproveEnabled: row.autoApproveEnabled,
       scanResultsPerRule: row.scanResultsPerRule,
       flagRateLimitThreshold: row.flagRateLimitThreshold,
+      scanIntervalMinutes: row.scanIntervalMinutes,
     };
   } catch {
     return { ...DEFAULTS };

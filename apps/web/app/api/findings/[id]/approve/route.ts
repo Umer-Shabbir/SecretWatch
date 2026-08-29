@@ -8,6 +8,7 @@ import {
 import { recordAudit } from "@/lib/audit";
 import { enqueueFlagJob } from "@/lib/queue";
 import { getSystemSettings } from "@/lib/system-settings";
+import { dispatchWebhookEvent } from "@/lib/webhooks";
 
 /**
  * POST /api/findings/:id/approve
@@ -60,6 +61,15 @@ export async function POST(_request: Request, { params }: { params: { id: string
       action: "finding_approved",
       detail: `findingId=${finding.id}`,
     });
+
+    dispatchWebhookEvent("finding.approved", {
+      id: finding.id,
+      repoFullName: finding.repoFullName,
+      filePath: finding.filePath,
+      matchedRule: finding.matchedRule,
+      severity: finding.severity,
+      approvedBy: session!.user.id,
+    }).catch((err) => console.error("[findings] Webhook dispatch finding.approved failed:", err));
 
     // autoFlagEnabled (admin system control): when off, approval no longer
     // auto-enqueues — the finding stays APPROVED and waits for a manual "Run

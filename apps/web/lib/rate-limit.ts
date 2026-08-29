@@ -1,41 +1,97 @@
-/**
- * Minimal in-process, in-memory IP-based token-bucket rate limiter for
- * public (unauthenticated) HTTP endpoints — currently only
- * POST /api/public/tokens.
- *
- * This mirrors the shape of apps/worker/src/github-client.ts's
- * SearchRateLimiter (same token-bucket idea) but is per-key (per-IP) rather
- * than a single shared bucket, and rejects over-limit requests (429) instead
- * of queueing/waiting — appropriate for an inbound HTTP handler, where a
- * caller should get an immediate, explicit "slow down" response rather than
- * have the request hang.
- *
- * LIMITATION (explicitly noted per ARCHITECTURE.md's intended stack): this
- * is single-process, in-memory state. It resets on every deploy/restart and
- * does not share state across multiple web instances. ARCHITECTURE.md
- * specifies BullMQ + Upstash Redis as the production job/queue stack — the
- * same Redis instance should back this limiter (e.g. a sliding-window or
- * token-bucket counter keyed by IP) before this endpoint is scaled beyond a
- * single instance or exposed at real public volume. Tracked as a follow-up,
- * not implemented here to keep this change scoped to the module at hand.
- */
+import Redis from "ioredis";
+import { getRedisConnectionOptions } from "@secretwatch/shared";
 
+/**
+ * Minimal in-process, in-memory IP-based token-bucket rate limiter fallback
+ * Used when Redis is unavailable.
+ */
 interface Bucket {
   count: number;
   windowStartMs: number;
 }
-
 const buckets = new Map<string, Bucket>();
 
+// Initialize Redis only if we are in an environment that has REDIS_URL
+// and we are not in a build step where it might fail or block
+let redis: Redis | null = null;
+try {
+  if (process.env.REDIS_URL) {
+    redis = new Redis(process.env.REDIS_URL);
+    redis.on("error", (err) => {
+      console.warn("Redis rate-limiter connection error. Falling back to in-memory.", err);
+    });
+  }
+} catch (e) {
+  console.warn("Failed to initialize Redis for rate limiting. Falling back to in-memory.");
+}
+
 /**
+ * Distributed (Redis) or in-process (Map) rate limiter for public HTTP endpoints.
  * Returns true if the request identified by `key` is allowed under the given
- * limit, and records the attempt. Uses a fixed-window counter (simpler than
- * a sliding window; adequate for a coarse abuse guard on a low-traffic
- * public form) — resets `windowMs` after the window's first request.
+ * limit, and records the attempt.
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   key: string,
   { limit = 5, windowMs = 60_000 }: { limit?: number; windowMs?: number } = {}
+): Promise<{ allowed: boolean; retryAfterMs: number }> {
+  if (redis && redis.status === "ready") {
+    return checkRateLimitRedis(key, { limit, windowMs });
+  }
+  return checkRateLimitInMemory(key, { limit, windowMs });
+}
+
+async function checkRateLimitRedis(
+  key: string,
+  { limit, windowMs }: { limit: number; windowMs: number }
+): Promise<{ allowed: boolean; retryAfterMs: number }> {
+  // Use a Lua script for atomic increment and expiry setting
+  // We use the current window start time (rounded down) as part of the key
+  // to create a fixed-window counter in Redis
+  const now = Date.now();
+  const windowStart = now - (now % windowMs);
+  const redisKey = `ratelimit:${key}:${windowStart}`;
+
+  try {
+    // Pipeline is fast and atomic enough for our needs here,
+    // INCR creates the key if it doesn't exist.
+    // EXPIRE sets the TTL to the remaining window time (+ a buffer) if we are the first increment.
+    const pipe = redis!.pipeline();
+    pipe.incr(redisKey);
+    pipe.pttl(redisKey);
+    const results = await pipe.exec();
+
+    if (!results || results.length !== 2) {
+      throw new Error("Redis pipeline failed");
+    }
+
+    const [incrResult, pttlResult] = results;
+    if (incrResult[0]) throw incrResult[0]; // Error during INCR
+    if (pttlResult[0]) throw pttlResult[0]; // Error during PTTL
+
+    const count = incrResult[1] as number;
+    let ttl = pttlResult[1] as number;
+
+    // If key has no TTL (ttl < 0), set it to expire at the end of the window.
+    if (ttl < 0) {
+      const windowRemaining = windowStart + windowMs - now;
+      await redis!.pexpire(redisKey, windowRemaining);
+      ttl = windowRemaining;
+    }
+
+    if (count > limit) {
+      return { allowed: false, retryAfterMs: Math.max(0, ttl) };
+    }
+
+    return { allowed: true, retryAfterMs: 0 };
+  } catch (err) {
+    console.error("Redis rate limiting failed, falling back to in-memory:", err);
+    return checkRateLimitInMemory(key, { limit, windowMs });
+  }
+}
+
+function checkRateLimitInMemory(
+  key: string,
+  { limit, windowMs }: { limit: number; windowMs: number }
 ): { allowed: boolean; retryAfterMs: number } {
   const now = Date.now();
   const existing = buckets.get(key);

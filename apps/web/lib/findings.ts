@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import type { FindingSeverity } from "@secretwatch/shared";
 
 /**
  * Findings list query/response contract (M04).
@@ -12,11 +13,15 @@ import { prisma } from "@/lib/db";
 export const FINDING_STATUSES = ["PENDING", "APPROVED", "FLAGGED", "IGNORED", "FAILED"] as const;
 export type FindingStatusValue = (typeof FINDING_STATUSES)[number];
 
+export const FINDING_SEVERITIES = ["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const;
+export type FindingSeverityValue = (typeof FINDING_SEVERITIES)[number];
+
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
 
 export const findingsListQuerySchema = z.object({
   status: z.enum(FINDING_STATUSES).optional(),
+  severity: z.enum(FINDING_SEVERITIES).optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
   q: z.string().trim().max(200).optional(),
@@ -30,6 +35,7 @@ export interface FindingSummary {
   filePath: string;
   matchedRule: string;
   status: FindingStatusValue;
+  severity?: FindingSeverity | null;
   /** Short display form of the commit SHA (first 7 chars), matching GitHub's own convention. */
   commitSha: string;
   createdAt: string; // ISO 8601
@@ -62,6 +68,7 @@ export interface FindingDetail {
   commitSha: string;
   matchedRule: string;
   redactedSnippet: string;
+  severity?: FindingSeverity | null;
   status: FindingStatusValue;
   createdAt: string; // ISO 8601
 }
@@ -73,6 +80,7 @@ const FINDING_DETAIL_SELECT = {
   commitSha: true,
   matchedRule: true,
   redactedSnippet: true,
+  severity: true,
   status: true,
   createdAt: true,
 } as const;
@@ -84,6 +92,7 @@ type FindingDetailRow = {
   commitSha: string;
   matchedRule: string;
   redactedSnippet: string;
+  severity: FindingSeverity | null;
   status: FindingStatusValue;
   createdAt: Date;
 };
@@ -96,6 +105,7 @@ function toFindingDetail(row: FindingDetailRow): FindingDetail {
     commitSha: row.commitSha,
     matchedRule: row.matchedRule,
     redactedSnippet: row.redactedSnippet,
+    severity: row.severity,
     status: row.status,
     createdAt: row.createdAt.toISOString(),
   };
@@ -114,7 +124,7 @@ export async function getFindingDetail(id: string): Promise<FindingDetail | null
 export class InvalidFindingTransitionError extends Error {
   constructor(
     public readonly currentStatus: FindingStatusValue,
-    public readonly attemptedStatus: "APPROVED" | "IGNORED"
+    public readonly attemptedStatus: "APPROVED" | "IGNORED" | "PENDING"
   ) {
     super(`Cannot transition finding from ${currentStatus} to ${attemptedStatus}`);
     this.name = "InvalidFindingTransitionError";
@@ -218,6 +228,100 @@ export async function ignoreFinding(id: string): Promise<FindingDetail> {
   return toFindingDetail(updated!);
 }
 
+/**
+ * Bulk transitions multiple PENDING findings to APPROVED.
+ * Returns the count of findings successfully transitioned.
+ */
+export async function bulkApproveFindings(ids: string[]): Promise<{ count: number }> {
+  if (ids.length === 0) return { count: 0 };
+  const result = await prisma.finding.updateMany({
+    where: {
+      id: { in: ids },
+      status: "PENDING",
+    },
+    data: { status: "APPROVED" },
+  });
+  return { count: result.count };
+}
+
+/**
+ * Bulk transitions multiple PENDING findings to IGNORED.
+ * Returns the count of findings successfully transitioned.
+ */
+export async function bulkIgnoreFindings(ids: string[]): Promise<{ count: number }> {
+  if (ids.length === 0) return { count: 0 };
+  const result = await prisma.finding.updateMany({
+    where: {
+      id: { in: ids },
+      status: "PENDING",
+    },
+    data: { status: "IGNORED" },
+  });
+  return { count: result.count };
+}
+
+/**
+ * Transitions a FAILED or IGNORED finding back to PENDING.
+ */
+export async function resetFinding(id: string): Promise<FindingDetail> {
+  const existing = await prisma.finding.findUnique({
+    where: { id },
+    select: FINDING_DETAIL_SELECT,
+  });
+  if (!existing) {
+    throw new FindingNotFoundError(id);
+  }
+  if (existing.status !== "FAILED" && existing.status !== "IGNORED") {
+    throw new InvalidFindingTransitionError(existing.status, "PENDING");
+  }
+
+  const result = await prisma.finding.updateMany({
+    where: {
+      id,
+      status: { in: ["FAILED", "IGNORED"] },
+    },
+    data: {
+      status: "PENDING",
+      failureReason: null,
+    },
+  });
+
+  if (result.count === 0) {
+    const refreshed = await prisma.finding.findUnique({
+      where: { id },
+      select: FINDING_DETAIL_SELECT,
+    });
+    throw new InvalidFindingTransitionError(
+      refreshed?.status ?? existing.status,
+      "PENDING"
+    );
+  }
+
+  const updated = await prisma.finding.findUnique({
+    where: { id },
+    select: FINDING_DETAIL_SELECT,
+  });
+  return toFindingDetail(updated!);
+}
+
+/**
+ * Bulk transitions multiple FAILED or IGNORED findings back to PENDING.
+ */
+export async function bulkResetFindings(ids: string[]): Promise<{ count: number }> {
+  if (ids.length === 0) return { count: 0 };
+  const result = await prisma.finding.updateMany({
+    where: {
+      id: { in: ids },
+      status: { in: ["FAILED", "IGNORED"] },
+    },
+    data: {
+      status: "PENDING",
+      failureReason: null,
+    },
+  });
+  return { count: result.count };
+}
+
 export class FindingNotFoundError extends Error {
   constructor(public readonly id: string) {
     super(`Finding not found: ${id}`);
@@ -237,6 +341,7 @@ function toShortSha(sha: string): string {
 export function parseFindingsQuery(searchParams: URLSearchParams) {
   return findingsListQuerySchema.safeParse({
     status: searchParams.get("status") ?? undefined,
+    severity: searchParams.get("severity") ?? undefined,
     page: searchParams.get("page") ?? undefined,
     pageSize: searchParams.get("pageSize") ?? undefined,
     q: searchParams.get("q") ?? undefined,
@@ -244,11 +349,14 @@ export function parseFindingsQuery(searchParams: URLSearchParams) {
 }
 
 export async function listFindings(query: FindingsListQuery): Promise<FindingsListResult> {
-  const { status, page, pageSize, q } = query;
+  const { status, severity, page, pageSize, q } = query;
 
   const where: Record<string, unknown> = {};
   if (status) {
     where.status = status;
+  }
+  if (severity) {
+    where.severity = severity;
   }
   if (q) {
     where.OR = [
@@ -269,6 +377,7 @@ export async function listFindings(query: FindingsListQuery): Promise<FindingsLi
         repoFullName: true,
         filePath: true,
         matchedRule: true,
+        severity: true,
         status: true,
         commitSha: true,
         createdAt: true,
@@ -282,6 +391,7 @@ export async function listFindings(query: FindingsListQuery): Promise<FindingsLi
     filePath: row.filePath,
     matchedRule: row.matchedRule,
     status: row.status,
+    severity: row.severity,
     commitSha: toShortSha(row.commitSha),
     createdAt: row.createdAt.toISOString(),
   }));
@@ -293,4 +403,152 @@ export async function listFindings(query: FindingsListQuery): Promise<FindingsLi
     total,
     totalPages: Math.max(Math.ceil(total / pageSize), 1),
   };
+}
+
+export const findingsExportQuerySchema = z.object({
+  status: z.enum(FINDING_STATUSES).optional(),
+  severity: z.enum(FINDING_SEVERITIES).optional(),
+  q: z.string().trim().max(200).optional(),
+  format: z.enum(["csv", "json"]).default("csv"),
+});
+
+export type FindingsExportQuery = z.infer<typeof findingsExportQuerySchema>;
+
+export function parseExportQuery(searchParams: URLSearchParams) {
+  return findingsExportQuerySchema.safeParse({
+    status: searchParams.get("status") ?? undefined,
+    severity: searchParams.get("severity") ?? undefined,
+    q: searchParams.get("q") ?? undefined,
+    format: searchParams.get("format") ?? undefined,
+  });
+}
+
+function buildFindingsWhere(query: Omit<FindingsExportQuery, "format">) {
+  const { status, severity, q } = query;
+  const where: Record<string, unknown> = {};
+  if (status) {
+    where.status = status;
+  }
+  if (severity) {
+    where.severity = severity;
+  }
+  if (q) {
+    where.OR = [
+      { repoFullName: { contains: q, mode: "insensitive" } },
+      { filePath: { contains: q, mode: "insensitive" } },
+    ];
+  }
+  return where;
+}
+
+const CHUNK_SIZE = 500;
+
+export async function exportFindingsToCSV(query: FindingsExportQuery, controller: ReadableStreamDefaultController) {
+  const encoder = new TextEncoder();
+  const headers = ["ID", "Repository", "File Path", "Rule", "Severity", "Status", "Commit SHA", "Created At", "Failure Reason"];
+  controller.enqueue(encoder.encode(headers.map(h => `"${h}"`).join(",") + "\n"));
+
+  const where = buildFindingsWhere(query);
+  let cursor: string | undefined = undefined;
+
+  while (true) {
+    const chunk: any[] = await prisma.finding.findMany({
+      where,
+      orderBy: { id: "asc" },
+      take: CHUNK_SIZE,
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0,
+      select: {
+        id: true,
+        repoFullName: true,
+        filePath: true,
+        matchedRule: true,
+        severity: true,
+        status: true,
+        commitSha: true,
+        createdAt: true,
+        failureReason: true,
+      },
+    });
+
+    if (chunk.length === 0) break;
+
+    for (const row of chunk) {
+      const csvRow = [
+        row.id,
+        row.repoFullName,
+        row.filePath,
+        row.matchedRule,
+        row.severity ?? "",
+        row.status,
+        row.commitSha,
+        row.createdAt.toISOString(),
+        row.failureReason ?? "",
+      ].map(val => `"${String(val).replace(/"/g, '""')}"`);
+      
+      controller.enqueue(encoder.encode(csvRow.join(",") + "\n"));
+    }
+
+    cursor = chunk[chunk.length - 1].id;
+  }
+  controller.close();
+}
+
+export async function exportFindingsToJSON(query: FindingsExportQuery, controller: ReadableStreamDefaultController) {
+  const encoder = new TextEncoder();
+  controller.enqueue(encoder.encode("[\n"));
+
+  const where = buildFindingsWhere(query);
+  let cursor: string | undefined = undefined;
+  let isFirst = true;
+
+  while (true) {
+    const chunk: any[] = await prisma.finding.findMany({
+      where,
+      orderBy: { id: "asc" },
+      take: CHUNK_SIZE,
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0,
+      select: {
+        id: true,
+        repoFullName: true,
+        filePath: true,
+        matchedRule: true,
+        severity: true,
+        status: true,
+        commitSha: true,
+        createdAt: true,
+        failureReason: true,
+      },
+    });
+
+    if (chunk.length === 0) break;
+
+    for (const row of chunk) {
+      if (!isFirst) {
+        controller.enqueue(encoder.encode(",\n"));
+      } else {
+        isFirst = false;
+      }
+      
+      const jsonRow = {
+        id: row.id,
+        repoFullName: row.repoFullName,
+        filePath: row.filePath,
+        matchedRule: row.matchedRule,
+        severity: row.severity,
+        status: row.status,
+        commitSha: row.commitSha,
+        createdAt: row.createdAt.toISOString(),
+        failureReason: row.failureReason,
+      };
+      
+      controller.enqueue(encoder.encode(JSON.stringify(jsonRow)));
+    }
+
+    cursor = chunk[chunk.length - 1].id;
+  }
+  
+  controller.enqueue(encoder.encode("\n]"));
+  controller.close();
 }

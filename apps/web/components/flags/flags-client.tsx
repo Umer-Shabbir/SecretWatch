@@ -45,6 +45,8 @@ export function FlagsClient({
   const [result, setResult] = useState<FlagsListResult | null>(initialResult);
   const [loadFailed, setLoadFailed] = useState(initialLoadFailed);
   const [refetching, setRefetching] = useState(false);
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Guards against an in-flight request's response landing after a newer
   // request has already started (e.g. rapid tab switching).
@@ -96,6 +98,42 @@ export function FlagsClient({
     fetchFlags(status, page);
   }
 
+  async function handleResetClick(id: string) {
+    setPendingActionId(id);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/findings/${id}/reset`, { method: "POST" });
+      const body = await res.json();
+      if (!res.ok) {
+        setActionError(body?.message ?? "Could not reset this finding. It may have already been updated.");
+        return;
+      }
+
+      // Update local state to remove the row from the FAILED view
+      // or change its status to PENDING if we're in the ALL view
+      setResult((prev) => {
+        if (!prev) return prev;
+
+        // If in FAILED view, remove it. If in ALL view, we technically should update it to PENDING
+        // but since Flags view only shows FLAGGED and FAILED, it should disappear from both anyway.
+        return {
+          ...prev,
+          flags: prev.flags.filter((f) => f.id !== id),
+          total: Math.max(prev.total - 1, 0),
+          summary: {
+            ...prev.summary,
+            failed: Math.max(prev.summary.failed - 1, 0),
+            totalAttempts: Math.max(prev.summary.totalAttempts - 1, 0)
+          }
+        };
+      });
+    } catch {
+      setActionError("Could not reset this finding. Please try again.");
+    } finally {
+      setPendingActionId(null);
+    }
+  }
+
   const flags: FlagRow[] = result?.flags ?? [];
   const totalPages = result?.totalPages ?? 1;
   const isTrulyEmpty = !loadFailed && status === "ALL" && result !== null && result.total === 0;
@@ -112,6 +150,12 @@ export function FlagsClient({
           </p>
         )}
       </div>
+
+      {actionError && (
+        <div role="alert" className="w-full rounded-small border border-danger-emphasis/30 bg-danger-subtle px-3 py-2 text-sm text-danger-fg">
+          {actionError}
+        </div>
+      )}
 
       <div className="flex items-start gap-5 overflow-x-auto" role="tablist" aria-label="Filter flags by status">
         {FILTER_TABS.map((tab) => {
@@ -201,7 +245,18 @@ export function FlagsClient({
                           {flag.issueRef}
                         </a>
                       ) : (
-                        <span className="text-fg-muted">{flag.failureReason}</span>
+                        <div className="flex flex-col gap-1.5 items-start">
+                          <span className="text-xs text-fg-muted">{flag.failureReason}</span>
+                          <Button
+                            variant="secondary"
+                            className="h-6 px-2 text-[11px] font-medium w-auto"
+                            onClick={() => handleResetClick(flag.id)}
+                            loading={pendingActionId === flag.id}
+                            disabled={pendingActionId !== null}
+                          >
+                            Reset to Pending
+                          </Button>
+                        </div>
                       )}
                     </td>
                     <td className="px-3 py-2.5 text-fg-default">{flag.templateName ?? "—"}</td>
@@ -237,7 +292,18 @@ export function FlagsClient({
                     <p className="mt-1 font-mono text-xs text-fg-muted">{flag.maskedTokenIdentifier}</p>
                   </>
                 ) : (
-                  <p className="mt-2 text-[13px] text-fg-muted">{flag.failureReason}</p>
+                  <div>
+                    <p className="mt-2 text-[13px] text-fg-muted">{flag.failureReason}</p>
+                    <Button
+                      variant="secondary"
+                      className="mt-3 w-full text-xs"
+                      onClick={() => handleResetClick(flag.id)}
+                      loading={pendingActionId === flag.id}
+                      disabled={pendingActionId !== null}
+                    >
+                      Reset to Pending
+                    </Button>
+                  </div>
                 )}
                 <span className="mt-3 block text-xs text-fg-muted">{formatRelativeTime(new Date(flag.postedAt))}</span>
               </div>

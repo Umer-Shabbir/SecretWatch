@@ -69,6 +69,7 @@ model Finding {
   commitSha       String
   matchedRule     String
   redactedSnippet String
+  severity        TemplateSeverity?
   status          FindingStatus @default(PENDING)
   createdAt       DateTime      @default(now())
   flag            Flag?
@@ -83,6 +84,7 @@ model Finding {
   // Scanner idempotency (M04): re-scanning the same commit/file/rule must not
   // create duplicate Finding rows. Additive, non-destructive constraint.
   @@unique([repoFullName, filePath, commitSha, matchedRule], name: "Finding_dedup_key")
+  @@index([severity])
   @@index([status])
   @@index([createdAt])
 }
@@ -186,6 +188,9 @@ model SystemSetting {
   // change takes effect on the next tick with no worker restart. Additive,
   // all defaulted — backward compatible with the original two-switch row.
 
+  // Scan interval in minutes for repeatable scheduler (default 15 minutes).
+  scanIntervalMinutes Int @default(15)
+
   // When false, approving a finding no longer auto-enqueues a flag job; the
   // admin must trigger flagging manually via "Run Flagger". Approve route
   // reads this per request.
@@ -220,4 +225,42 @@ model AuditLog {
   action    String
   detail    String?
   createdAt DateTime @default(now())
+}
+
+// Generic webhook integration so outward alerts can be triggered
+// for new high/critical findings or admin actions.
+model WebhookEndpoint {
+  id        String   @id @default(cuid())
+  url       String
+  name      String
+  // Optional secret used to compute HMAC SHA-256 signatures for outgoing bodies.
+  secret    String?
+  // Which event types should trigger this webhook (e.g. "finding.created", "finding.approved").
+  // If empty, receives all events.
+  events    String[]
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([enabled])
+}
+
+enum RepositoryFilterType {
+  ALLOW
+  BLOCK
+}
+
+// M10 (Repository Filters): Rules for automatically skipping or requiring
+// specific repositories during scanning. Tested against the repoFullName before
+// a search or finding is persisted.
+model RepositoryFilter {
+  id        String               @id @default(cuid())
+  type      RepositoryFilterType
+  pattern   String
+  enabled   Boolean              @default(true)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@index([type])
+  @@index([enabled])
 }

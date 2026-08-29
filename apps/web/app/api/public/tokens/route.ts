@@ -43,7 +43,7 @@ const RATE_LIMIT = { limit: 5, windowMs: 60_000 };
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
-  const { allowed, retryAfterMs } = checkRateLimit(`public-tokens:${ip}`, RATE_LIMIT);
+  const { allowed, retryAfterMs } = await checkRateLimit(`public-tokens:${ip}`, RATE_LIMIT);
   if (!allowed) {
     return NextResponse.json(
       { error: "rate_limited" },

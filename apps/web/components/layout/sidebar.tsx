@@ -17,9 +17,11 @@ const adminNav: NavItem[] = [
   { label: "Overview", href: "/admin", exact: true },
   { label: "Review Queue", href: "/admin/review-queue" },
   { label: "Scan Rules", href: "/admin/rules" },
+  { label: "Repo Filters", href: "/admin/repository-filters" },
   { label: "Templates", href: "/admin/templates" },
   { label: "Workers", href: "/admin/workers" },
   { label: "Tokens", href: "/admin/tokens" },
+  { label: "Webhooks", href: "/admin/notifications" },
 ];
 
 /** Sidebar — Figma node 7:15. 240px fixed width, Nav Item instances with Selected/Default states per DESIGN.md §9.1/10.1. */

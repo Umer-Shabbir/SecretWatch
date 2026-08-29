@@ -1,28 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
+import { StatCard } from "@/components/ui/stat-card";
 import { formatShortDate } from "@/lib/format-date";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import type { AdminTokenSummary } from "@/lib/admin-tokens";
 
 /**
- * Client orchestrator for Admin / Tokens. Follows the same shape as
- * components/admin/rules-client.tsx (RulesClient): initial data from the
- * Server Component, Client Component owns refetch-on-retry and the
- * deactivate action. No confirmation dialog — unlike Scan Rules' Disable
- * (which stops a rule from running future scans), deactivating a token here
- * only stops it from being selected for future scans/flags; it is a lower-
- * stakes, reversible-in-effect action (a new token can always be
- * resubmitted), so a single-click action with inline pending state was
- * judged sufficient. Revisit if a future Figma pass specifies otherwise.
+ * Client orchestrator for Admin / Tokens.
  *
- * SECURITY: never renders GithubToken.encrypted (not even present in
- * AdminTokenSummary — see lib/admin-tokens.ts). Only maskedIdentifier is
- * shown.
+ * Includes Token Health Dashboard, metrics, filtering, and insights.
  */
 export function AdminTokensClient({
   initialTokens,
@@ -36,10 +27,15 @@ export function AdminTokensClient({
   const [refetching, setRefetching] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
   const [newToken, setNewToken] = useState("");
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState<string | null>(null);
+
+  const [filterTab, setFilterTab] = useState<"ALL" | "ACTIVE" | "RATE_LIMITED" | "INACTIVE">("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+
   const requestId = useRef(0);
 
   const fetchTokens = useCallback(async () => {
@@ -68,13 +64,6 @@ export function AdminTokensClient({
     fetchTokens();
   }
 
-  /**
-   * Admin manual token add (2026-08-24). POSTs the raw token to /api/tokens,
-   * which encrypts+masks it server-side. The raw value is cleared from state
-   * immediately on success and never logged/echoed. On success we refetch the
-   * list so the new row (with server-computed masked value + source=manual)
-   * shows without guessing its shape client-side.
-   */
   async function handleAddToken(e: React.FormEvent) {
     e.preventDefault();
     const value = newToken.trim();
@@ -124,32 +113,104 @@ export function AdminTokensClient({
     }
   }
 
-  const tokenList = tokens ?? [];
-  const total = tokenList.length;
-  const activeCount = tokenList.filter((t) => t.active).length;
-  const isEmpty = !loadFailed && tokens !== null && total === 0;
+  const tokenList = useMemo(() => tokens ?? [], [tokens]);
+
+  // Aggregate Health Metrics
+  const summaryCounters = useMemo(() => {
+    let total = 0;
+    let active = 0;
+    let rateLimited = 0;
+    let inactive = 0;
+
+    for (const t of tokenList) {
+      total++;
+      if (t.active) active++;
+      else inactive++;
+
+      // Based on percentage (Github tokens usually have a max of 5000)
+      // < 20% means < 1000
+      if (t.active && t.rateLimitRemaining !== null && t.rateLimitRemaining < 1000) {
+        rateLimited++;
+      }
+    }
+
+    return { total, active, rateLimited, inactive };
+  }, [tokenList]);
+
+  // Derived Filtered List
+  const filteredList = useMemo(() => {
+    return tokenList.filter((t) => {
+      // 1. Tab Filter
+      if (filterTab === "ACTIVE" && !t.active) return false;
+      if (filterTab === "INACTIVE" && t.active) return false;
+      if (filterTab === "RATE_LIMITED" && (!t.active || t.rateLimitRemaining === null || t.rateLimitRemaining >= 1000)) return false;
+
+      // 2. Search Code filter
+      if (searchQuery.trim().length > 0) {
+        const q = searchQuery.toLowerCase();
+        if (!t.maskedIdentifier?.toLowerCase().includes(q)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [tokenList, filterTab, searchQuery]);
+
+  const isEmpty = !loadFailed && tokens !== null && summaryCounters.total === 0;
+  const noMatches = !isEmpty && filteredList.length === 0;
 
   return (
     <div className="flex w-full flex-col gap-6 p-4 sm:p-8">
       <div>
-        <h1 className="text-2xl font-semibold leading-8 text-fg-default">Tokens</h1>
+        <h1 className="text-2xl font-semibold leading-8 text-fg-default">GitHub Tokens / Pool Health</h1>
         {!loadFailed && tokens !== null && (
           <p className="mt-1 text-sm text-fg-muted">
-            {total} token{total === 1 ? "" : "s"} submitted · {activeCount} active
+            Global token pool providing quota for background search and issue-flagging.
           </p>
         )}
       </div>
+
+      {!loadFailed && tokens !== null && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+          <StatCard
+            label="Total Tokens"
+            value={summaryCounters.total}
+            helpText="All tokens added to the pool."
+            indicatorClassName="bg-fg-muted"
+          />
+          <StatCard
+            label="Active / Healthy"
+            value={summaryCounters.active - summaryCounters.rateLimited}
+            helpText="Currently providing rate limit."
+            indicatorClassName="bg-success-emphasis"
+          />
+          <StatCard
+            label="Rate Limited (<20%)"
+            value={summaryCounters.rateLimited}
+            valueClassName={summaryCounters.rateLimited > 0 ? "text-warning-emphasis" : "text-fg-default"}
+            helpText="Tokens close to exhaustion."
+            indicatorClassName="bg-warning-emphasis"
+          />
+          <StatCard
+            label="Needs Rotation"
+            value={summaryCounters.inactive}
+            valueClassName={summaryCounters.inactive > 0 ? "text-danger-emphasis" : "text-fg-default"}
+            helpText="Stopped working or deactivated."
+            indicatorClassName="bg-danger-emphasis"
+          />
+        </div>
+      )}
 
       <form
         onSubmit={handleAddToken}
         className="flex w-full flex-col gap-2 rounded-small border border-border-default p-4 sm:p-5"
       >
         <label htmlFor="add-token" className="text-sm font-medium text-fg-default">
-          Add a token manually
+          Add a proxy token (PAT)
         </label>
         <p className="text-xs text-fg-muted">
-          Paste a GitHub personal access token. It is encrypted at rest and only its masked
-          identifier is ever displayed.
+          Paste a GitHub personal access token to expand pool limits. It is encrypted at rest securely.
         </p>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
@@ -195,54 +256,127 @@ export function AdminTokensClient({
         <div className="w-full rounded-small border border-border-muted">
           <EmptyState
             title="No tokens submitted yet"
-            description="Tokens submitted through the public form will appear here."
+            description="Add a token above to start scanning repositories."
           />
         </div>
       ) : (
-        <div className={`flex w-full flex-col gap-4 ${refetching ? "opacity-60" : ""}`}>
-          {tokenList.map((token) => {
-            const isPending = pendingId === token.id;
-            return (
-              <div
-                key={token.id}
-                className="flex w-full flex-col gap-2 rounded-small border border-border-default p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-5"
-              >
-                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="font-mono text-sm text-fg-default">
-                      {token.maskedIdentifier ?? "(no masked value on record)"}
-                    </span>
-                    <Badge status={token.active ? "success" : "default"}>
-                      {token.active ? "ACTIVE" : "INACTIVE"}
-                    </Badge>
-                    <Badge status="accent">{token.source.toUpperCase()}</Badge>
-                  </div>
-                  <p className="text-xs text-fg-subtle">
-                    Submitted {formatShortDate(new Date(token.createdAt))}
-                    {token.lastUsedAt && ` · last used ${formatRelativeTime(new Date(token.lastUsedAt))}`}
-                    {token.rateLimitRemaining !== null && ` · ${token.rateLimitRemaining} requests remaining`}
-                  </p>
-                  {token.scopes.length > 0 && (
-                    <p className="text-xs text-fg-subtle">Scopes: {token.scopes.join(", ")}</p>
-                  )}
-                </div>
+        <div className="flex w-full flex-col gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border-default pb-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <FilterTab label="All" count={summaryCounters.total} active={filterTab === "ALL"} onClick={() => setFilterTab("ALL")} />
+              <FilterTab label="Active" count={summaryCounters.active} active={filterTab === "ACTIVE"} onClick={() => setFilterTab("ACTIVE")} />
+              <FilterTab label="Low Limit" count={summaryCounters.rateLimited} active={filterTab === "RATE_LIMITED"} onClick={() => setFilterTab("RATE_LIMITED")} />
+              <FilterTab label="Needs Rotation" count={summaryCounters.inactive} active={filterTab === "INACTIVE"} onClick={() => setFilterTab("INACTIVE")} />
+            </div>
 
-                <div className="flex items-start gap-2">
-                  <Button
-                    variant="secondary"
-                    className="w-auto"
-                    onClick={() => handleDeactivate(token.id)}
-                    loading={isPending}
-                    disabled={!token.active || (pendingId !== null && !isPending)}
-                  >
-                    {token.active ? "Deactivate" : "Deactivated"}
-                  </Button>
-                </div>
+            <div className="relative">
+              <svg
+                className="absolute left-2.5 top-2.5 h-4 w-4 text-fg-muted"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                placeholder="Search masked text..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 w-64 rounded-small border border-border-default bg-canvas-default pl-9 pr-3 text-sm text-fg-default placeholder:text-fg-subtle focus:border-accent-emphasis focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className={`flex w-full flex-col gap-4 ${refetching ? "opacity-60" : ""}`}>
+            {noMatches ? (
+              <div className="py-8 text-center text-sm text-fg-muted">
+                No tokens match your selected filters.
               </div>
-            );
-          })}
+            ) : (
+              filteredList.map((token) => {
+                const isPending = pendingId === token.id;
+                const isRateLimited = token.active && token.rateLimitRemaining !== null && token.rateLimitRemaining < 1000;
+
+                return (
+                  <div
+                    key={token.id}
+                    className="flex w-full flex-col gap-2 rounded-small border border-border-default p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-5"
+                  >
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="font-mono text-sm text-fg-default">
+                          {token.maskedIdentifier ?? "(no masked value on record)"}
+                        </span>
+
+                        {token.active ? (
+                           <Badge status="success">ACTIVE</Badge>
+                        ) : (
+                           <Badge status="default">INACTIVE / FAILED</Badge>
+                        )}
+                        <Badge status="accent">{token.source.toUpperCase()}</Badge>
+
+                        {isRateLimited && (
+                          <Badge status="warning">LOW RATE LIMIT</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-fg-subtle">
+                        Submitted {formatShortDate(new Date(token.createdAt))}
+                        {token.lastUsedAt && ` · last used ${formatRelativeTime(new Date(token.lastUsedAt))}`}
+                        {token.rateLimitRemaining !== null && ` · ${token.rateLimitRemaining} requests remaining`}
+                      </p>
+                      {token.scopes.length > 0 && (
+                        <p className="text-xs text-fg-subtle">Scopes: {token.scopes.join(", ")}</p>
+                      )}
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                       <Button
+                        variant="secondary"
+                        className="w-auto"
+                        onClick={() => handleDeactivate(token.id)}
+                        loading={isPending}
+                        disabled={!token.active || (pendingId !== null && !isPending)}
+                      >
+                        {token.active ? "Deactivate" : "Deactivated"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+function FilterTab({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-small px-3 py-1.5 text-sm font-medium transition-colors ${
+        active
+          ? "bg-canvas-subtle text-fg-default"
+          : "text-fg-muted hover:bg-canvas-subtle hover:text-fg-default"
+      }`}
+    >
+      {label} <span className={`ml-1 rounded px-1.5 py-0.5 text-xs ${active ? "bg-border-default" : "bg-canvas-subtle"}`}>{count}</span>
+    </button>
   );
 }

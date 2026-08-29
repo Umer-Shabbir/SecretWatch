@@ -4,7 +4,9 @@ const nextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "avatars.githubusercontent.com" }],
   },
-  serverComponentsExternalPackages: ["bullmq"],
+  experimental: {
+    serverComponentsExternalPackages: ["bullmq"],
+  },
 };
 
 export default nextConfig;

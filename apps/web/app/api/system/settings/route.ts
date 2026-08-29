@@ -28,6 +28,8 @@ const patchSchema = z
     // rateLimitRemaining is 0..~5000; a threshold of 0..1000 covers any sane
     // "skip near-empty tokens" policy.
     flagRateLimitThreshold: z.number().int().min(0).max(1000).optional(),
+    // Repeatable scheduler interval limit - min 1 min, max 1 day (1440 mins)
+    scanIntervalMinutes: z.number().int().min(1).max(1440).optional(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), {
     message: "At least one setting field is required",
@@ -84,7 +86,8 @@ export async function PATCH(request: NextRequest) {
       `scannerEnabled=${settings.scannerEnabled} flaggerEnabled=${settings.flaggerEnabled} ` +
       `autoFlagEnabled=${settings.autoFlagEnabled} autoApproveEnabled=${settings.autoApproveEnabled} ` +
       `scanResultsPerRule=${settings.scanResultsPerRule} ` +
-      `flagRateLimitThreshold=${settings.flagRateLimitThreshold}`,
+      `flagRateLimitThreshold=${settings.flagRateLimitThreshold} ` +
+      `scanIntervalMinutes=${settings.scanIntervalMinutes}`,
   });
 
   return NextResponse.json({ settings });

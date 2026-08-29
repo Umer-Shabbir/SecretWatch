@@ -60,6 +60,7 @@ describe("scanner switch gating", () => {
       scanRule: { findUnique: vi.fn() },
       githubToken: { findFirst: vi.fn(), update: vi.fn() },
       finding: { create: vi.fn(), findUnique: vi.fn() },
+      repositoryFilter: { findMany: vi.fn(async () => []) },
     };
 
     const { runScanForRule } = await import("../scanner.worker");
@@ -87,6 +88,7 @@ describe("scanner switch gating", () => {
         update: vi.fn(async () => ({})),
       },
       finding: { create: vi.fn() },
+      repositoryFilter: { findMany: vi.fn(async () => []) },
     };
 
     const { runScanForRule } = await import("../scanner.worker");
