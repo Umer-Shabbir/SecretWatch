@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import { NextRequest } from "next/server";
 import { getRedisConnectionOptions } from "@secretwatch/shared";
 
 /**
@@ -109,13 +110,37 @@ function checkRateLimitInMemory(
   return { allowed: true, retryAfterMs: 0 };
 }
 
-/** Best-effort client IP extraction from standard proxy headers (Next.js strips the raw socket address behind most hosts). Falls back to a constant key, which degrades to a single shared bucket if no proxy header is present — acceptable for a dev/low-traffic fallback, not a substitute for real infra-level rate limiting. */
-export function getClientIp(request: Request): string {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0]!.trim();
+/**
+ * Extracts the client IP from the request securely.
+ *
+ * SEC-001: Rate Limit Bypass via Spoofed X-Forwarded-For Header.
+ * Naive parsers take the first element of X-Forwarded-For (`parts[0]`), which an attacker
+ * can arbitrarily spoof by sending `X-Forwarded-For: <fake-ip>`.
+ *
+ * Secure extraction order:
+ * 1. NextRequest.ip (if populated by Next.js / Edge runtime)
+ * 2. CF-Connecting-IP (set by Cloudflare)
+ * 3. X-Real-IP (set by trusted reverse proxy like Nginx or ALB)
+ * 4. Last entry of X-Forwarded-For (appended by the closest trusted upstream proxy)
+ */
+export function getClientIp(request: Request | NextRequest): string {
+  if ("ip" in request && typeof (request as any).ip === "string" && (request as any).ip) {
+    return (request as any).ip;
   }
+  const cfIp = request.headers.get("cf-connecting-ip");
+  if (cfIp) return cfIp.trim();
+
   const realIp = request.headers.get("x-real-ip");
   if (realIp) return realIp.trim();
-  return "unknown";
+
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const parts = forwardedFor.split(",").map((p) => p.trim()).filter(Boolean);
+    if (parts.length > 0) {
+      // The last IP in the chain is appended by the closest proxy and cannot be spoofed by the client
+      return parts[parts.length - 1];
+    }
+  }
+
+  return "127.0.0.1";
 }

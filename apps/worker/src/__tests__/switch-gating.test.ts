@@ -85,6 +85,7 @@ describe("scanner switch gating", () => {
       },
       githubToken: {
         findFirst: vi.fn(async () => ({ id: "t1", encrypted: "enc" })),
+        findMany: vi.fn(async () => [{ id: "t1", encrypted: "enc" }]),
         update: vi.fn(async () => ({})),
       },
       finding: { create: vi.fn() },
@@ -94,8 +95,8 @@ describe("scanner switch gating", () => {
     const { runScanForRule } = await import("../scanner.worker");
     await runScanForRule("rule-1");
 
-    // searchCode(encrypted, query, page, pageSize) — 4th arg is the page size.
-    expect(searchCodeMock).toHaveBeenCalledWith("enc", expect.any(String), 1, 75);
+    // searchCode(encrypted, tokenId, query, page, pageSize) — 5th arg is the page size.
+    expect(searchCodeMock).toHaveBeenCalledWith("enc", "t1", expect.any(String), 1, 75);
   });
 });
 
