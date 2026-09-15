@@ -1,6 +1,5 @@
 import { requireAdmin } from "@/lib/authorize";
-import { getWorkerMonitoringSnapshot } from "@/lib/workers";
-import { getLiveActivity } from "@/lib/activity";
+import { getCachedWorkerMonitoringSnapshot, getCachedLiveActivity } from "@/lib/monitoring-cache";
 
 /**
  * GET /api/admin/events — Server-Sent Events stream for real-time worker
@@ -10,6 +9,8 @@ import { getLiveActivity } from "@/lib/activity";
  *   event: activity  — LiveActivity (scanner/flagger feed + queue depth)
  *
  * Authorization: ADMIN only (same gate as every /admin/* API route).
+ *
+ * Calls caching helpers heavily to avoid database connection exhaustion.
  *
  * The stream stays open until the client disconnects. On fetch error (Redis
  * unreachable, etc.) the event carries an `error` field so the client can
@@ -41,9 +42,10 @@ export async function GET() {
         if (closed) return;
 
         try {
+          // Both calls route through memoizing/deduplicating cache layer (3s TTL).
           const [workers, activity] = await Promise.all([
-            getWorkerMonitoringSnapshot().catch(() => null),
-            getLiveActivity().catch(() => null),
+            getCachedWorkerMonitoringSnapshot().catch(() => null),
+            getCachedLiveActivity().catch(() => null),
           ]);
 
           if (closed) return;

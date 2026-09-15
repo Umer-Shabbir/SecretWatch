@@ -6,6 +6,7 @@ import { prisma } from "./db";
 import { getSystemSettings } from "./system-settings";
 import { searchCode } from "./github-client";
 import { evaluateAllRules, type EvaluableRule } from "./rules/engine";
+import { getActiveRepoFilters } from "./repo-filters";
 
 /**
  * Scanner worker (ARCHITECTURE.md §5/§6). Consumes `scan-queue` jobs. Each
@@ -141,11 +142,8 @@ export async function runScanForRule(ruleId: string, queryOverride?: string): Pr
     data: { lastUsedAt: new Date() },
   });
 
-  // Load active repository filter rules (allowlist & blocklist)
-  const activeRepoFilters: RepoFilterRule[] = await prisma.repositoryFilter.findMany({
-    where: { enabled: true },
-    select: { id: true, type: true, pattern: true, enabled: true },
-  });
+  // Load active repository filter rules (allowlist & blocklist) from in-memory cache
+  const activeRepoFilters = await getActiveRepoFilters();
 
   let created = 0;
   let skipped = 0;
