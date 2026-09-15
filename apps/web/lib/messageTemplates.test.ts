@@ -65,6 +65,7 @@ function resetFakeDb(seed: FakeMessageTemplateRow[]) {
         return removed;
       }),
     },
+    $transaction: vi.fn(async (cb: (tx: any) => Promise<any>) => cb(client)),
   };
   sharedPrisma = client;
   return client;

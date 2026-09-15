@@ -107,28 +107,28 @@ function toMessageTemplateSummary(row: MessageTemplateRow): MessageTemplateSumma
 export class MessageTemplateNotFoundError extends Error {
   constructor(public readonly id: string) {
     super(`Message template not found: ${id}`);
-    this.name = "MessageTemplateNotFoundError";
+    this.name = "MessageTemplateNotFoundError"; Object.setPrototypeOf(this, MessageTemplateNotFoundError.prototype);
   }
 }
 
 export class InvalidVariableError extends Error {
   constructor(public readonly variable: string) {
     super(`Unsupported template variable: {{${variable}}}`);
-    this.name = "InvalidVariableError";
+    this.name = "InvalidVariableError"; Object.setPrototypeOf(this, InvalidVariableError.prototype);
   }
 }
 
 export class CannotDeleteDefaultError extends Error {
   constructor(public readonly id: string) {
     super(`Cannot delete the default message template: ${id}`);
-    this.name = "CannotDeleteDefaultError";
+    this.name = "CannotDeleteDefaultError"; Object.setPrototypeOf(this, CannotDeleteDefaultError.prototype);
   }
 }
 
 export class CannotDeleteLastTemplateError extends Error {
   constructor(public readonly id: string) {
     super(`Cannot delete the only remaining message template: ${id}`);
-    this.name = "CannotDeleteLastTemplateError";
+    this.name = "CannotDeleteLastTemplateError"; Object.setPrototypeOf(this, CannotDeleteLastTemplateError.prototype);
   }
 }
 
@@ -312,24 +312,36 @@ export async function updateMessageTemplate(
  * self-healing default-template lookup.
  */
 export async function deleteMessageTemplate(id: string): Promise<void> {
-  const existing = await prisma.messageTemplate.findUnique({
-    where: { id },
-    select: MESSAGE_TEMPLATE_SELECT,
+  await prisma.$transaction(async (tx) => {
+    // 1. Get the target template first, establishing its existence and default status.
+    const existing = await tx.messageTemplate.findUnique({
+      where: { id },
+      select: MESSAGE_TEMPLATE_SELECT,
+    });
+    if (!existing) {
+      throw new MessageTemplateNotFoundError(id);
+    }
+
+    if (existing.isDefault) {
+      throw new CannotDeleteDefaultError(id);
+    }
+
+    // 2. Count ALL templates currently in the DB.
+    // In PostgreSQL, COUNT under read-committed isn't fully serialized against concurrent
+    // deletes unless we elevate the transaction or explicitly lock rows. But rather than
+    // a table-level lock, we can select FOR UPDATE all remaining templates if we want
+    // strict serialization, OR we can simply let the delete happen, and if the count
+    // AFTER delete is 0, we rollback. Rollback-on-zero is the safest atomic path without
+    // locking the whole table.
+    // 
+    // Wait, simpler: just delete it, then count what's left. If count is 0, throw and rollback!
+    await tx.messageTemplate.delete({ where: { id } });
+    const remainingCount = await tx.messageTemplate.count();
+    
+    if (remainingCount === 0) {
+      throw new CannotDeleteLastTemplateError(id);
+    }
   });
-  if (!existing) {
-    throw new MessageTemplateNotFoundError(id);
-  }
-
-  if (existing.isDefault) {
-    throw new CannotDeleteDefaultError(id);
-  }
-
-  const totalCount = await prisma.messageTemplate.count();
-  if (totalCount <= 1) {
-    throw new CannotDeleteLastTemplateError(id);
-  }
-
-  await prisma.messageTemplate.delete({ where: { id } });
 }
 
 /**
