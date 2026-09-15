@@ -55,23 +55,42 @@ function buildQueryForRule(rule: { name: string }): string {
 
 /** Picks an active GithubToken to authenticate the search request (round-robin by lastUsedAt would be M07's flagger concern; scanner just needs any valid active token). */
 async function pickActiveToken() {
-  const candidates = await prisma.githubToken.findMany({
-    where: { active: true },
-    orderBy: { lastUsedAt: "asc" },
-    select: { id: true, encrypted: true, rateLimitRemaining: true, rateLimitResetAt: true },
-  });
+  while (true) {
+    const candidates = await prisma.githubToken.findMany({
+      where: { active: true },
+      orderBy: { lastUsedAt: "asc" },
+      select: { id: true, encrypted: true, rateLimitRemaining: true, rateLimitResetAt: true, lastUsedAt: true },
+    });
 
-  const now = new Date();
-  const healthy = candidates.find((t) => {
-    if (t.rateLimitResetAt && t.rateLimitResetAt > now) {
-      if (t.rateLimitRemaining !== null && t.rateLimitRemaining <= 0) {
-        return false;
+    if (candidates.length === 0) return null;
+
+    const now = new Date();
+    const healthy = candidates.find((t) => {
+      if (t.rateLimitResetAt && t.rateLimitResetAt > now) {
+        if (t.rateLimitRemaining !== null && t.rateLimitRemaining <= 0) {
+          return false;
+        }
       }
-    }
-    return true;
-  });
+      return true;
+    });
 
-  return healthy ?? candidates[0] ?? null;
+    const tokenToClaim = healthy ?? candidates[0];
+    if (!tokenToClaim) return null;
+
+    // Atomically claim the token by updating its lastUsedAt timestamp immediately.
+    // This prevents concurrent worker jobs from picking the exact same token.
+    const result = await prisma.githubToken.updateMany({
+      where: {
+        id: tokenToClaim.id,
+        lastUsedAt: tokenToClaim.lastUsedAt,
+      },
+      data: { lastUsedAt: new Date() },
+    });
+
+    if (result.count > 0) {
+      return tokenToClaim;
+    }
+  }
 }
 
 let sharedFlagQueue: Queue<FlagJobData> | null = null;

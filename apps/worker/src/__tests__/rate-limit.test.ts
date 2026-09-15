@@ -16,6 +16,24 @@ vi.mock("../db", () => ({
         }
         return token;
       }),
+      updateMany: vi.fn(async (args: any) => {
+        const { where, data } = args;
+        const token = mockTokens.find((t) => {
+          if (t.id !== where.id) return false;
+          if (where.lastUsedAt !== undefined) {
+            if (where.lastUsedAt === null && t.lastUsedAt !== null && t.lastUsedAt !== undefined) return false;
+            if (where.lastUsedAt instanceof Date && t.lastUsedAt instanceof Date) {
+              if (where.lastUsedAt.getTime() !== t.lastUsedAt.getTime()) return false;
+            }
+          }
+          return true;
+        });
+        if (token) {
+          Object.assign(token, data);
+          return { count: 1 };
+        }
+        return { count: 0 };
+      }),
     },
     finding: {
       findUnique: vi.fn(),

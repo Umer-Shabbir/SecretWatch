@@ -87,6 +87,7 @@ describe("scanner switch gating", () => {
         findFirst: vi.fn(async () => ({ id: "t1", encrypted: "enc" })),
         findMany: vi.fn(async () => [{ id: "t1", encrypted: "enc" }]),
         update: vi.fn(async () => ({})),
+        updateMany: vi.fn(async () => ({ count: 1 })),
       },
       finding: { create: vi.fn() },
       repositoryFilter: { findMany: vi.fn(async () => []) },
