@@ -220,14 +220,17 @@ export async function runScanForRule(ruleId: string, queryOverride?: string): Pr
   if (autoApproveEnabled && autoFlagEnabled && newFindingIds.length > 0) {
     try {
       const flagQueue = getFlagQueue();
-      for (const findingId of newFindingIds) {
-        await flagQueue.add("flag-finding", { findingId }, {
+      const jobs = newFindingIds.map((findingId) => ({
+        name: "flag-finding",
+        data: { findingId },
+        opts: {
           attempts: 5,
           backoff: { type: "exponential", delay: 10_000 },
           removeOnComplete: { count: 500 },
           removeOnFail: { count: 500 },
-        });
-      }
+        },
+      }));
+      await flagQueue.addBulk(jobs);
     } catch (err) {
       // Non-fatal: findings remain APPROVED and will be picked up by a future
       // manual "Run Flagger" or scheduler tick. Never log secrets.

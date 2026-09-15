@@ -1,6 +1,8 @@
 import { Octokit } from "@octokit/rest";
 import { decrypt } from "./token-crypto";
 import { prisma } from "./db";
+import { getRedisConnectionOptions } from "@secretwatch/shared";
+import Redis from "ioredis";
 
 /**
  * Thrown by createGithubIssue on any non-2xx GitHub REST response. Carries
@@ -72,32 +74,101 @@ export interface CodeSearchResult {
   htmlUrl: string;
 }
 
+const RATE_LIMIT_LUA_SCRIPT = `
+local tokens_key = KEYS[1]
+local timestamp_key = KEYS[2]
+local rate = tonumber(ARGV[1])
+local capacity = tonumber(ARGV[2])
+local now = tonumber(ARGV[3])
+local requested = tonumber(ARGV[4])
+local ttlMs = tonumber(ARGV[5])
+
+local last_tokens = tonumber(redis.call("GET", tokens_key))
+if last_tokens == nil then
+  last_tokens = capacity
+end
+
+local last_refreshed = tonumber(redis.call("GET", timestamp_key))
+if last_refreshed == nil then
+  last_refreshed = now
+end
+
+local time_passed = math.max(0, now - last_refreshed)
+local new_tokens = math.min(capacity, last_tokens + (time_passed * rate))
+
+if new_tokens >= requested then
+  local updated_tokens = new_tokens - requested
+  redis.call("SET", tokens_key, updated_tokens, "PX", ttlMs)
+  redis.call("SET", timestamp_key, now, "PX", ttlMs)
+  return 1
+else
+  redis.call("SET", tokens_key, new_tokens, "PX", ttlMs)
+  redis.call("SET", timestamp_key, now, "PX", ttlMs)
+  local deficit = requested - new_tokens
+  local wait_ms = math.ceil(deficit / rate)
+  return -wait_ms
+end
+`;
+
 /**
- * Simple in-process token-bucket throttle for GitHub's authenticated Search
+ * Redis-backed token-bucket throttle for GitHub's authenticated Search
  * API rate limit (~30 requests/minute, ARCHITECTURE.md §5). This is
- * intentionally minimal (single-process, in-memory) — sufficient for one
- * worker instance; would need a shared/Redis-backed limiter if the worker
- * is ever scaled to multiple replicas.
+ * shared across all worker processes using the same Redis instance.
  */
 export class SearchRateLimiter {
-  private timestamps: number[] = [];
+  private redis: Redis | null = null;
+  private readonly rate: number; // tokens per ms
+
   constructor(
     private readonly maxRequests = 30,
     private readonly windowMs = 60_000
-  ) {}
+  ) {
+    this.rate = maxRequests / windowMs;
+  }
+
+  private getRedis(): Redis {
+    if (!this.redis) {
+      // getRedisConnectionOptions return type matches ioredis connect options closely
+      this.redis = new Redis(getRedisConnectionOptions() as any);
+      this.redis.defineCommand("acquireToken", {
+        numberOfKeys: 2,
+        lua: RATE_LIMIT_LUA_SCRIPT,
+      });
+    }
+    return this.redis;
+  }
 
   async acquire(): Promise<void> {
-    const now = Date.now();
-    this.timestamps = this.timestamps.filter((t) => now - t < this.windowMs);
+    const redis = this.getRedis();
+    while (true) {
+      const now = Date.now();
+      // acquireToken returns 1 for success, or negative wait_ms for failure
+      // args: KEYS[1], KEYS[2], ARGV[1] (rate), ARGV[2] (capacity), ARGV[3] (now), ARGV[4] (requested), ARGV[5] (ttlMs)
+      const result = await (redis as any).acquireToken(
+        "github_search_rl:tokens",
+        "github_search_rl:ts",
+        this.rate.toString(),
+        this.maxRequests.toString(),
+        now.toString(),
+        "1",
+        this.windowMs.toString()
+      );
 
-    if (this.timestamps.length >= this.maxRequests) {
-      const oldest = this.timestamps[0];
-      const waitMs = this.windowMs - (now - oldest) + 50;
-      await new Promise((resolve) => setTimeout(resolve, Math.max(waitMs, 0)));
-      return this.acquire();
+      if (result === 1) {
+        return;
+      } else {
+        const waitMs = Math.max(0, -result) + 50; // extra 50ms buffer
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+      }
     }
+  }
 
-    this.timestamps.push(now);
+  // useful for tests
+  async disconnect(): Promise<void> {
+    if (this.redis) {
+      await this.redis.quit();
+      this.redis = null;
+    }
   }
 }
 
