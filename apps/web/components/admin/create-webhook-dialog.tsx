@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ALL_WEBHOOK_EVENTS, WebhookEventType } from "@/lib/webhooks";
+import { ALL_WEBHOOK_EVENTS, WebhookEventType } from "@/lib/webhook-types";
 
 export interface WebhookFormValues {
   name: string;

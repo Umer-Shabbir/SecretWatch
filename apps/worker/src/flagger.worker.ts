@@ -64,18 +64,28 @@ export function inferSecretTypeFromRule(ruleName: string): TemplateSecretType {
   return "GENERIC_API_KEY";
 }
 
-/** Picks the least-recently-used active token that isn't near its rate limit. Falls back to any active token if all are low (better to attempt with backoff than to never flag). Threshold is the admin-configured flagRateLimitThreshold. */
+/** Picks the least-recently-used active token that isn't near its rate limit. Skips exhausted tokens until their reset time. Threshold is the admin-configured flagRateLimitThreshold. */
 async function pickFlaggingToken(threshold: number) {
   const candidates = await prisma.githubToken.findMany({
     where: { active: true },
     orderBy: { lastUsedAt: "asc" },
-    select: { id: true, encrypted: true, rateLimitRemaining: true },
+    select: { id: true, encrypted: true, rateLimitRemaining: true, rateLimitResetAt: true },
   });
 
-  const healthy = candidates.find(
-    (t) => t.rateLimitRemaining === null || t.rateLimitRemaining > threshold
-  );
-  return healthy ?? candidates[0] ?? null;
+  const now = new Date();
+
+  // A token is considered usable if:
+  // - It has no recorded rate limit remaining, OR
+  // - Its rate limit remaining is strictly greater than the threshold, OR
+  // - Its reset timestamp has already passed (rateLimitResetAt <= now)
+  const isUsable = (t: { rateLimitRemaining: number | null; rateLimitResetAt: Date | null }) => {
+    if (t.rateLimitRemaining === null) return true;
+    if (t.rateLimitResetAt && t.rateLimitResetAt <= now) return true;
+    return t.rateLimitRemaining > threshold;
+  };
+
+  const healthy = candidates.find(isUsable);
+  return healthy ?? null;
 }
 
 export async function getOrCreateDefaultTemplate() {
@@ -196,7 +206,7 @@ export async function runFlagForFinding(findingId: string): Promise<{ outcome: "
   const title = `[SecretWatch] Potential leaked secret detected: ${finding.matchedRule}`;
 
   try {
-    const issue = await createGithubIssue(token.encrypted, owner, repo, title, body);
+    const issue = await createGithubIssue(token.encrypted, token.id, owner, repo, title, body);
 
     await prisma.githubToken.update({ where: { id: token.id }, data: { lastUsedAt: new Date() } });
 

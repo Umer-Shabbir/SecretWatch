@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { CreateWebhookDialog } from "./create-webhook-dialog";
 import { EditWebhookDialog } from "./edit-webhook-dialog";
 import { DeleteWebhookDialog } from "./delete-webhook-dialog";
-import type { WebhookEndpointSummary } from "@/lib/webhooks";
-import { ALL_WEBHOOK_EVENTS } from "@/lib/webhooks";
+import type { WebhookEndpointSummary } from "@/lib/webhook-types";
+import { ALL_WEBHOOK_EVENTS } from "@/lib/webhook-types";
 
 export function WebhooksClient({ initialWebhooks }: { initialWebhooks: WebhookEndpointSummary[] }) {
   const [webhooks, setWebhooks] = useState<WebhookEndpointSummary[]>(initialWebhooks);

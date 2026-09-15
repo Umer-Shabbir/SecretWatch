@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ALL_WEBHOOK_EVENTS } from "@/lib/webhooks";
-import type { WebhookEndpointSummary } from "@/lib/webhooks";
+import { ALL_WEBHOOK_EVENTS } from "@/lib/webhook-types";
+import type { WebhookEndpointSummary } from "@/lib/webhook-types";
 
 export function EditWebhookDialog({
   open,

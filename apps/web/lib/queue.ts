@@ -116,3 +116,46 @@ export async function enqueueFlagJobs(findingIds: string[]): Promise<number> {
   }
   return findingIds.length;
 }
+
+export async function syncSchedulerIntervalFromWeb(intervalMinutes: number): Promise<void> {
+  if (!intervalMinutes || intervalMinutes <= 0) return;
+  const targetEveryMs = intervalMinutes * 60_000;
+  
+  if (!globalForQueue.scanQueue) {
+    globalForQueue.scanQueue = new Queue<ScanJobData>(QUEUE_NAMES.SCAN, {
+      connection: getRedisConnectionOptions(),
+    });
+  }
+  
+  // We can just construct a temporary Queue pointing at SCHEDULER:
+  const schedulerQueue = new Queue(QUEUE_NAMES.SCHEDULER, {
+    connection: getRedisConnectionOptions(),
+  });
+  
+  try {
+    const repeatableJobs = await schedulerQueue.getRepeatableJobs();
+    const existingJob = repeatableJobs.find(
+      (job) => job.name === "recurring-scan-tick" || job.id === "recurring-scan-tick"
+    );
+
+    if (existingJob) {
+      if (Number(existingJob.every) === targetEveryMs) {
+        return;
+      }
+      await schedulerQueue.removeRepeatableByKey(existingJob.key);
+    }
+    
+    await schedulerQueue.add(
+      "recurring-scan-tick",
+      {},
+      {
+        repeat: { every: targetEveryMs },
+        removeOnComplete: { count: 50 },
+        removeOnFail: { count: 50 },
+        jobId: "recurring-scan-tick", // same as SCHEDULER_JOB_NAME in packages/shared
+      }
+    );
+  } finally {
+    await schedulerQueue.close();
+  }
+}

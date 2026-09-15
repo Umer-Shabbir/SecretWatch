@@ -55,11 +55,33 @@ function buildQueryForRule(rule: { name: string }): string {
 
 /** Picks an active GithubToken to authenticate the search request (round-robin by lastUsedAt would be M07's flagger concern; scanner just needs any valid active token). */
 async function pickActiveToken() {
-  return prisma.githubToken.findFirst({
+  const candidates = await prisma.githubToken.findMany({
     where: { active: true },
     orderBy: { lastUsedAt: "asc" },
-    select: { id: true, encrypted: true },
+    select: { id: true, encrypted: true, rateLimitRemaining: true, rateLimitResetAt: true },
   });
+
+  const now = new Date();
+  const healthy = candidates.find((t) => {
+    if (t.rateLimitResetAt && t.rateLimitResetAt > now) {
+      if (t.rateLimitRemaining !== null && t.rateLimitRemaining <= 0) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  return healthy ?? candidates[0] ?? null;
+}
+
+let sharedFlagQueue: Queue<FlagJobData> | null = null;
+function getFlagQueue(): Queue<FlagJobData> {
+  if (!sharedFlagQueue) {
+    sharedFlagQueue = new Queue<FlagJobData>(QUEUE_NAMES.FLAG, {
+      connection: getRedisConnectionOptions(),
+    });
+  }
+  return sharedFlagQueue;
 }
 
 /** Derives a short display commit SHA. GitHub's code search `sha` field is the blob SHA of the matched file at index time — used here as the commitSha field per the Finding schema's single `commitSha` column (no separate blob/commit distinction exists in the data model). */
@@ -93,7 +115,7 @@ export async function runScanForRule(ruleId: string, queryOverride?: string): Pr
   const evaluable: EvaluableRule = { name: rule.name, pattern: rule.pattern, kind: inferKind(rule.name) };
   const query = queryOverride ?? buildQueryForRule(rule);
 
-  const results = await searchCode(token.encrypted, query, 1, clampPageSize(scanResultsPerRule));
+  const results = await searchCode(token.encrypted, token.id, query, 1, clampPageSize(scanResultsPerRule));
 
   await prisma.githubToken.update({
     where: { id: token.id },
@@ -178,20 +200,14 @@ export async function runScanForRule(ruleId: string, queryOverride?: string): Pr
   // findings stay APPROVED and can be flagged by a manual "Run Flagger".
   if (autoApproveEnabled && autoFlagEnabled && newFindingIds.length > 0) {
     try {
-      const flagQueue = new Queue<FlagJobData>(QUEUE_NAMES.FLAG, {
-        connection: getRedisConnectionOptions(),
-      });
-      try {
-        for (const findingId of newFindingIds) {
-          await flagQueue.add("flag-finding", { findingId }, {
-            attempts: 5,
-            backoff: { type: "exponential", delay: 10_000 },
-            removeOnComplete: { count: 500 },
-            removeOnFail: { count: 500 },
-          });
-        }
-      } finally {
-        await flagQueue.close();
+      const flagQueue = getFlagQueue();
+      for (const findingId of newFindingIds) {
+        await flagQueue.add("flag-finding", { findingId }, {
+          attempts: 5,
+          backoff: { type: "exponential", delay: 10_000 },
+          removeOnComplete: { count: 500 },
+          removeOnFail: { count: 500 },
+        });
       }
     } catch (err) {
       // Non-fatal: findings remain APPROVED and will be picked up by a future
@@ -287,6 +303,13 @@ export async function upsertFinding(data: {
 
 function isUniqueConstraintError(err: unknown): boolean {
   return typeof err === "object" && err !== null && (err as { code?: string }).code === "P2002";
+}
+
+export async function closeScannerQueues(): Promise<void> {
+  if (sharedFlagQueue) {
+    await sharedFlagQueue.close();
+    sharedFlagQueue = null;
+  }
 }
 
 export function createScannerWorker(): Worker<ScanJobData> {

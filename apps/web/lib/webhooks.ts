@@ -1,45 +1,13 @@
 import { prisma } from "@/lib/db";
 import crypto from "crypto";
+import { assertSafeWebhookUrlAsync, SSRFValidationError } from "@secretwatch/shared";
+import {
+  WebhookEndpointSummary,
+  WebhookEventType,
+  ALL_WEBHOOK_EVENTS,
+} from "./webhook-types";
 
-export interface WebhookEndpointSummary {
-  id: string;
-  name: string;
-  url: string;
-  secret: string | null;
-  events: string[];
-  enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type WebhookEventType =
-  | "finding.created"
-  | "finding.approved"
-  | "finding.flagged"
-  | "flag.failed";
-
-export const ALL_WEBHOOK_EVENTS: { type: WebhookEventType; label: string; description: string }[] = [
-  {
-    type: "finding.created",
-    label: "Finding Created",
-    description: "Triggered when the scanner detects a new secret finding.",
-  },
-  {
-    type: "finding.approved",
-    label: "Finding Approved",
-    description: "Triggered when a finding is approved manually or via auto-approve.",
-  },
-  {
-    type: "finding.flagged",
-    label: "Finding Flagged (Issue Created)",
-    description: "Triggered when the flagger creates a GitHub issue for an approved finding.",
-  },
-  {
-    type: "flag.failed",
-    label: "Flag Failed",
-    description: "Triggered when issue creation encounters an error or rate limit.",
-  },
-];
+export * from "./webhook-types";
 
 export class WebhookNotFoundError extends Error {
   constructor(public readonly id: string) {
@@ -52,15 +20,6 @@ export class InvalidWebhookError extends Error {
   constructor(public readonly reason: string) {
     super(`Invalid webhook configuration: ${reason}`);
     this.name = "InvalidWebhookError";
-  }
-}
-
-function isValidUrl(urlString: string): boolean {
-  try {
-    const parsed = new URL(urlString);
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
-  } catch {
-    return false;
   }
 }
 
@@ -110,7 +69,11 @@ export async function createWebhookEndpoint(params: {
   if (!name) throw new InvalidWebhookError("Name must not be empty");
 
   const url = params.url?.trim() ?? "";
-  if (!isValidUrl(url)) throw new InvalidWebhookError("Invalid URL format. Must start with http:// or https://");
+  try {
+    await assertSafeWebhookUrlAsync(url);
+  } catch (err) {
+    throw new InvalidWebhookError(err instanceof Error ? err.message : "Invalid URL");
+  }
 
   const events = params.events && params.events.length > 0 ? params.events : ALL_WEBHOOK_EVENTS.map((e) => e.type);
 
@@ -156,7 +119,11 @@ export async function updateWebhookEndpoint(
 
   if (params.url !== undefined) {
     const trimmed = params.url.trim();
-    if (!isValidUrl(trimmed)) throw new InvalidWebhookError("Invalid URL format");
+    try {
+      await assertSafeWebhookUrlAsync(trimmed);
+    } catch (err) {
+      throw new InvalidWebhookError(err instanceof Error ? err.message : "Invalid URL");
+    }
     data.url = trimmed;
   }
 
@@ -191,77 +158,85 @@ export async function dispatchWebhookEvent(
   event: WebhookEventType,
   payload: Record<string, unknown>
 ): Promise<{ dispatched: number; failed: number }> {
-  const endpoints = await prisma.webhookEndpoint.findMany({
-    where: {
-      enabled: true,
-      OR: [{ events: { has: event } }, { events: { isEmpty: true } }],
-    },
-  });
+  try {
+    const endpoints = await prisma.webhookEndpoint.findMany({
+      where: {
+        enabled: true,
+        OR: [{ events: { has: event } }, { events: { isEmpty: true } }],
+      },
+    });
 
-  if (endpoints.length === 0) {
-    return { dispatched: 0, failed: 0 };
-  }
+    if (endpoints.length === 0) {
+      return { dispatched: 0, failed: 0 };
+    }
 
-  let dispatched = 0;
-  let failed = 0;
+    let dispatched = 0;
+    let failed = 0;
 
-  const timestamp = new Date().toISOString();
-  const baseBody = {
-    event,
-    timestamp,
-    data: payload,
-  };
+    const timestamp = new Date().toISOString();
+    const baseBody = {
+      event,
+      timestamp,
+      data: payload,
+    };
 
-  const jsonString = JSON.stringify(baseBody);
+    const jsonString = JSON.stringify(baseBody);
 
-  await Promise.all(
-    endpoints.map(async (endpoint) => {
-      try {
-        let bodyToSend: string = jsonString;
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-          "User-Agent": "SecretWatch-Webhook-Dispatcher/1.0",
-        };
+    await Promise.all(
+      endpoints.map(async (endpoint) => {
+        try {
+          // Double-check SSRF protection just before dispatch to mitigate TOCTOU changes
+          // or corrupted DB values.
+          await assertSafeWebhookUrlAsync(endpoint.url);
 
-        // Slack / Discord compatibility formatting
-        if (endpoint.url.includes("hooks.slack.com")) {
-          const slackText = `*[SecretWatch Alert]* \`${event}\`\n${JSON.stringify(payload, null, 2)}`;
-          bodyToSend = JSON.stringify({ text: slackText });
-        } else if (endpoint.url.includes("discord.com/api/webhooks")) {
-          const discordText = `**[SecretWatch Alert]** \`${event}\`\n\`\`\`json\n${JSON.stringify(payload, null, 2)}\n\`\`\``;
-          bodyToSend = JSON.stringify({ content: discordText });
-        } else {
-          // Compute HMAC SHA-256 signature if secret is provided
-          if (endpoint.secret) {
-            const signature = crypto.createHmac("sha256", endpoint.secret).update(jsonString).digest("hex");
-            headers["X-SecretWatch-Signature"] = `sha256=${signature}`;
+          let bodyToSend: string = jsonString;
+          const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+            "User-Agent": "SecretWatch-Webhook-Dispatcher/1.0",
+          };
+
+          // Slack / Discord compatibility formatting
+          if (endpoint.url.includes("hooks.slack.com")) {
+            const slackText = `*[SecretWatch Alert]* \`${event}\`\n${JSON.stringify(payload, null, 2)}`;
+            bodyToSend = JSON.stringify({ text: slackText });
+          } else if (endpoint.url.includes("discord.com/api/webhooks")) {
+            const discordText = `**[SecretWatch Alert]** \`${event}\`\n\`\`\`json\n${JSON.stringify(payload, null, 2)}\n\`\`\``;
+            bodyToSend = JSON.stringify({ content: discordText });
+          } else {
+            // Compute HMAC SHA-256 signature if secret is provided
+            if (endpoint.secret) {
+              const signature = crypto.createHmac("sha256", endpoint.secret).update(jsonString).digest("hex");
+              headers["X-SecretWatch-Signature"] = `sha256=${signature}`;
+            }
           }
-        }
 
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 5000);
 
-        const res = await fetch(endpoint.url, {
-          method: "POST",
-          headers,
-          body: bodyToSend,
-          signal: controller.signal,
-        });
+          const res = await fetch(endpoint.url, {
+            method: "POST",
+            headers,
+            body: bodyToSend,
+            signal: controller.signal,
+          });
 
-        clearTimeout(timeout);
+          clearTimeout(timeout);
 
-        if (res.ok) {
-          dispatched++;
-        } else {
+          if (res.ok) {
+            dispatched++;
+          } else {
+            failed++;
+          }
+        } catch {
           failed++;
         }
-      } catch {
-        failed++;
-      }
-    })
-  );
+      })
+    );
 
-  return { dispatched, failed };
+    return { dispatched, failed };
+  } catch (err) {
+    return { dispatched: 0, failed: 0 };
+  }
 }
 
 export async function testWebhookEndpoint(
@@ -283,6 +258,8 @@ export async function testWebhookEndpoint(
   });
 
   try {
+    await assertSafeWebhookUrlAsync(endpoint.url);
+
     let bodyToSend: string = jsonString;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",

@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import crypto from "crypto";
+import { assertSafeWebhookUrlAsync, SSRFValidationError } from "@secretwatch/shared";
 
 export type WebhookEventType =
   | "finding.created"
@@ -38,6 +39,8 @@ export async function dispatchWebhookEvent(
     await Promise.all(
       endpoints.map(async (endpoint) => {
         try {
+          await assertSafeWebhookUrlAsync(endpoint.url);
+
           let bodyToSend: string = jsonString;
           const headers: Record<string, string> = {
             "Content-Type": "application/json",

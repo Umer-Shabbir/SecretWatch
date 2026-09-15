@@ -1,5 +1,6 @@
 import { Octokit } from "@octokit/rest";
 import { decrypt } from "./token-crypto";
+import { prisma } from "./db";
 
 /**
  * Thrown by createGithubIssue on any non-2xx GitHub REST response. Carries
@@ -11,6 +12,43 @@ export class GithubApiError extends Error {
   constructor(public readonly status: number, message: string) {
     super(message);
     this.name = "GithubApiError";
+  }
+}
+
+/**
+ * Parses and updates the rate limit stats from GitHub response headers.
+ */
+async function updateRateLimitsFromHeaders(tokenId: string, headers: Record<string, string | number | undefined>) {
+  if (!headers) return;
+
+  const remainingHeader = headers["x-ratelimit-remaining"];
+  const resetHeader = headers["x-ratelimit-reset"];
+
+  const data: { rateLimitRemaining?: number; rateLimitResetAt?: Date } = {};
+
+  if (remainingHeader !== undefined && remainingHeader !== null) {
+    const remaining = parseInt(String(remainingHeader), 10);
+    if (!isNaN(remaining)) {
+      data.rateLimitRemaining = remaining;
+    }
+  }
+
+  if (resetHeader !== undefined && resetHeader !== null) {
+    const resetSeconds = parseInt(String(resetHeader), 10);
+    if (!isNaN(resetSeconds)) {
+      data.rateLimitResetAt = new Date(resetSeconds * 1000);
+    }
+  }
+
+  if (Object.keys(data).length > 0) {
+    try {
+      await prisma.githubToken.update({
+        where: { id: tokenId },
+        data,
+      });
+    } catch (err) {
+      console.error(`[github-client] Failed to update rate limit for token ${tokenId}:`, err);
+    }
   }
 }
 
@@ -71,10 +109,25 @@ export const searchRateLimiter = new SearchRateLimiter();
  */
 export async function withGithubClient<T>(
   encryptedToken: string,
+  tokenId: string,
   fn: (octokit: Octokit) => Promise<T>
 ): Promise<T> {
   const token = decrypt(encryptedToken);
   const octokit = new Octokit({ auth: token });
+
+  octokit.hook.after("request", async (response) => {
+    if (response?.headers) {
+      await updateRateLimitsFromHeaders(tokenId, response.headers as Record<string, string | number | undefined>);
+    }
+  });
+
+  octokit.hook.error("request", async (error) => {
+    if ((error as any).response?.headers) {
+      await updateRateLimitsFromHeaders(tokenId, (error as any).response.headers as Record<string, string | number | undefined>);
+    }
+    throw error;
+  });
+
   try {
     return await fn(octokit);
   } finally {
@@ -91,13 +144,14 @@ export async function withGithubClient<T>(
  */
 export async function searchCode(
   encryptedToken: string,
+  tokenId: string,
   query: string,
   page = 1,
   perPage = 30
 ): Promise<CodeSearchResult[]> {
   await searchRateLimiter.acquire();
 
-  return withGithubClient(encryptedToken, async (octokit) => {
+  return withGithubClient(encryptedToken, tokenId, async (octokit) => {
     const response = await octokit.rest.search.code({
       q: query,
       page,
@@ -139,12 +193,13 @@ export interface CreatedIssue {
  */
 export async function createGithubIssue(
   encryptedToken: string,
+  tokenId: string,
   owner: string,
   repo: string,
   title: string,
   body: string
 ): Promise<CreatedIssue> {
-  return withGithubClient(encryptedToken, async (octokit) => {
+  return withGithubClient(encryptedToken, tokenId, async (octokit) => {
     try {
       const response = await octokit.rest.issues.create({ owner, repo, title, body });
       return { htmlUrl: response.data.html_url, number: response.data.number };

@@ -21,6 +21,7 @@ export interface AdminTokenSummary {
   scopes: string[];
   lastUsedAt: string | null;
   rateLimitRemaining: number | null;
+  rateLimitResetAt: string | null;
   active: boolean;
   createdAt: string; // ISO 8601
 }
@@ -32,6 +33,7 @@ const ADMIN_TOKEN_SELECT = {
   scopes: true,
   lastUsedAt: true,
   rateLimitRemaining: true,
+  rateLimitResetAt: true,
   active: true,
   createdAt: true,
 } as const;
@@ -43,6 +45,7 @@ type AdminTokenRow = {
   scopes: string[];
   lastUsedAt: Date | null;
   rateLimitRemaining: number | null;
+  rateLimitResetAt: Date | null;
   active: boolean;
   createdAt: Date;
 };
@@ -55,6 +58,7 @@ function toAdminTokenSummary(row: AdminTokenRow): AdminTokenSummary {
     scopes: row.scopes,
     lastUsedAt: row.lastUsedAt ? row.lastUsedAt.toISOString() : null,
     rateLimitRemaining: row.rateLimitRemaining,
+    rateLimitResetAt: row.rateLimitResetAt ? row.rateLimitResetAt.toISOString() : null,
     active: row.active,
     createdAt: row.createdAt.toISOString(),
   };

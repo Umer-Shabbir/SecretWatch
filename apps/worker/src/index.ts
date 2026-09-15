@@ -1,4 +1,4 @@
-import { createScannerWorker } from "./scanner.worker";
+import { createScannerWorker, closeScannerQueues } from "./scanner.worker";
 import { createFlaggerWorker } from "./flagger.worker";
 import { startScheduler } from "./scheduler";
 
@@ -43,7 +43,7 @@ async function main() {
 
   const shutdown = async () => {
     console.log("[worker] shutting down...");
-    await Promise.all([scannerWorker.close(), flaggerWorker.close(), schedulerWorker.close()]);
+    await Promise.all([scannerWorker.close(), flaggerWorker.close(), schedulerWorker.close(), closeScannerQueues()]);
     process.exit(0);
   };
 
