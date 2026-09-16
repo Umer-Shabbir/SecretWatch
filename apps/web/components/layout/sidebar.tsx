@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-interface NavItem {
+export interface NavItem {
   label: string;
   href: string;
   /** Match only the exact path (used for the Overview root, which is a prefix of every other admin route). */
@@ -13,7 +13,7 @@ interface NavItem {
 // Admin is the only authenticated role after the 2026-08-17 scope
 // correction — there is no end-user dashboard/findings/tokens area, so the
 // sidebar shows only admin-scoped nav items.
-const adminNav: NavItem[] = [
+export const adminNav: NavItem[] = [
   { label: "Overview", href: "/admin", exact: true },
   { label: "Review Queue", href: "/admin/review-queue" },
   { label: "Scan Rules", href: "/admin/rules" },
