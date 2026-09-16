@@ -72,7 +72,7 @@ SecretWatch has identified a potential leaked credential in **{{repo}}**.
 
 ### About this issue
 
-This issue was opened automatically by [SecretWatch](https://github.com/TODO-project-org/secretwatch) — an open-source tool that scans public GitHub repositories for accidentally exposed API keys, tokens, and other secrets. SecretWatch never stores or transmits the raw secret value; only a redacted reference is kept for audit purposes.
+This issue was opened automatically by [SecretWatch](${process.env.NEXT_PUBLIC_APP_URL || process.env.PROJECT_REPO_URL || "https://github.com/Umer-Shabbir/SecretWatch"}) — an open-source tool that scans public GitHub repositories for accidentally exposed API keys, tokens, and other secrets. SecretWatch never stores or transmits the raw secret value; only a redacted reference is kept for audit purposes.
 
 If you believe this is a false positive, you can close this issue. No further action will be taken on this finding.`;
 
@@ -89,8 +89,9 @@ If you believe this is a false positive, you can close this issue. No further ac
  * URL. The `TODO-project-org` segment is intentionally left as a visible
  * placeholder until a real project org/repo exists.
  */
-export const ATTRIBUTION_LINE =
-  "If you'd like to support this project, visit: https://github.com/TODO-project-org/secretwatch";
+export const ATTRIBUTION_LINE = `If you'd like to support this project, visit: ${
+  process.env.NEXT_PUBLIC_APP_URL || process.env.PROJECT_REPO_URL || "https://github.com/Umer-Shabbir/SecretWatch"
+}`;
 
 /**
  * Appends ATTRIBUTION_LINE to `body` when `include` is true, separated from

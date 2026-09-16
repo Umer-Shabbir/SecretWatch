@@ -6,6 +6,7 @@ import { recordAudit } from "@/lib/audit";
 import { encrypt, maskToken } from "@/lib/token-crypto";
 import { PAT_PATTERN } from "@/lib/pat-format";
 import { listAdminTokens } from "@/lib/admin-tokens";
+import { validateGitHubToken } from "@/lib/github-validate";
 
 /**
  * GET /api/tokens
@@ -88,6 +89,16 @@ export async function POST(request: NextRequest) {
   let createdId: string;
   try {
     const plaintext = parsed.data.token;
+
+    // Validate the token via GitHub API and extract granted scopes
+    const { valid, scopes } = await validateGitHubToken(plaintext);
+    if (!valid) {
+      return NextResponse.json(
+        { error: "invalid_token", issues: ["GitHub API rejected the provided token as inactive or invalid."] },
+        { status: 400 }
+      );
+    }
+
     const encrypted = encrypt(plaintext);
     maskedIdentifier = maskToken(plaintext);
 
@@ -96,7 +107,7 @@ export async function POST(request: NextRequest) {
         encrypted,
         maskedIdentifier,
         source: "manual",
-        scopes: [],
+        scopes,
         active: true,
       },
       select: { id: true },

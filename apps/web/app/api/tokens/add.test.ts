@@ -46,7 +46,16 @@ vi.mock("@/lib/admin-tokens", () => ({
   listAdminTokens: vi.fn(async () => []),
 }));
 
+// Mock GitHub token validation
+let mockValidToken = true;
+let mockTokenScopes = ["public_repo", "repo"];
+vi.mock("@/lib/github-validate", () => ({
+  validateGitHubToken: vi.fn(async () => ({ valid: mockValidToken, scopes: mockTokenScopes })),
+}));
+
 beforeEach(() => {
+  mockValidToken = true;
+  mockTokenScopes = ["public_repo", "repo"];
   currentSessionUserId = "admin-a";
   currentSessionRole = "ADMIN";
   recordAuditMock.mockClear();
@@ -105,6 +114,7 @@ describe("POST /api/tokens — persistence + security", () => {
     const args = sharedPrisma.githubToken.create.mock.calls[0][0];
     expect(args.data.source).toBe("manual");
     expect(args.data.active).toBe(true);
+    expect(args.data.scopes).toEqual(["public_repo", "repo"]);
     expect(args.data).not.toHaveProperty("userId");
   });
 

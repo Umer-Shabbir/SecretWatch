@@ -16,6 +16,7 @@
     "prisma:generate": "npm run prisma:generate --workspace=apps/web",
     "prisma:migrate": "npm run prisma:migrate --workspace=apps/web",
     "worker:dev": "npm run dev --workspace=apps/worker",
+    "worker:build": "npm run build --workspace=apps/worker",
     "worker:start": "npm run start --workspace=apps/worker",
     "worker:typecheck": "npm run typecheck --workspace=apps/worker",
     "worker:test": "npm run test --workspace=apps/worker",

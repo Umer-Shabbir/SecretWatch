@@ -159,6 +159,10 @@ export async function dispatchWebhookEvent(
   payload: Record<string, unknown>
 ): Promise<{ dispatched: number; failed: number }> {
   try {
+    if (!prisma?.webhookEndpoint?.findMany) {
+      return { dispatched: 0, failed: 0 };
+    }
+
     const endpoints = await prisma.webhookEndpoint.findMany({
       where: {
         enabled: true,

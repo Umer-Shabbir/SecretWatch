@@ -70,6 +70,7 @@ model Finding {
   commitSha       String
   matchedRule     String
   redactedSnippet String
+  secretHash      String?
   severity        TemplateSeverity?
   status          FindingStatus @default(PENDING)
   createdAt       DateTime      @default(now())
@@ -84,10 +85,11 @@ model Finding {
 
   // Scanner idempotency (M04): re-scanning the same commit/file/rule must not
   // create duplicate Finding rows. Additive, non-destructive constraint.
-  @@unique([repoFullName, filePath, commitSha, matchedRule], name: "Finding_dedup_key")
+  @@unique([repoFullName, filePath, secretHash], name: "Finding_dedup_key")
   @@index([severity])
   @@index([status])
   @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 model Flag {

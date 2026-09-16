@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState, memo } from "react";
 import { useSSE } from "@/lib/use-sse";
 import type { LiveActivity, ScannerFind, FlaggerFlag, FlaggerFailure, QueueDepth } from "@/lib/activity";
 
@@ -199,7 +199,7 @@ function ScannerPanel({ scanner, now }: { scanner: LiveActivity["scanner"]; now:
   );
 }
 
-function ScannerRow({ find, now }: { find: ScannerFind; now: number }) {
+const ScannerRow = memo(function ScannerRow({ find, now }: { find: ScannerFind; now: number }) {
   return (
     <li className="flex items-start justify-between gap-3 py-2">
       <div className="min-w-0">
@@ -214,7 +214,7 @@ function ScannerRow({ find, now }: { find: ScannerFind; now: number }) {
       </div>
     </li>
   );
-}
+});
 
 function FlaggerPanel({ flagger, now }: { flagger: LiveActivity["flagger"]; now: number }) {
   return (
@@ -245,7 +245,7 @@ function FlaggerPanel({ flagger, now }: { flagger: LiveActivity["flagger"]; now:
   );
 }
 
-function FlaggerRow({ flag, now }: { flag: FlaggerFlag; now: number }) {
+const FlaggerRow = memo(function FlaggerRow({ flag, now }: { flag: FlaggerFlag; now: number }) {
   return (
     <li className="flex items-start justify-between gap-3 py-2">
       <div className="min-w-0">
@@ -265,13 +265,13 @@ function FlaggerRow({ flag, now }: { flag: FlaggerFlag; now: number }) {
       </div>
     </li>
   );
-}
+});
 
-function FailureRow({ failure }: { failure: FlaggerFailure }) {
+const FailureRow = memo(function FailureRow({ failure }: { failure: FlaggerFailure }) {
   return (
     <div className="flex items-start justify-between gap-3 text-[11px]">
       <span className="truncate font-mono text-fg-muted">{failure.repoFullName}</span>
       <span className="shrink-0 text-danger-fg">{failure.failureReason ?? "Unknown error"}</span>
     </div>
   );
-}
+});

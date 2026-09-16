@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { dispatchWebhookEvent } from "./webhooks";
 import { Queue, Worker, type Job } from "bullmq";
 import { QUEUE_NAMES, getRedisConnectionOptions, type FlagJobData } from "@secretwatch/shared";
@@ -165,12 +166,18 @@ export async function runScanForRule(ruleId: string, queryOverride?: string): Pr
       for (const match of matches) {
         const commitSha = toCommitSha(result.sha);
         const severity = inferSeverityForRule(match.ruleName);
+
+        // Compute SHA-256 for secret to utilize in deduplication as per ARCH-001
+        // we use the matched secret from the engine
+        const secretHash = createHash("sha256").update(match.matchedSecret).digest("hex");
+
         const findingResult = await upsertFinding({
           repoFullName: result.repoFullName,
           filePath: result.filePath,
           commitSha,
           matchedRule: match.ruleName,
           redactedSnippet: match.redactedSnippet,
+          secretHash,
           severity,
           status: autoApproveEnabled ? "APPROVED" : "PENDING",
         });
@@ -278,17 +285,18 @@ export async function upsertFinding(data: {
   commitSha: string;
   matchedRule: string;
   redactedSnippet: string;
+  secretHash?: string;
   severity?: FindingSeverityLevel | null;
   status?: "PENDING" | "APPROVED";
 }): Promise<{ wasCreated: boolean; id?: string }> {
+  // If secretHash is provided, use the new deduplication constraint, fallback to finding_dedup_key
   const existing = await prisma.finding.findUnique({
     where: {
       Finding_dedup_key: {
         repoFullName: data.repoFullName,
         filePath: data.filePath,
-        commitSha: data.commitSha,
-        matchedRule: data.matchedRule,
-      }
+        secretHash: data.secretHash ?? null,
+      } as any,
     },
     select: { id: true }, // lightweight select
   });
@@ -305,6 +313,7 @@ export async function upsertFinding(data: {
         commitSha: data.commitSha,
         matchedRule: data.matchedRule,
         redactedSnippet: data.redactedSnippet,
+        secretHash: data.secretHash,
         severity: data.severity,
         status: data.status ?? "PENDING",
       },
@@ -313,7 +322,7 @@ export async function upsertFinding(data: {
     return { wasCreated: true, id: finding.id };
   } catch (err: unknown) {
     // Prisma unique constraint violation code P2002 -> already scanned this
-    // exact commit/file/rule combination. Anything else re-throws.
+    // exact secret in this file. Anything else re-throws.
     if (isUniqueConstraintError(err)) {
       return { wasCreated: false };
     }

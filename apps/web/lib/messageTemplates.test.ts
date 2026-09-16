@@ -211,7 +211,7 @@ describe("renderMessageTemplatePreview", () => {
     const { renderMessageTemplatePreview } = await import("./messageTemplates");
     const rendered = renderMessageTemplatePreview("{{rule}}", true);
     expect(rendered).toContain("If you'd like to support this project, visit:");
-    expect(rendered).toContain("https://github.com/TODO-project-org/secretwatch");
+    expect(rendered).toMatch(/https:\/\/github\.com\/(TODO-project-org|Umer-Shabbir)\/[Ss]ecret[Ww]atch/);
   });
 });
 

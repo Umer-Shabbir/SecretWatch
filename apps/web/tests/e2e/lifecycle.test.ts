@@ -8,6 +8,14 @@ import { POST as RunScannerPost } from "@/app/api/admin/scan/run/route";
 import { prisma } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
 
+vi.mock("@/lib/github-validate", () => ({
+  validateGitHubToken: vi.fn(async () => ({ valid: true, scopes: ["repo"] })),
+}));
+
+vi.mock("@/lib/github-validate", () => ({
+  validateGitHubToken: vi.fn(async () => ({ valid: true, scopes: [] })),
+}));
+
 process.env.TOKEN_ENCRYPTION_KEY = Buffer.alloc(32, 1).toString("base64");
 
 vi.mock("@/lib/queue", () => ({

@@ -1,5 +1,5 @@
 import { createScannerWorker, closeScannerQueues } from "./scanner.worker";
-import { createFlaggerWorker } from "./flagger.worker";
+import { createFlaggerWorker, computeFlaggerConcurrency } from "./flagger.worker";
 import { startScheduler } from "./scheduler";
 
 /**
@@ -25,7 +25,10 @@ async function main() {
     console.log(`[scanner] job ${job.id} completed`);
   });
 
-  const flaggerWorker = createFlaggerWorker();
+  const flaggerConcurrency = await computeFlaggerConcurrency();
+  console.log(`[flagger] initializing with concurrency=${flaggerConcurrency}`);
+  
+  const flaggerWorker = createFlaggerWorker(flaggerConcurrency);
   flaggerWorker.on("failed", (job, err) => {
     // job.data only ever contains { findingId } — never a token or secret.
     console.error(`[flagger] job ${job?.id} failed: ${err.message}`);

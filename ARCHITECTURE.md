@@ -272,3 +272,27 @@ Alternative if Railway free credits run out: single Hetzner CX22 VPS (~€4.5/mo
 7. Admin panel: user mgmt, worker health/stats, rate limit dashboard.
 8. Marketing site pages.
 9. Deploy to Railway, wire domain.
+
+## 10. Worker & Queue Topology
+
+The architecture utilizes robust BullMQ queue definitions to decouple jobs, heavily prioritizing rate limit preservation over throughput speed. 
+
+- **Concurrency Limits**:
+  - `scan-queue`: Must strictly limit concurrency (e.g., `concurrency: 1` or `2`) as GitHub's Code Search API heavily rate limits (30 requests/minute for authenticated users). Employs rate-limit groups or token buckets across rotating API keys.
+  - `flag-queue`: Configured for low, deliberate concurrency (e.g., `concurrency: 3-5`). Rate limitations apply to issuing issue requests; rotating user PATs round-robin.
+
+- **Backoff Strategies**:
+  - Employs Exponential Backoff for API failures (403 Rate Limit / 429 Too Many Requests). Standard configuration:
+    ```javascript
+    attempts: 5,
+    backoff: {
+      type: 'exponential',
+      delay: 5000 // 5s, 10s, 20s, 40s... or parsed from retry-after headers.
+    }
+    ```
+  - For HTTP 403 blocks specifically regarding rate limits where GitHub sends a Reset header, the worker throws a custom `RateLimitError(resetAt)` triggering a custom BullMQ backoff strategy that sleeps the job dynamically until `resetAt`.
+
+- **Dead-Letter Queue (DLQ) & Failure Handling**:
+  - Jobs hitting maximum attempts transition to a `failed` state in BullMQ, effectively acting as a managed DLQ.
+  - The Admin UI surfaces these failed jobs via the BullMQ dashboard or specific database flag states (e.g., `status = FAILED`), allowing manual inspection (e.g., to see if the GitHub repository has since been deleted or made private).
+  - Failed findings can be manually requeued (status pushed back to `PENDING`) safely, as operation logic inside flag issues must guarantee idempotency (checking if an issue already exists before opening a new one). 

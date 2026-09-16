@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "outDir": "dist",
-    "noEmit": true,
+    "noEmit": false,
     "types": ["node"]
   },
   "include": ["src/**/*.ts"],

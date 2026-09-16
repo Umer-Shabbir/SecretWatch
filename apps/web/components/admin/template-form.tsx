@@ -42,8 +42,7 @@ const SECRET_TYPE_OPTIONS: { value: TemplateSecretTypeValue; label: string }[] =
  * text lives in packages/shared/src/template.ts's ATTRIBUTION_LINE; this is
  * a display-only copy of it for the toggle's helper text.
  */
-const ATTRIBUTION_LINE_PREVIEW =
-  "If you'd like to support this project, visit: https://github.com/TODO-project-org/secretwatch";
+const ATTRIBUTION_LINE_PREVIEW = `If you'd like to support this project, visit: ${process.env.NEXT_PUBLIC_APP_URL || "https://github.com/Umer-Shabbir/SecretWatch"}`;
 
 /**
  * Shared Create/Edit Template form — hand-composed "Template Form" frame

@@ -85,39 +85,34 @@ export async function listFlags(query: FlagsListQuery): Promise<FlagsListResult>
   const statusFilter: Array<"FLAGGED" | "FAILED"> =
     status === "FLAGGED" ? ["FLAGGED"] : status === "FAILED" ? ["FAILED"] : ["FLAGGED", "FAILED"];
 
-  const [total, successful, failed] = await Promise.all([
+  const [total, successful, failed, rows] = await Promise.all([
     prisma.finding.count({ where: { status: { in: statusFilter } } }),
     prisma.finding.count({ where: { status: "FLAGGED" } }),
     prisma.finding.count({ where: { status: "FAILED" } }),
-  ]);
-
-  // Fetch a superset (all matching rows up to a sane cap) so FLAGGED/FAILED
-  // can be merged and re-sorted by a single "postedAt" timeline before
-  // paginating in-memory. Flags history is not expected to reach a size
-  // where this becomes a real cost; revisit with a UNION query if it does.
-  const CAP = 2000;
-  const rows = await prisma.finding.findMany({
-    where: { status: { in: statusFilter } },
-    orderBy: { createdAt: "desc" },
-    take: CAP,
-    select: {
-      id: true,
-      repoFullName: true,
-      filePath: true,
-      matchedRule: true,
-      status: true,
-      createdAt: true,
-      failureReason: true,
-      flag: {
-        select: {
-          issueUrl: true,
-          postedAt: true,
-          usedTokenId: true,
-          templateId: true,
+    prisma.finding.findMany({
+      where: { status: { in: statusFilter } },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      select: {
+        id: true,
+        repoFullName: true,
+        filePath: true,
+        matchedRule: true,
+        status: true,
+        createdAt: true,
+        failureReason: true,
+        flag: {
+          select: {
+            issueUrl: true,
+            postedAt: true,
+            usedTokenId: true,
+            templateId: true,
+          },
         },
       },
-    },
-  });
+    }),
+  ]);
 
   const tokenIds = Array.from(new Set(rows.map((r) => r.flag?.usedTokenId).filter((v): v is string => Boolean(v))));
   const templateIds = Array.from(new Set(rows.map((r) => r.flag?.templateId).filter((v): v is string => Boolean(v))));
@@ -164,13 +159,8 @@ export async function listFlags(query: FlagsListQuery): Promise<FlagsListResult>
     };
   });
 
-  flagRows.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-
-  const start = (page - 1) * pageSize;
-  const paged = flagRows.slice(start, start + pageSize);
-
   return {
-    flags: paged,
+    flags: flagRows,
     page,
     pageSize,
     total,

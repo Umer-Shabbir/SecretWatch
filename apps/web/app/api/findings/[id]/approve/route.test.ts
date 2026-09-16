@@ -44,6 +44,9 @@ function resetFakeDb(seed: FakeFindingRow[]) {
         return { count: 1 };
       }),
     },
+    webhookEndpoint: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   };
   sharedPrisma = client;
   return client;

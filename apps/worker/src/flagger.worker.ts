@@ -326,7 +326,25 @@ async function markFailed(findingId: string, reason: string): Promise<void> {
   });
 }
 
-export function createFlaggerWorker(): Worker<FlagJobData> {
+/**
+ * Dynamically computes flagger worker concurrency based on active token count.
+ * Concurrency is clamped between a minimum of 1 and a maximum of 10 (or active token count),
+ * defaulting to 3 when no active tokens exist or on count lookup failure.
+ */
+export async function computeFlaggerConcurrency(): Promise<number> {
+  try {
+    const activeTokenCount = await prisma.githubToken.count({
+      where: { active: true },
+    });
+    if (activeTokenCount <= 0) return 3;
+    // Scale concurrency dynamically: max(1, min(activeTokenCount, 10))
+    return Math.max(1, Math.min(activeTokenCount, 10));
+  } catch {
+    return 3;
+  }
+}
+
+export function createFlaggerWorker(concurrency: number = 3): Worker<FlagJobData> {
   return new Worker<FlagJobData>(
     QUEUE_NAMES.FLAG,
     async (job: Job<FlagJobData>) => {
@@ -343,7 +361,7 @@ export function createFlaggerWorker(): Worker<FlagJobData> {
     },
     {
       connection: getRedisConnectionOptions(),
-      concurrency: 3, // separate concurrency from scan-queue per ARCHITECTURE.md §5
+      concurrency, // dynamically configurable concurrency based on active tokens
     }
   );
 }

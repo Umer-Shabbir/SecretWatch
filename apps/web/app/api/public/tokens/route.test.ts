@@ -38,6 +38,13 @@ vi.mock("@/lib/audit", () => ({
   recordAudit: (params: { userId?: string | null; action: string; detail?: string }) => recordAuditMock(params),
 }));
 
+// Mock GitHub token validation
+let mockValidToken = true;
+let mockTokenScopes = ["public_repo", "repo"];
+vi.mock("@/lib/github-validate", () => ({
+  validateGitHubToken: vi.fn(async () => ({ valid: mockValidToken, scopes: mockTokenScopes })),
+}));
+
 // The rate limiter (lib/rate-limit.ts) keys on IP in module-level in-memory
 // state that persists across tests in this file. Each call to postToken()
 // without an explicit `ip` gets a fresh, never-before-used IP so tests that
@@ -50,6 +57,8 @@ function nextTestIp(): string {
 }
 
 beforeEach(() => {
+  mockValidToken = true;
+  mockTokenScopes = ["public_repo", "repo"];
   recordAuditMock.mockClear();
   sharedPrisma = resetFakeDb();
 });
@@ -75,6 +84,16 @@ describe("POST /api/public/tokens — validation", () => {
     const { POST } = await import("./route");
     const res = await POST(postToken("not-a-real-token") as any);
     expect(res.status).toBe(400);
+    expect(sharedPrisma.githubToken.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid PAT according to GitHub API", async () => {
+    const { POST } = await import("./route");
+    mockValidToken = false;
+    const res = await POST(postToken(FAKE_PAT) as any);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("invalid_token");
     expect(sharedPrisma.githubToken.create).not.toHaveBeenCalled();
   });
 
@@ -112,6 +131,7 @@ describe("POST /api/public/tokens — persistence contract", () => {
     const callArgs = sharedPrisma.githubToken.create.mock.calls[0][0];
     expect(callArgs.data.source).toBe("pat");
     expect(callArgs.data.active).toBe(true);
+    expect(callArgs.data.scopes).toEqual(["public_repo", "repo"]);
     expect(callArgs.data).not.toHaveProperty("userId");
   });
 
