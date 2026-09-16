@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import crypto from "crypto";
-import { assertSafeWebhookUrlAsync, SSRFValidationError } from "@secretwatch/shared";
+import { assertSafeWebhookUrlAsync, safeWebhookFetch, SSRFValidationError } from "@secretwatch/shared";
 import {
   WebhookEndpointSummary,
   WebhookEventType,
@@ -217,7 +217,7 @@ export async function dispatchWebhookEvent(
           const controller = new AbortController();
           const timeout = setTimeout(() => controller.abort(), 5000);
 
-          const res = await fetch(endpoint.url, {
+          const res = await safeWebhookFetch(endpoint.url, {
             method: "POST",
             headers,
             body: bodyToSend,
@@ -286,7 +286,7 @@ export async function testWebhookEndpoint(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
 
-    const res = await fetch(endpoint.url, {
+    const res = await safeWebhookFetch(endpoint.url, {
       method: "POST",
       headers,
       body: bodyToSend,

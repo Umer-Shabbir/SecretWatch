@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireAdmin } from "@/lib/authorize";
 import {
   listWebhookEndpoints,
@@ -6,6 +7,7 @@ import {
   InvalidWebhookError,
 } from "@/lib/webhooks";
 import { recordAudit } from "@/lib/audit";
+import { ALL_WEBHOOK_EVENTS } from "@/lib/webhook-types";
 
 export async function GET() {
   const { session, error } = await requireAdmin();
@@ -27,6 +29,14 @@ export async function GET() {
   }
 }
 
+const createWebhookSchema = z.object({
+  name: z.string().trim().min(1, "name is required").max(255),
+  url: z.string().trim().url("url must be a valid URL"),
+  secret: z.string().nullable().optional(),
+  events: z.array(z.string()).optional(),
+  enabled: z.boolean().optional().default(true),
+});
+
 export async function POST(req: NextRequest) {
   const { session, error } = await requireAdmin();
   if (error === "unauthenticated") {
@@ -43,22 +53,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { name, url, secret, events, enabled } = (body as Record<string, unknown>) ?? {};
+  const parsed = createWebhookSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { message: parsed.error.issues[0]?.message ?? "Invalid input" },
+      { status: 400 }
+    );
+  }
 
-  if (!name || typeof name !== "string") {
-    return NextResponse.json({ message: "name is required" }, { status: 400 });
-  }
-  if (!url || typeof url !== "string") {
-    return NextResponse.json({ message: "url is required" }, { status: 400 });
-  }
+  const { name, url, secret, events, enabled } = parsed.data;
 
   try {
     const created = await createWebhookEndpoint({
       name,
       url,
-      secret: typeof secret === "string" ? secret : null,
-      events: Array.isArray(events) ? (events as string[]) : undefined,
-      enabled: typeof enabled === "boolean" ? enabled : true,
+      secret,
+      events,
+      enabled,
     });
 
     await recordAudit({
