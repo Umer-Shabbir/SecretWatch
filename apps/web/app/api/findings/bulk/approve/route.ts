@@ -47,11 +47,14 @@ export async function POST(request: Request) {
       });
 
       // Fetch the findings to dispatch webhooks for them
+      let validIds: string[] = [];
       try {
         const approvedFindings = await prisma.finding.findMany({
           where: { id: { in: ids }, status: "APPROVED" },
           select: { id: true, repoFullName: true, filePath: true, matchedRule: true, severity: true },
         });
+
+        validIds = approvedFindings.map(f => f.id);
 
         for (const finding of approvedFindings) {
           dispatchWebhookEvent("finding.approved", {
@@ -68,9 +71,9 @@ export async function POST(request: Request) {
       }
 
       const { autoFlagEnabled } = await getSystemSettings();
-      if (autoFlagEnabled) {
+      if (autoFlagEnabled && validIds.length > 0) {
         try {
-          await enqueueFlagJobs(ids);
+          await enqueueFlagJobs(validIds);
         } catch (enqueueErr) {
           console.error(`[findings] failed to enqueue bulk flag jobs:`, enqueueErr instanceof Error ? enqueueErr.message : enqueueErr);
         }

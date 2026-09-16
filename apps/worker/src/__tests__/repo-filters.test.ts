@@ -19,7 +19,7 @@ describe("repo-filters cache", () => {
 
   it("caches database results until TTL expires", async () => {
     const mockFilters = [{ id: "1", type: "ALLOWLIST", pattern: "org/*", enabled: true }];
-    vi.mocked(prisma.repositoryFilter.findMany).mockResolvedValueOnce(mockFilters as any);
+    vi.mocked(prisma.repositoryFilter.findMany).mockReturnValueOnce(Promise.resolve(mockFilters) as unknown as ReturnType<typeof prisma.repositoryFilter.findMany>);
 
     const f1 = await getActiveRepoFilters();
     expect(f1).toEqual(mockFilters);
@@ -35,8 +35,8 @@ describe("repo-filters cache", () => {
     const mockFilters = [{ id: "1", type: "ALLOWLIST", pattern: "org/*", enabled: true }];
     
     // Make the DB call take a small amount of time
-    vi.mocked(prisma.repositoryFilter.findMany).mockImplementationOnce(() => 
-      new Promise((resolve) => setTimeout(() => resolve(mockFilters as any), 10))
+    vi.mocked(prisma.repositoryFilter.findMany).mockImplementationOnce(() =>
+      new Promise((resolve) => setTimeout(() => resolve(mockFilters as any), 10)) as unknown as ReturnType<typeof prisma.repositoryFilter.findMany>
     );
 
     const promises = [
