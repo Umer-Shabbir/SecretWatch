@@ -79,9 +79,6 @@ export async function PATCH(request: NextRequest) {
     await enqueueFlagJobs(findings.map(f => f.id)).catch(() => {});
   }
 
-  if (parsed.data.scanIntervalMinutes !== undefined) {
-    await import("@/lib/queue").then(q => q.syncSchedulerIntervalFromWeb(parsed.data.scanIntervalMinutes!)).catch(() => {});
-  }
 
   await recordAudit({
     userId: session!.user.id,

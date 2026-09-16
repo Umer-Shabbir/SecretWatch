@@ -72,9 +72,22 @@ export default function SubmitTokenPage() {
         <p className="max-w-md text-sm text-fg-muted">
           Thank you. Your token will be used to scan public GitHub repositories for leaked secrets.
         </p>
-        <Link href="/" className="text-sm font-medium text-accent-fg hover:underline">
-          Back to home
-        </Link>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Button
+            variant="secondary"
+            className="w-auto"
+            onClick={() => {
+              setMaskedIdentifier(null);
+              setError(null);
+              setToken("");
+            }}
+          >
+            Submit another token
+          </Button>
+          <Link href="/" className="text-sm font-medium text-accent-fg hover:underline px-3 py-2">
+            Back to home
+          </Link>
+        </div>
       </main>
     );
   }

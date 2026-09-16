@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { useSSE } from "@/lib/use-sse";
 import { adminNav } from "./sidebar";
 
@@ -19,7 +20,30 @@ export function Header({
 }) {
   const { connected, error } = useSSE({});
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const pathname = usePathname();
+
+  useEffect(() => {
+    const currentTheme = document.documentElement.dataset.theme as "light" | "dark" | undefined;
+    if (currentTheme) {
+      setTheme(currentTheme);
+    } else {
+      setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    }
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    document.documentElement.dataset.theme = newTheme;
+  }, [theme]);
+
+  // Handle logout
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/admin-sign-in" });
+  };
+
 
   return (
     <header className="relative z-40 shrink-0 border-b border-border-default bg-canvas-default">
@@ -65,21 +89,73 @@ export function Header({
           <button
             type="button"
             aria-label="Toggle theme"
-            className="hidden sm:flex size-8 items-center justify-center rounded-small border border-border-default bg-canvas-default text-fg-muted"
+            onClick={toggleTheme}
+            className="hidden sm:flex size-8 items-center justify-center rounded-small border border-border-default bg-canvas-default text-fg-muted hover:bg-canvas-subtle transition-colors"
           >
             <span aria-hidden="true">◐</span>
           </button>
-          {userImage ? (
-            <Image
-              src={userImage}
-              alt={userName ? `${userName} avatar` : "Account avatar"}
-              width={32}
-              height={32}
-              className="size-8 rounded-full"
-            />
-          ) : (
-            <span className="size-8 rounded-full bg-accent-subtle" aria-hidden="true" />
-          )}
+
+          {/* Account menu dropdown (UX-002) */}
+          <div className="relative">
+            <button
+              type="button"
+              aria-label="Account menu"
+              aria-expanded={accountMenuOpen}
+              aria-haspopup="true"
+              onClick={() => setAccountMenuOpen((v) => !v)}
+              className="flex items-center gap-1 rounded-full border border-transparent focus:outline-none focus:ring-2 focus:ring-accent-emphasis"
+            >
+              {userImage ? (
+                <Image
+                  src={userImage}
+                  alt={userName ? `${userName} avatar` : "Account avatar"}
+                  width={32}
+                  height={32}
+                  className="size-8 rounded-full"
+                />
+              ) : (
+                <span className="flex size-8 items-center justify-center rounded-full bg-accent-subtle text-accent-fg font-semibold text-xs" aria-hidden="true">
+                  {userName ? userName.slice(0, 2).toUpperCase() : "AD"}
+                </span>
+              )}
+            </button>
+
+            {accountMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setAccountMenuOpen(false)}
+                  aria-hidden="true"
+                />
+                <div
+                  role="menu"
+                  aria-orientation="vertical"
+                  className="absolute right-0 top-full mt-2 z-50 w-56 rounded-medium border border-border-default bg-canvas-default p-1 shadow-lg"
+                >
+                  <div className="px-3 py-2 border-b border-border-default text-xs">
+                    <p className="font-semibold text-fg-default truncate">
+                      {userName || "Administrator"}
+                    </p>
+                    <p className="text-fg-muted truncate">Admin Account</p>
+                  </div>
+                  <div className="py-1">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setAccountMenuOpen(false);
+                        handleSignOut();
+                      }}
+                      className="flex w-full items-center gap-2 rounded-small px-3 py-1.5 text-xs text-danger-fg hover:bg-danger-subtle transition-colors text-left"
+                    >
+                      <span aria-hidden="true">⎋</span>
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

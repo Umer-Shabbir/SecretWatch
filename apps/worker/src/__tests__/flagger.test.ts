@@ -73,28 +73,11 @@ describe("resolveTemplateForFinding", () => {
     mockTemplates.length = 0;
   });
 
-  it("resolves specific template by severity and secret type", async () => {
-    mockTemplates.push({ id: "t1", severity: "CRITICAL", secretType: "AWS_KEY" });
+  it("returns default template directly", async () => {
     mockTemplates.push({ id: "default", isDefault: true });
 
     const tmpl = await resolveTemplateForFinding({ severity: "CRITICAL", matchedRule: "AWS Access Key" });
-    expect(tmpl.id).toBe("t1");
-  });
-
-  it("falls back to secret type alone", async () => {
-    mockTemplates.push({ id: "t2", secretType: "AWS_KEY" }); // no severity set
-    mockTemplates.push({ id: "default", isDefault: true });
-
-    const tmpl = await resolveTemplateForFinding({ severity: "CRITICAL", matchedRule: "AWS Access Key" });
-    expect(tmpl.id).toBe("t2");
-  });
-
-  it("falls back to severity alone", async () => {
-    mockTemplates.push({ id: "t3", severity: "CRITICAL" }); // no secretType set
-    mockTemplates.push({ id: "default", isDefault: true });
-
-    const tmpl = await resolveTemplateForFinding({ severity: "CRITICAL", matchedRule: "AWS Access Key" });
-    expect(tmpl.id).toBe("t3");
+    expect(tmpl.id).toBe("default");
   });
 
   it("creates and falls back to default if no matches found", async () => {

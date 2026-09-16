@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreateFilterDialog } from "./create-filter-dialog";
 import { EditFilterDialog } from "./edit-filter-dialog";
+import { DeleteFilterDialog } from "./delete-filter-dialog";
 import type { RepositoryFilterSummary } from "@/lib/repository-filters";
 
 export function RepositoryFiltersClient({ initialFilters }: { initialFilters: RepositoryFilterSummary[] }) {
@@ -103,7 +104,7 @@ export function RepositoryFiltersClient({ initialFilters }: { initialFilters: Re
                     </div>
                   </td>
                   <td className="px-4 py-3 align-top text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="secondary"
                         className="w-auto px-2.5 h-8 text-xs"
@@ -154,33 +155,13 @@ export function RepositoryFiltersClient({ initialFilters }: { initialFilters: Re
         />
       )}
 
-      {/* Basic Delete Confirmation Modal inline */}
-      {deleteFilterId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-lg bg-canvas-default p-6 shadow-lg border border-border-default">
-            <h3 className="mb-2 text-lg font-medium text-fg-default">Delete Filter Rule</h3>
-            <p className="mb-6 text-sm text-fg-muted">
-              Are you sure you want to delete this rule? This cannot be undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="secondary"
-                disabled={deleting}
-                onClick={() => setDeleteFilterId(null)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                disabled={deleting}
-                onClick={handleDelete}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteFilterDialog
+        open={Boolean(deleteFilterId)}
+        filterPattern={filters.find((f) => f.id === deleteFilterId)?.pattern ?? "this rule"}
+        onCancel={() => setDeleteFilterId(null)}
+        onConfirm={handleDelete}
+        deleting={deleting}
+      />
     </div>
   );
 }

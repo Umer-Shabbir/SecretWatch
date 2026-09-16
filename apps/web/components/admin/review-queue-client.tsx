@@ -211,15 +211,22 @@ export function ReviewQueueClient({
         setActionError(body?.message ?? `Could not ${action} selected findings.`);
         return;
       }
-      setResult((prev) =>
-        prev
-          ? {
-              ...prev,
-              findings: prev.findings.filter((f) => !ids.includes(f.id)),
-              total: Math.max(prev.total - ids.length, 0),
-            }
-          : prev
-      );
+      setResult((prev) => {
+        if (!prev) return prev;
+        const newFindings = prev.findings.filter((f) => !ids.includes(f.id));
+        const newTotal = Math.max(prev.total - ids.length, 0);
+
+        // UX-007: Fetch previous page if current page becomes empty
+        if (newFindings.length === 0 && page > 1) {
+          setPage(page - 1);
+        }
+
+        return {
+          ...prev,
+          findings: newFindings,
+          total: newTotal,
+        };
+      });
       setSelectedIds(new Set());
       router.refresh();
     } catch {
@@ -378,7 +385,11 @@ export function ReviewQueueClient({
                     />
                     <div className="flex-1">
                       <div className="flex flex-wrap items-start justify-between gap-2">
-                        <span className="text-base font-semibold text-accent-fg underline">{finding.repoFullName}</span>
+                        <span className="text-base font-semibold text-accent-fg hover:underline">
+                          <a href={`https://github.com/${finding.repoFullName}`} target="_blank" rel="noreferrer">
+                            {finding.repoFullName}
+                          </a>
+                        </span>
                         <div className="flex gap-2">
                           <FindingSeverityBadge severity={finding.severity} />
                           <FindingStatusBadge status="PENDING" />

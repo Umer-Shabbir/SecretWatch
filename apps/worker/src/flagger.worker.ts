@@ -128,51 +128,6 @@ export async function resolveTemplateForFinding(finding: {
   severity?: TemplateSeverity | null;
   matchedRule?: string | null;
 }) {
-  const secretType = finding.matchedRule ? inferSecretTypeFromRule(finding.matchedRule) : null;
-  const severity = finding.severity ?? null;
-
-  // 1. Match both severity & secretType
-  if (severity && secretType) {
-    const matched = await prisma.messageTemplate.findFirst({
-      where: { severity, secretType },
-      orderBy: { createdAt: "desc" },
-    });
-    if (matched) return matched;
-  }
-
-  // 2. Match secretType alone
-  if (secretType) {
-    const matched = await prisma.messageTemplate.findFirst({
-      where: { secretType, severity: null },
-      orderBy: { createdAt: "desc" },
-    });
-    if (matched) return matched;
-
-    // Also check any template matching secretType regardless of severity
-    const matchedAnySeverity = await prisma.messageTemplate.findFirst({
-      where: { secretType },
-      orderBy: { createdAt: "desc" },
-    });
-    if (matchedAnySeverity) return matchedAnySeverity;
-  }
-
-  // 3. Match severity alone
-  if (severity) {
-    const matched = await prisma.messageTemplate.findFirst({
-      where: { severity, secretType: null },
-      orderBy: { createdAt: "desc" },
-    });
-    if (matched) return matched;
-
-    // Also check any template matching severity regardless of secretType
-    const matchedAnySecretType = await prisma.messageTemplate.findFirst({
-      where: { severity },
-      orderBy: { createdAt: "desc" },
-    });
-    if (matchedAnySecretType) return matchedAnySecretType;
-  }
-
-  // 4. Default template fallback
   return getOrCreateDefaultTemplate();
 }
 

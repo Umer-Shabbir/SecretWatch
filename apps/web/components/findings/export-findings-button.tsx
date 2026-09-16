@@ -14,11 +14,13 @@ export function ExportFindingsButton({
   className = "",
 }: ExportFindingsButtonProps) {
   const [exporting, setExporting] = useState<"csv" | "json" | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleExport(format: "csv" | "json") {
     if (exporting) return;
 
     setExporting(format);
+    setError(null);
     try {
       const params = new URLSearchParams({
         format,
@@ -60,32 +62,39 @@ export function ExportFindingsButton({
       window.URL.revokeObjectURL(downloadUrl);
     } catch (err) {
       console.error(`Export to ${format.toUpperCase()} failed:`, err);
-      alert("Export failed. Please try again.");
+      setError("Export failed. Please try again.");
     } finally {
       setExporting(null);
     }
   }
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <Button
-        variant="secondary"
-        onClick={() => handleExport("csv")}
-        loading={exporting === "csv"}
-        disabled={exporting !== null}
-        className="w-auto h-8 px-3 text-xs font-medium"
-      >
-        Export CSV
-      </Button>
-      <Button
-        variant="secondary"
-        onClick={() => handleExport("json")}
-        loading={exporting === "json"}
-        disabled={exporting !== null}
-        className="w-auto h-8 px-3 text-xs font-medium"
-      >
-        Export JSON
-      </Button>
+    <div className={`flex flex-col gap-1 ${className}`}>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="secondary"
+          onClick={() => handleExport("csv")}
+          loading={exporting === "csv"}
+          disabled={exporting !== null}
+          className="w-auto h-8 px-3 text-xs font-medium"
+        >
+          Export CSV
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => handleExport("json")}
+          loading={exporting === "json"}
+          disabled={exporting !== null}
+          className="w-auto h-8 px-3 text-xs font-medium"
+        >
+          Export JSON
+        </Button>
+      </div>
+      {error && (
+        <span role="alert" className="text-xs text-danger-fg">
+          {error}
+        </span>
+      )}
     </div>
   );
 }
