@@ -61,6 +61,7 @@ async function pickActiveToken() {
     const candidates = await prisma.githubToken.findMany({
       where: { active: true },
       orderBy: { lastUsedAt: "asc" },
+      take: 50,
       select: { id: true, encrypted: true, rateLimitRemaining: true, rateLimitResetAt: true, lastUsedAt: true },
     });
 

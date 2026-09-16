@@ -81,18 +81,17 @@ export async function enqueueFlagJob(findingId: string): Promise<void> {
  */
 export async function enqueueScanJobs(ruleIds: string[]): Promise<number> {
   const queue = getScanQueue();
-  for (const ruleId of ruleIds) {
-    await queue.add(
-      "scan-rule",
-      { ruleId },
-      {
-        attempts: 3,
-        backoff: { type: "exponential", delay: 5_000 },
-        removeOnComplete: { count: 500 },
-        removeOnFail: { count: 500 },
-      }
-    );
-  }
+  const jobs = ruleIds.map((ruleId) => ({
+    name: "scan-rule",
+    data: { ruleId },
+    opts: {
+      attempts: 3,
+      backoff: { type: "exponential", delay: 5_000 },
+      removeOnComplete: { count: 500 },
+      removeOnFail: { count: 500 },
+    },
+  }));
+  await queue.addBulk(jobs);
   return ruleIds.length;
 }
 
@@ -102,18 +101,17 @@ export async function enqueueScanJobs(ruleIds: string[]): Promise<number> {
  */
 export async function enqueueFlagJobs(findingIds: string[]): Promise<number> {
   const queue = getFlagQueue();
-  for (const findingId of findingIds) {
-    await queue.add(
-      "flag-finding",
-      { findingId },
-      {
-        attempts: 3,
-        backoff: { type: "exponential", delay: 5_000 },
-        removeOnComplete: { count: 500 },
-        removeOnFail: { count: 500 },
-      }
-    );
-  }
+  const jobs = findingIds.map((findingId) => ({
+    name: "flag-finding",
+    data: { findingId },
+    opts: {
+      attempts: 3,
+      backoff: { type: "exponential", delay: 5_000 },
+      removeOnComplete: { count: 500 },
+      removeOnFail: { count: 500 },
+    },
+  }));
+  await queue.addBulk(jobs);
   return findingIds.length;
 }
 

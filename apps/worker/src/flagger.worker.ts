@@ -70,6 +70,7 @@ async function pickFlaggingToken(threshold: number) {
     const candidates = await prisma.githubToken.findMany({
       where: { active: true },
       orderBy: { lastUsedAt: "asc" },
+      take: 50,
       select: { id: true, encrypted: true, rateLimitRemaining: true, rateLimitResetAt: true, lastUsedAt: true },
     });
 
@@ -104,6 +105,7 @@ async function pickFlaggingToken(threshold: number) {
       return healthy;
     }
     // If count is 0, another worker just claimed it. Loop and try to pick the next one.
+    await new Promise((resolve) => setTimeout(resolve, 50 + Math.random() * 100));
   }
 }
 
