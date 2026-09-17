@@ -54,7 +54,9 @@ async function main() {
   process.on("SIGTERM", shutdown);
 }
 
-main().catch((err) => {
-  console.error("[worker] fatal startup error:", err instanceof Error ? err.message : err);
-  process.exit(1);
-});
+if (process.env.NODE_ENV !== "test") {
+  main().catch((err) => {
+    console.error("[worker] fatal startup error:", err instanceof Error ? err.message : err);
+    process.exit(1);
+  });
+}

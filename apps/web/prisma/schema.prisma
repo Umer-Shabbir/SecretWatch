@@ -64,7 +64,7 @@ model GithubToken {
 }
 
 model Finding {
-  id              String        @id @default(cuid())
+  id              String            @id @default(cuid())
   repoFullName    String
   filePath        String
   commitSha       String
@@ -72,8 +72,8 @@ model Finding {
   redactedSnippet String
   secretHash      String?
   severity        TemplateSeverity?
-  status          FindingStatus @default(PENDING)
-  createdAt       DateTime      @default(now())
+  status          FindingStatus     @default(PENDING)
+  createdAt       DateTime          @default(now())
   flag            Flag?
 
   // M07 (Flagger): plain-text reason a flag attempt failed (e.g. "GitHub API
@@ -85,7 +85,7 @@ model Finding {
 
   // Scanner idempotency (M04): re-scanning the same commit/file/rule must not
   // create duplicate Finding rows. Additive, non-destructive constraint.
-  @@unique([repoFullName, filePath, secretHash], name: "Finding_dedup_key")
+  @@unique([repoFullName, filePath, commitSha, matchedRule, secretHash], name: "Finding_dedup_key")
   @@index([severity])
   @@index([status])
   @@index([createdAt])
@@ -182,9 +182,9 @@ model ScanRule {
 // with no restart. Defaults are ON so existing worker behavior is unchanged
 // for any deployment that never touches the switches.
 model SystemSetting {
-  id             String   @id @default("singleton")
-  scannerEnabled Boolean  @default(true)
-  flaggerEnabled Boolean  @default(true)
+  id             String  @id @default("singleton")
+  scannerEnabled Boolean @default(true)
+  flaggerEnabled Boolean @default(true)
 
   // Whole-system tuning knobs (2026-08-24 admin-control addition). All are
   // read fresh per job/request by the worker + approve route, so an admin
@@ -228,6 +228,9 @@ model AuditLog {
   action    String
   detail    String?
   createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
 }
 
 // Generic webhook integration so outward alerts can be triggered

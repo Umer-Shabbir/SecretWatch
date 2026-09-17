@@ -79,6 +79,12 @@ export async function PATCH(request: NextRequest) {
     await enqueueFlagJobs(findings.map(f => f.id)).catch(() => {});
   }
 
+  if (parsed.data.autoApproveEnabled === true) {
+    await prisma.finding.updateMany({
+      where: { status: "PENDING" },
+      data: { status: "APPROVED" },
+    });
+  }
 
   await recordAudit({
     userId: session!.user.id,

@@ -32,19 +32,19 @@ function resetFakeDb() {
     finding: {
       findUnique: vi.fn(async ({ where }: any) => {
         if (where.Finding_dedup_key) {
-          const { repoFullName, filePath, commitSha, matchedRule } = where.Finding_dedup_key;
-          const key = `${repoFullName}::${filePath}::${commitSha}::${matchedRule}`;
+          const { repoFullName, filePath, commitSha, matchedRule, secretHash } = where.Finding_dedup_key;
+          const key = `${repoFullName}::${filePath}::${commitSha}::${matchedRule}::${secretHash ?? ""}`;
           const found = rows.find(
-            (r) => `${r.repoFullName}::${r.filePath}::${r.commitSha}::${r.matchedRule}` === key
+            (r: any) => `${r.repoFullName}::${r.filePath}::${r.commitSha}::${r.matchedRule}::${r.secretHash ?? ""}` === key
           );
           return found ? { id: found.id } : null;
         }
         return null;
       }),
       create: vi.fn(async ({ data }: any) => {
-        const key = `${data.repoFullName}::${data.filePath}::${data.commitSha}::${data.matchedRule}`;
+        const key = `${data.repoFullName}::${data.filePath}::${data.commitSha}::${data.matchedRule}::${data.secretHash ?? ""}`;
         const exists = rows.find(
-          (r) => `${r.repoFullName}::${r.filePath}::${r.commitSha}::${r.matchedRule}` === key
+          (r: any) => `${r.repoFullName}::${r.filePath}::${r.commitSha}::${r.matchedRule}::${r.secretHash ?? ""}` === key
         );
         if (exists) {
           throw makeUniqueError();

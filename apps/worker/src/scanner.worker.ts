@@ -40,7 +40,23 @@ function clampPageSize(n: number): number {
 }
 
 /** Builds a GitHub code search query string for a rule's characteristic prefix, to shard scans (ARCHITECTURE.md §5). */
-function buildQueryForRule(rule: { name: string }): string {
+function buildQueryForRule(rule: { name: string; pattern?: string }): string {
+  if (rule.pattern) {
+    // Extract literal prefix from regex pattern (e.g. ^ghp_ -> ghp_)
+    const prefixRegex = new RegExp("^[\^\b]*([a-zA-Z0-9_]{3,})");
+    const match = prefixRegex.exec(rule.pattern);
+    if (match && match[1]) {
+      return `${match[1]} in:file`;
+    }
+    
+    // Extract literal from non-capturing group prefix (e.g. ^(?:ghp_ -> ghp_)
+    const groupRegex = new RegExp("^[\^\b]*\(\?\:([a-zA-Z0-9_]{3,})");
+    const groupMatch = groupRegex.exec(rule.pattern);
+    if (groupMatch && groupMatch[1]) {
+      return `${groupMatch[1]} in:file`;
+    }
+  }
+
   // Conservative, generic query per rule name — refined per-rule below where
   // a known literal prefix exists (keeps queries efficient and GitHub-search
   // syntax valid, since GitHub code search does not support arbitrary regex).
@@ -86,6 +102,7 @@ async function pickActiveToken() {
       where: {
         id: tokenToClaim.id,
         lastUsedAt: tokenToClaim.lastUsedAt,
+        active: true,
       },
       data: { lastUsedAt: new Date() },
     });
@@ -93,6 +110,8 @@ async function pickActiveToken() {
     if (result.count > 0) {
       return tokenToClaim;
     }
+    // If count is 0, another worker just claimed it. Loop and try to pick the next one.
+    await new Promise((resolve) => setTimeout(resolve, 50 + Math.random() * 100));
   }
 }
 
@@ -296,8 +315,10 @@ export async function upsertFinding(data: {
       Finding_dedup_key: {
         repoFullName: data.repoFullName,
         filePath: data.filePath,
-        secretHash: data.secretHash ?? null,
-      } as any,
+        commitSha: data.commitSha,
+        matchedRule: data.matchedRule,
+        secretHash: data.secretHash ?? "",
+      },
     },
     select: { id: true }, // lightweight select
   });

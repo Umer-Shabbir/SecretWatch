@@ -39,11 +39,27 @@ function applyFilters(where: any, rows: FakeFindingRow[]): FakeFindingRow[] {
   if (where?.status) {
     result = result.filter((r) => r.status === where.status);
   }
-  if (where?.OR) {
-    const q = (where.OR[0]?.repoFullName?.contains ?? "").toLowerCase();
-    result = result.filter(
-      (r) => r.repoFullName.toLowerCase().includes(q) || r.filePath.toLowerCase().includes(q)
-    );
+  if (where?.AND) {
+    for (const clause of where.AND) {
+      if (clause.OR) {
+        const q = (clause.OR[0]?.repoFullName?.contains ?? "").toLowerCase();
+        result = result.filter(
+          (r) => r.repoFullName.toLowerCase().includes(q) || r.filePath.toLowerCase().includes(q)
+        );
+      }
+    }
+  } else if (where?.OR) {
+    result = result.filter((r) => {
+      return where.OR.some((clause: any) => {
+        if (clause.repoFullName?.contains) {
+          return r.repoFullName.toLowerCase().includes(clause.repoFullName.contains.toLowerCase());
+        }
+        if (clause.filePath?.contains) {
+          return r.filePath.toLowerCase().includes(clause.filePath.contains.toLowerCase());
+        }
+        return false;
+      });
+    });
   }
   return result;
 }

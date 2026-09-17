@@ -16,6 +16,7 @@ export interface NavItem {
 export const adminNav: NavItem[] = [
   { label: "Overview", href: "/admin", exact: true },
   { label: "Review Queue", href: "/admin/review-queue" },
+  { label: "Audit Log", href: "/admin/activity" },
   { label: "Scan Rules", href: "/admin/rules" },
   { label: "Repo Filters", href: "/admin/repository-filters" },
   { label: "Templates", href: "/admin/templates" },

@@ -39,6 +39,7 @@ export interface FindingSummary {
   /** Short display form of the commit SHA (first 7 chars), matching GitHub's own convention. */
   commitSha: string;
   createdAt: string; // ISO 8601
+  failureReason?: string | null;
 }
 
 export interface FindingsListResult {
@@ -359,10 +360,15 @@ export async function listFindings(query: FindingsListQuery): Promise<FindingsLi
     where.severity = severity;
   }
   if (q) {
-    where.OR = [
-      { repoFullName: { contains: q, mode: "insensitive" } },
-      { filePath: { contains: q, mode: "insensitive" } },
-    ];
+    const tokens = q.split(/\s+/).filter(Boolean);
+    if (tokens.length > 0) {
+      where.AND = tokens.map((token) => ({
+        OR: [
+          { repoFullName: { contains: token, mode: "insensitive" } },
+          { filePath: { contains: token, mode: "insensitive" } },
+        ],
+      }));
+    }
   }
 
   const [total, rows] = await Promise.all([
@@ -381,6 +387,7 @@ export async function listFindings(query: FindingsListQuery): Promise<FindingsLi
         status: true,
         commitSha: true,
         createdAt: true,
+        failureReason: true,
       },
     }),
   ]);
@@ -394,6 +401,7 @@ export async function listFindings(query: FindingsListQuery): Promise<FindingsLi
     severity: row.severity,
     commitSha: toShortSha(row.commitSha),
     createdAt: row.createdAt.toISOString(),
+    ...(row.failureReason ? { failureReason: row.failureReason } : {}),
   }));
 
   return {
@@ -433,29 +441,29 @@ function buildFindingsWhere(query: Omit<FindingsExportQuery, "format">) {
     where.severity = severity;
   }
   if (q) {
-    where.OR = [
-      { repoFullName: { contains: q, mode: "insensitive" } },
-      { filePath: { contains: q, mode: "insensitive" } },
-    ];
+    const tokens = q.split(/\s+/).filter(Boolean);
+    if (tokens.length > 0) {
+      where.AND = tokens.map((token) => ({
+        OR: [
+          { repoFullName: { contains: token, mode: "insensitive" } },
+          { filePath: { contains: token, mode: "insensitive" } },
+        ],
+      }));
+    }
   }
   return where;
 }
 
 const CHUNK_SIZE = 500;
 
-export async function exportFindingsToCSV(query: FindingsExportQuery, controller: ReadableStreamDefaultController) {
-  const encoder = new TextEncoder();
-  const headers = ["ID", "Repository", "File Path", "Rule", "Severity", "Status", "Commit SHA", "Created At", "Failure Reason"];
-  controller.enqueue(encoder.encode(headers.map(h => `"${h}"`).join(",") + "\n"));
-
-  const where = buildFindingsWhere(query);
+export async function* fetchFindingsInChunks(where: Record<string, unknown>, chunkSize: number = CHUNK_SIZE) {
   let cursor: string | undefined = undefined;
 
   while (true) {
     const chunk: any[] = await prisma.finding.findMany({
       where,
       orderBy: { id: "asc" },
-      take: CHUNK_SIZE,
+      take: chunkSize,
       cursor: cursor ? { id: cursor } : undefined,
       skip: cursor ? 1 : 0,
       select: {
@@ -473,6 +481,20 @@ export async function exportFindingsToCSV(query: FindingsExportQuery, controller
 
     if (chunk.length === 0) break;
 
+    yield chunk;
+
+    cursor = chunk[chunk.length - 1].id;
+  }
+}
+
+export async function exportFindingsToCSV(query: FindingsExportQuery, controller: ReadableStreamDefaultController) {
+  const encoder = new TextEncoder();
+  const headers = ["ID", "Repository", "File Path", "Rule", "Severity", "Status", "Commit SHA", "Created At", "Failure Reason"];
+  controller.enqueue(encoder.encode(headers.map(h => `"${h}"`).join(",") + "\n"));
+
+  const where = buildFindingsWhere(query);
+
+  for await (const chunk of fetchFindingsInChunks(where, CHUNK_SIZE)) {
     for (const row of chunk) {
       const csvRow = [
         row.id,
@@ -485,11 +507,9 @@ export async function exportFindingsToCSV(query: FindingsExportQuery, controller
         row.createdAt.toISOString(),
         row.failureReason ?? "",
       ].map(val => `"${String(val).replace(/"/g, '""')}"`);
-      
+
       controller.enqueue(encoder.encode(csvRow.join(",") + "\n"));
     }
-
-    cursor = chunk[chunk.length - 1].id;
   }
   controller.close();
 }
@@ -499,38 +519,16 @@ export async function exportFindingsToJSON(query: FindingsExportQuery, controlle
   controller.enqueue(encoder.encode("[\n"));
 
   const where = buildFindingsWhere(query);
-  let cursor: string | undefined = undefined;
   let isFirst = true;
 
-  while (true) {
-    const chunk: any[] = await prisma.finding.findMany({
-      where,
-      orderBy: { id: "asc" },
-      take: CHUNK_SIZE,
-      cursor: cursor ? { id: cursor } : undefined,
-      skip: cursor ? 1 : 0,
-      select: {
-        id: true,
-        repoFullName: true,
-        filePath: true,
-        matchedRule: true,
-        severity: true,
-        status: true,
-        commitSha: true,
-        createdAt: true,
-        failureReason: true,
-      },
-    });
-
-    if (chunk.length === 0) break;
-
+  for await (const chunk of fetchFindingsInChunks(where, CHUNK_SIZE)) {
     for (const row of chunk) {
       if (!isFirst) {
         controller.enqueue(encoder.encode(",\n"));
       } else {
         isFirst = false;
       }
-      
+
       const jsonRow = {
         id: row.id,
         repoFullName: row.repoFullName,
@@ -542,13 +540,11 @@ export async function exportFindingsToJSON(query: FindingsExportQuery, controlle
         createdAt: row.createdAt.toISOString(),
         failureReason: row.failureReason,
       };
-      
+
       controller.enqueue(encoder.encode(JSON.stringify(jsonRow)));
     }
-
-    cursor = chunk[chunk.length - 1].id;
   }
-  
+
   controller.enqueue(encoder.encode("\n]"));
   controller.close();
 }

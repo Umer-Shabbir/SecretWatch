@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/authorize";
 import { prisma } from "@/lib/db";
 import { recordAudit } from "@/lib/audit";
-import { encrypt, maskToken } from "@/lib/token-crypto";
+import { encrypt, maskToken } from "@secretwatch/shared";
 import { PAT_PATTERN } from "@/lib/pat-format";
 import { listAdminTokens } from "@/lib/admin-tokens";
 import { validateGitHubToken } from "@/lib/github-validate";

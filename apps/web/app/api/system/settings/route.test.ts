@@ -48,6 +48,7 @@ vi.mock("@/lib/audit", () => ({
 
 let mockRules: any[] = [];
 let mockFindings: any[] = [];
+const updateManyFindingsMock = vi.fn((..._args: any[]) => Promise.resolve({ count: 0 }));
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -56,6 +57,7 @@ vi.mock("@/lib/db", () => ({
     },
     finding: {
       findMany: vi.fn(async () => mockFindings),
+      updateMany: vi.fn((..._args: any[]) => updateManyFindingsMock(..._args)),
     },
   },
 }));
@@ -66,6 +68,7 @@ beforeEach(() => {
   enqueueScanJobsMock.mockClear();
   enqueueFlagJobsMock.mockClear();
   recordAuditMock.mockClear();
+  updateManyFindingsMock.mockClear();
   mockRules = [];
   mockFindings = [];
 });
@@ -122,6 +125,19 @@ describe("PATCH /api/system/settings", () => {
     expect(res.status).toBe(200);
     expect(enqueueFlagJobsMock).toHaveBeenCalledWith(["finding-1"]);
     expect(enqueueScanJobsMock).not.toHaveBeenCalled();
+  });
+
+  it("bulk transitions pending findings when autoApproveEnabled is toggled ON", async () => {
+    const { PATCH } = await import("./route");
+    const res = await PATCH(new Request("http://localhost", {
+      method: "PATCH",
+      body: JSON.stringify({ autoApproveEnabled: true }),
+    }) as any);
+    expect(res.status).toBe(200);
+    expect(updateManyFindingsMock).toHaveBeenCalledWith({
+      where: { status: "PENDING" },
+      data: { status: "APPROVED" },
+    });
   });
 
   it("does not enqueue jobs when toggling scanner or flagger OFF", async () => {

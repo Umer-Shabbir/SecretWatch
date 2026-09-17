@@ -1,23 +1,47 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/authorize";
-import { getLiveActivity } from "@/lib/activity";
+import { prisma } from "@/lib/db";
 
-/**
- * GET /api/admin/activity (2026-08-24 admin-control addition).
- *
- * Live worker activity feed for the admin Overview: recent scanner findings,
- * recent flagger flags + failures, and live scan/flag queue depth. Polled by
- * the Overview's WorkerActivity client component so operators see what the
- * workers are doing without a manual refresh.
- *
- * Authorization: ADMIN only, same gate as every other /admin/* API route.
- */
-export async function GET() {
+const PAGE_SIZE = 20;
+
+export async function GET(request: NextRequest) {
   const { error } = await requireAdmin();
   if (error) {
-    return NextResponse.json({ error }, { status: error === "unauthenticated" ? 401 : 403 });
+    return NextResponse.json({ error }, { status: error === "forbidden" ? 403 : 401 });
   }
 
-  const activity = await getLiveActivity();
-  return NextResponse.json(activity);
+  const { searchParams } = new URL(request.url);
+  const pageParam = searchParams.get("page");
+  const pageSizeParam = searchParams.get("pageSize");
+
+  const page = pageParam ? Math.max(1, parseInt(pageParam, 10)) : 1;
+  const pageSize = pageSizeParam ? Math.min(50, Math.max(1, parseInt(pageSizeParam, 10))) : PAGE_SIZE;
+
+  try {
+    const [total, rows] = await Promise.all([
+      prisma.auditLog.count(),
+      prisma.auditLog.findMany({
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: {
+          id: true,
+          userId: true,
+          action: true,
+          detail: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+
+    return NextResponse.json({
+      logs: rows,
+      page,
+      pageSize,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    });
+  } catch (err) {
+    return NextResponse.json({ error: "Failed to fetch audit logs" }, { status: 500 });
+  }
 }

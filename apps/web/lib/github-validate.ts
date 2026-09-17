@@ -10,6 +10,7 @@ export async function validateGitHubToken(token: string): Promise<{ valid: boole
         Accept: "application/vnd.github.v3+json",
         "User-Agent": "SecretWatch-TokenValidator",
       },
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!res.ok) {

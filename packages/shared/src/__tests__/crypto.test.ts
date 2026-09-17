@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll } from "vitest";
 import crypto from "node:crypto";
-import { encrypt, decrypt, maskToken } from "./token-crypto";
+import { encrypt, decrypt, maskToken } from "../crypto";
 
 // Obviously-fake fixtures only — never realistic-looking secrets. Built by
 // concatenation (not a contiguous literal) so secret scanners don't flag

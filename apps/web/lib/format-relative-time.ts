@@ -1,6 +1,7 @@
 /** Formats a past Date as a short relative string ("2m ago", "1h ago", "3d ago"). */
-export function formatRelativeTime(date: Date, now: Date = new Date()): string {
-  const diffMs = now.getTime() - date.getTime();
+export function formatRelativeTime(date: Date | string, now: Date = new Date()): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const diffMs = now.getTime() - d.getTime();
   const diffSec = Math.max(0, Math.floor(diffMs / 1000));
 
   if (diffSec < 60) return "just now";

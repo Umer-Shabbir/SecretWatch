@@ -13,6 +13,58 @@ export interface SSEState {
   error: boolean;
 }
 
+// Module-level fallback singleton shared across any hooks mounted outside SSEProvider
+let sharedEs: EventSource | null = null;
+const sharedHandlers = new Set<React.MutableRefObject<SSEHandlers>>();
+const stateListeners = new Set<(state: SSEState) => void>();
+let sharedState: SSEState = { connected: false, error: false };
+let disconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function updateSharedState(next: SSEState) {
+  sharedState = next;
+  stateListeners.forEach((listener) => listener(next));
+}
+
+function initSharedEventSource() {
+  if (sharedEs) return;
+
+  sharedEs = new EventSource("/api/admin/events");
+
+  sharedEs.onopen = () => {
+    updateSharedState({ connected: true, error: false });
+  };
+
+  sharedEs.onerror = () => {
+    updateSharedState({ connected: false, error: true });
+  };
+
+  sharedEs.addEventListener("workers", (event: MessageEvent) => {
+    try {
+      const data = JSON.parse(event.data);
+      sharedHandlers.forEach((ref) => ref.current.onWorkers?.(data));
+    } catch {
+      // Malformed JSON — skip
+    }
+  });
+
+  sharedEs.addEventListener("activity", (event: MessageEvent) => {
+    try {
+      const data = JSON.parse(event.data);
+      sharedHandlers.forEach((ref) => ref.current.onActivity?.(data));
+    } catch {
+      // Malformed JSON — skip
+    }
+  });
+}
+
+function closeSharedEventSource() {
+  if (sharedEs) {
+    sharedEs.close();
+    sharedEs = null;
+    updateSharedState({ connected: false, error: false });
+  }
+}
+
 /**
  * useSSE — React hook for consuming the shared admin SSE endpoint
  * (/api/admin/events). Listens for named events and calls the provided
@@ -20,16 +72,15 @@ export interface SSEState {
  *
  * Automatically attaches to the root-level <SSEProvider> context to share a single
  * EventSource connection across the entire app (PERF-003). If mounted outside
- * SSEProvider, it gracefully falls back to a standalone EventSource instance.
+ * SSEProvider, it gracefully falls back to a shared module-level singleton EventSource
+ * to guarantee that at most one connection exists per tab.
  */
 export function useSSE(handlers: SSEHandlers): SSEState {
   const context = useSSEContext();
   const handlersRef = useRef(handlers);
   handlersRef.current = handlers;
 
-  // Fallback standalone state if no SSEProvider is present in the tree
-  const [fallbackState, setFallbackState] = useState<SSEState>({ connected: false, error: false });
-  const mountedRef = useRef(true);
+  const [fallbackState, setFallbackState] = useState<SSEState>(sharedState);
 
   // Hook into context if available
   useEffect(() => {
@@ -37,51 +88,26 @@ export function useSSE(handlers: SSEHandlers): SSEState {
       return context.subscribe(handlersRef);
     }
 
-    // Standalone fallback:
-    mountedRef.current = true;
-    let es: EventSource | null = null;
-
-    function connect() {
-      es = new EventSource("/api/admin/events");
-
-      es.onopen = () => {
-        if (mountedRef.current) {
-          setFallbackState({ connected: true, error: false });
-        }
-      };
-
-      es.onerror = () => {
-        if (mountedRef.current) {
-          setFallbackState({ connected: false, error: true });
-        }
-      };
-
-      es.addEventListener("workers", (event: MessageEvent) => {
-        try {
-          const data = JSON.parse(event.data);
-          handlersRef.current.onWorkers?.(data);
-        } catch {
-          // Malformed JSON — skip
-        }
-      });
-
-      es.addEventListener("activity", (event: MessageEvent) => {
-        try {
-          const data = JSON.parse(event.data);
-          handlersRef.current.onActivity?.(data);
-        } catch {
-          // Malformed JSON — skip
-        }
-      });
+    // Standalone fallback using module-level singleton:
+    if (disconnectTimeout) {
+      clearTimeout(disconnectTimeout);
+      disconnectTimeout = null;
     }
 
-    connect();
+    sharedHandlers.add(handlersRef);
+    stateListeners.add(setFallbackState);
+    initSharedEventSource();
 
     return () => {
-      mountedRef.current = false;
-      if (es) {
-        es.close();
-        es = null;
+      sharedHandlers.delete(handlersRef);
+      stateListeners.delete(setFallbackState);
+
+      if (sharedHandlers.size === 0) {
+        disconnectTimeout = setTimeout(() => {
+          if (sharedHandlers.size === 0) {
+            closeSharedEventSource();
+          }
+        }, 1000);
       }
     };
   }, [context]);

@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import { decrypt } from "./token-crypto";
+import { decrypt } from "@secretwatch/shared";
 import { prisma } from "./db";
 import { getRedisConnectionOptions } from "@secretwatch/shared";
 import Redis from "ioredis";

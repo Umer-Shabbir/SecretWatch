@@ -5,13 +5,25 @@
  * the same shape.
  */
 
-export type FindingStatus = "PENDING" | "APPROVED" | "FLAGGED" | "IGNORED" | "FAILED";
+export type FindingStatus =
+  "PENDING" | "APPROVED" | "FLAGGED" | "IGNORED" | "FAILED";
 
-export const FINDING_STATUSES: FindingStatus[] = ["PENDING", "APPROVED", "FLAGGED", "IGNORED", "FAILED"];
+export const FINDING_STATUSES: FindingStatus[] = [
+  "PENDING",
+  "APPROVED",
+  "FLAGGED",
+  "IGNORED",
+  "FAILED",
+];
 
 export type FindingSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 
-export const FINDING_SEVERITIES: FindingSeverity[] = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
+export const FINDING_SEVERITIES: FindingSeverity[] = [
+  "CRITICAL",
+  "HIGH",
+  "MEDIUM",
+  "LOW",
+];
 
 /**
  * Row shape returned by GET /api/findings.
@@ -98,4 +110,16 @@ export type FlagsListFilter = "ALL" | "FLAGGED" | "FAILED";
 /** flag-queue job payload (M07), shared between apps/web's producer (lib/queue.ts) and apps/worker's consumer (flagger.worker.ts). */
 export interface FlagJobData {
   findingId: string;
+}
+export interface WebhookPayload {
+  id: string;
+  repoFullName: string;
+  filePath: string;
+  matchedRule: string;
+  severity: FindingSeverity | null;
+  status: FindingStatus;
+  autoApproved?: boolean;
+  approvedBy?: string;
+  issueUrl?: string; // For flagged event
+  failureReason?: string; // For flag.failed
 }

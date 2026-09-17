@@ -25,28 +25,26 @@ const SEVERITY_FILTERS: Array<{ label: string; value: FindingSeverity | "ALL" }>
   { label: "Low", value: "LOW" },
 ];
 
+const QUEUE_STATUSES = [
+  { label: "Pending Review", value: "PENDING" },
+  { label: "Failed Flags", value: "FAILED" },
+] as const;
+
+type QueueStatus = (typeof QUEUE_STATUSES)[number]["value"];
+
 /**
- * Client orchestrator for Admin / Review Queue (M06). Figma nodes:
- *   - 42:844 Default
- *   - 42:845 Loading (route-level loading.tsx handles the *initial* load;
- *     `refetching` here covers subsequent page loads)
- *   - 42:846 Empty
- *   - 42:847 Error
- *   - 42:848 Confirm Approve (modal — reuses ConfirmApproveDialog, same
- *     component M05's Finding Detail already uses)
- *   - 42:849 Mobile
+ * Client orchestrator for Admin / Review Queue (M06).
  *
- * Always queries GET /api/findings?status=PENDING — a review queue is by
- * definition the set of findings awaiting a human decision. Severity filter
- * tabs (All/Critical/High/Medium/Low) map to the `severity` column added by
- * the finding-severity migration and are appended to the query when a non-ALL
- * value is selected.
+ * Supports querying findings by status (PENDING or FAILED) and filtering
+ * by severity (ALL, CRITICAL, HIGH, MEDIUM, LOW).
  *
- * Approve/Ignore call the same admin-gated endpoints M05 already built
- * (POST /api/findings/:id/approve, /ignore) — no new backend logic, no
- * duplicated business rules. A successful action removes the row from the
- * local list (it's no longer PENDING) rather than re-fetching the whole
- * page, so the queue visibly shrinks as the admin works through it.
+ * For PENDING findings:
+ *   - Approve & Flag (transitions to APPROVED and enqueues flag job)
+ *   - Ignore (transitions to IGNORED)
+ *
+ * For FAILED findings:
+ *   - Retry Flag (resets finding back to PENDING and approves/enqueues it)
+ *   - Ignore (transitions to IGNORED)
  */
 export function ReviewQueueClient({
   initialResult,
@@ -59,53 +57,57 @@ export function ReviewQueueClient({
 }) {
   const router = useRouter();
   const [page, setPage] = useState(initialResult?.page ?? 1);
+  const [queueStatus, setQueueStatus] = useState<QueueStatus>("PENDING");
   const [severityFilter, setSeverityFilter] = useState<FindingSeverity | "ALL">("ALL");
   const [result, setResult] = useState<FindingsListResult | null>(initialResult);
   const [loadFailed, setLoadFailed] = useState(initialLoadFailed);
   const [refetching, setRefetching] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkAction, setBulkAction] = useState<"approve" | "ignore" | null>(null);
+  const [bulkAction, setBulkAction] = useState<"approve" | "ignore" | "retry" | null>(null);
   const [showBulkConfirmDialog, setShowBulkConfirmDialog] = useState(false);
 
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<"approve" | "ignore" | null>(null);
+  const [pendingAction, setPendingAction] = useState<"approve" | "ignore" | "retry" | null>(null);
   const [confirmTargetId, setConfirmTargetId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const approveTriggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const requestId = useRef(0);
 
-  const fetchQueue = useCallback(async (nextPage: number, severity: FindingSeverity | "ALL") => {
-    const thisRequest = ++requestId.current;
-    setRefetching(true);
-    try {
-      const params = new URLSearchParams({
-        status: "PENDING",
-        page: String(nextPage),
-        pageSize: String(PAGE_SIZE),
-      });
-      if (severity !== "ALL") {
-        params.set("severity", severity);
-      }
-      const res = await fetch(`/api/findings?${params.toString()}`, { cache: "no-store" });
-      if (thisRequest !== requestId.current) return;
+  const fetchQueue = useCallback(
+    async (nextPage: number, severity: FindingSeverity | "ALL", status: QueueStatus) => {
+      const thisRequest = ++requestId.current;
+      setRefetching(true);
+      try {
+        const params = new URLSearchParams({
+          status,
+          page: String(nextPage),
+          pageSize: String(PAGE_SIZE),
+        });
+        if (severity !== "ALL") {
+          params.set("severity", severity);
+        }
+        const res = await fetch(`/api/findings?${params.toString()}`, { cache: "no-store" });
+        if (thisRequest !== requestId.current) return;
 
-      if (!res.ok) {
+        if (!res.ok) {
+          setLoadFailed(true);
+          return;
+        }
+        const body = (await res.json()) as FindingsListResult;
+        setResult(body);
+        setSelectedIds(new Set());
+        setLoadFailed(false);
+      } catch {
+        if (thisRequest !== requestId.current) return;
         setLoadFailed(true);
-        return;
+      } finally {
+        if (thisRequest === requestId.current) setRefetching(false);
       }
-      const body = (await res.json()) as FindingsListResult;
-      setResult(body);
-      setSelectedIds(new Set());
-      setLoadFailed(false);
-    } catch {
-      if (thisRequest !== requestId.current) return;
-      setLoadFailed(true);
-    } finally {
-      if (thisRequest === requestId.current) setRefetching(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const isFirstRender = useRef(true);
   useEffect(() => {
@@ -113,32 +115,56 @@ export function ReviewQueueClient({
       isFirstRender.current = false;
       return;
     }
-    fetchQueue(page, severityFilter);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, severityFilter]);
+    fetchQueue(page, severityFilter, queueStatus);
+  }, [page, severityFilter, queueStatus, fetchQueue]);
 
-  function handleRetry() {
-    fetchQueue(page, severityFilter);
+  function handleRetryFetch() {
+    fetchQueue(page, severityFilter, queueStatus);
+  }
+
+  function handleStatusChange(status: QueueStatus) {
+    if (status === queueStatus) return;
+    setQueueStatus(status);
+    setPage(1);
+    setSelectedIds(new Set());
   }
 
   function handleSeverityChange(value: FindingSeverity | "ALL") {
     setSeverityFilter(value);
     setPage(1);
+    setSelectedIds(new Set());
   }
 
-  async function performAction(id: string, action: "approve" | "ignore") {
+  async function performAction(id: string, action: "approve" | "ignore" | "retry") {
     setPendingActionId(id);
     setPendingAction(action);
     setActionError(null);
     try {
-      const res = await fetch(`/api/findings/${id}/${action}`, { method: "POST" });
-      const body = await res.json();
-      if (!res.ok) {
-        setActionError(body?.message ?? `Could not ${action} this finding. It may have already been updated.`);
-        return;
+      if (action === "retry") {
+        // Reset to PENDING first
+        const resetRes = await fetch(`/api/findings/${id}/reset`, { method: "POST" });
+        const resetBody = await resetRes.json();
+        if (!resetRes.ok) {
+          setActionError(resetBody?.message ?? "Could not reset finding status for retry.");
+          return;
+        }
+        // Then Approve & Flag to re-enqueue
+        const approveRes = await fetch(`/api/findings/${id}/approve`, { method: "POST" });
+        const approveBody = await approveRes.json();
+        if (!approveRes.ok) {
+          setActionError(approveBody?.message ?? "Finding reset to pending, but failed to re-approve.");
+          return;
+        }
+      } else {
+        const res = await fetch(`/api/findings/${id}/${action}`, { method: "POST" });
+        const body = await res.json();
+        if (!res.ok) {
+          setActionError(body?.message ?? `Could not ${action} this finding. It may have already been updated.`);
+          return;
+        }
       }
-      // Remove the row locally — it's no longer PENDING, so it no longer
-      // belongs in this queue. Avoids a full re-fetch for a single-row change.
+
+      // Remove the row locally — it's no longer in this status queue
       setResult((prev) =>
         prev
           ? {
@@ -148,8 +174,6 @@ export function ReviewQueueClient({
             }
           : prev
       );
-      // Refresh server data so navigation to other pages (e.g. admin
-      // overview stat cards, sidebar badges) reflects the updated counts.
       router.refresh();
     } catch {
       setActionError(`Could not ${action} this finding. Please try again.`);
@@ -162,6 +186,10 @@ export function ReviewQueueClient({
 
   function handleIgnoreClick(id: string) {
     performAction(id, "ignore");
+  }
+
+  function handleRetryFlagClick(id: string) {
+    performAction(id, "retry");
   }
 
   function handleApproveClick(id: string) {
@@ -195,28 +223,52 @@ export function ReviewQueueClient({
     }
   }
 
-  async function performBulkAction(action: "approve" | "ignore") {
+  async function performBulkAction(action: "approve" | "ignore" | "retry") {
     if (selectedIds.size === 0) return;
     setBulkAction(action);
     setActionError(null);
     try {
       const ids = Array.from(selectedIds);
-      const res = await fetch(`/api/findings/bulk/${action}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
-      });
-      const body = await res.json();
-      if (!res.ok) {
-        setActionError(body?.message ?? `Could not ${action} selected findings.`);
-        return;
+      if (action === "retry") {
+        const resetRes = await fetch("/api/findings/bulk/reset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids }),
+        });
+        const resetBody = await resetRes.json();
+        if (!resetRes.ok) {
+          setActionError(resetBody?.message ?? "Could not reset selected findings.");
+          return;
+        }
+
+        const approveRes = await fetch("/api/findings/bulk/approve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids }),
+        });
+        const approveBody = await approveRes.json();
+        if (!approveRes.ok) {
+          setActionError(approveBody?.message ?? "Reset selected findings, but bulk approval failed.");
+          return;
+        }
+      } else {
+        const res = await fetch(`/api/findings/bulk/${action}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids }),
+        });
+        const body = await res.json();
+        if (!res.ok) {
+          setActionError(body?.message ?? `Could not ${action} selected findings.`);
+          return;
+        }
       }
+
       setResult((prev) => {
         if (!prev) return prev;
         const newFindings = prev.findings.filter((f) => !ids.includes(f.id));
         const newTotal = Math.max(prev.total - ids.length, 0);
 
-        // UX-007: Fetch previous page if current page becomes empty
         if (newFindings.length === 0 && page > 1) {
           setPage(page - 1);
         }
@@ -260,9 +312,29 @@ export function ReviewQueueClient({
         <h1 className="text-2xl font-semibold leading-8 text-fg-default">Review Queue</h1>
         {!loadFailed && result !== null && (
           <p className="mt-1 text-sm text-fg-muted">
-            {total} finding{total === 1 ? "" : "s"} awaiting review
+            {total} finding{total === 1 ? "" : "s"} {queueStatus === "PENDING" ? "awaiting review" : "failed to flag"}
           </p>
         )}
+      </div>
+
+      {/* Status View Switcher */}
+      <div className="flex border-b border-border-default gap-6" role="tablist" aria-label="Review Queue Status">
+        {QUEUE_STATUSES.map(({ label, value }) => (
+          <button
+            key={value}
+            role="tab"
+            type="button"
+            aria-selected={queueStatus === value}
+            onClick={() => handleStatusChange(value)}
+            className={`pb-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              queueStatus === value
+                ? "border-accent-emphasis text-accent-fg font-semibold"
+                : "border-transparent text-fg-muted hover:text-fg-default hover:border-border-default"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {actionError && (
@@ -329,15 +401,27 @@ export function ReviewQueueClient({
             >
               Ignore Selected ({selectedIds.size})
             </Button>
-            <Button
-              variant="primary"
-              className="w-auto text-xs"
-              onClick={() => setShowBulkConfirmDialog(true)}
-              loading={bulkAction === "approve"}
-              disabled={bulkAction !== null}
-            >
-              Approve &amp; Flag Selected ({selectedIds.size})
-            </Button>
+            {queueStatus === "FAILED" ? (
+              <Button
+                variant="primary"
+                className="w-auto text-xs"
+                onClick={() => performBulkAction("retry")}
+                loading={bulkAction === "retry"}
+                disabled={bulkAction !== null}
+              >
+                Retry Selected ({selectedIds.size})
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                className="w-auto text-xs"
+                onClick={() => setShowBulkConfirmDialog(true)}
+                loading={bulkAction === "approve"}
+                disabled={bulkAction !== null}
+              >
+                Approve &amp; Flag Selected ({selectedIds.size})
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -345,9 +429,9 @@ export function ReviewQueueClient({
       {loadFailed ? (
         <ErrorState
           title="Failed to load review queue"
-          description="We couldn't load pending findings. Please try again."
+          description={`We couldn't load ${queueStatus === "PENDING" ? "pending" : "failed"} findings. Please try again.`}
           action={
-            <Button variant="secondary" className="w-auto" onClick={handleRetry} loading={refetching}>
+            <Button variant="secondary" className="w-auto" onClick={handleRetryFetch} loading={refetching}>
               Retry
             </Button>
           }
@@ -355,8 +439,12 @@ export function ReviewQueueClient({
       ) : isEmpty ? (
         <div className="w-full rounded-small border border-border-muted">
           <EmptyState
-            title="Nothing to review"
-            description="All findings have been reviewed. New findings will appear here for approval."
+            title={queueStatus === "PENDING" ? "Nothing to review" : "No failed flags"}
+            description={
+              queueStatus === "PENDING"
+                ? "All findings have been reviewed. New findings will appear here for approval."
+                : "There are currently no findings with failed flag attempts."
+            }
           />
         </div>
       ) : (
@@ -365,6 +453,7 @@ export function ReviewQueueClient({
             {findings.map((finding) => {
               const isThisApproving = pendingActionId === finding.id && pendingAction === "approve";
               const isThisIgnoring = pendingActionId === finding.id && pendingAction === "ignore";
+              const isThisRetrying = pendingActionId === finding.id && pendingAction === "retry";
               const anyActionOnThisRow = pendingActionId === finding.id;
               const isSelected = selectedIds.has(finding.id);
 
@@ -392,12 +481,22 @@ export function ReviewQueueClient({
                         </span>
                         <div className="flex gap-2">
                           <FindingSeverityBadge severity={finding.severity} />
-                          <FindingStatusBadge status="PENDING" />
+                          <FindingStatusBadge status={finding.status} />
                         </div>
                       </div>
                       <p className="mt-3 font-mono text-[13px] text-fg-default">{finding.filePath}</p>
                       <p className="mt-2 text-sm text-fg-default">{finding.matchedRule}</p>
+                      {finding.failureReason && (
+                        <p className="mt-2 text-xs font-medium text-danger-fg">
+                          Failure reason: {finding.failureReason}
+                        </p>
+                      )}
                       <p className="mt-2 text-xs text-fg-muted">Detected {formatRelativeTime(new Date(finding.createdAt))}</p>
+                      {finding.failureReason && (
+                        <p className="mt-2 text-xs text-danger-fg">
+                          <span className="font-semibold">Failure reason:</span> {finding.failureReason}
+                        </p>
+                      )}
 
                       <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
                         <Button
@@ -409,17 +508,29 @@ export function ReviewQueueClient({
                         >
                           Ignore
                         </Button>
-                        <Button
-                          ref={(el) => {
-                            approveTriggerRefs.current[finding.id] = el;
-                          }}
-                          variant="primary"
-                          className="w-full sm:w-auto"
-                          onClick={() => handleApproveClick(finding.id)}
-                          disabled={anyActionOnThisRow && !isThisApproving}
-                        >
-                          Approve &amp; Flag
-                        </Button>
+                        {finding.status === "FAILED" || queueStatus === "FAILED" ? (
+                          <Button
+                            variant="primary"
+                            className="w-full sm:w-auto"
+                            onClick={() => handleRetryFlagClick(finding.id)}
+                            loading={isThisRetrying}
+                            disabled={anyActionOnThisRow && !isThisRetrying}
+                          >
+                            Retry Flag
+                          </Button>
+                        ) : (
+                          <Button
+                            ref={(el) => {
+                              approveTriggerRefs.current[finding.id] = el;
+                            }}
+                            variant="primary"
+                            className="w-full sm:w-auto"
+                            onClick={() => handleApproveClick(finding.id)}
+                            disabled={anyActionOnThisRow && !isThisApproving}
+                          >
+                            Approve &amp; Flag
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>

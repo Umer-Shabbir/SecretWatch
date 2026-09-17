@@ -1,9 +1,9 @@
 {
   "id": "M07",
   "name": "Flagger + Flags",
-  "status": "DONE",
-  "owner": null,
-  "claimedAt": null,
+  "status": "CLAIMED",
+  "owner": "antigravity",
+  "claimedAt": "2026-09-17T20:04:43.761Z",
   "completedAt": "2026-08-16T20:16:00.000Z",
   "dependencies": [
     "M03",

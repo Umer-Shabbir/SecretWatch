@@ -50,11 +50,21 @@ There is no USER role account/session in this product. (The `Role` enum in `pris
 - IGNORED
 - FAILED
 
+## Custom Scan Rule Search Syntax
+
+When defining custom scan rules, the underlying search acts directly on GitHub's code search APIs. 
+Custom scan rules must include standard GitHub code search qualifiers if trying to restrict queries. By default, SecretWatch scanner resolves rules with implicit fallbacks (e.g. `ruleName in:file`) to capture high-entropy strings, but admins can supply overriding syntax. 
+
 ## Worker responsibilities
 
 ### Scanner
 
 Searches GitHub code, evaluates regex/entropy rules, and writes findings.
+
+
+### Auto-Approval Backlog Processing
+
+When the "Auto-Approve" feature is enabled via system settings, new findings enter the `APPROVED` state immediately upon discovery. When an administrator turns on Auto-Approve while existing `PENDING` findings exist, those backlogged findings are retroactively transitioned to `APPROVED` so the flagger worker can process them. By default, the flagger only selects `APPROVED` findings and ignores `PENDING` ones.
 
 ### Flagger
 
@@ -63,6 +73,12 @@ Processes approved findings and creates GitHub issues using a globally-submitted
 ### Scheduler
 
 Creates recurring scan jobs through BullMQ.
+
+## Auto-Approval Backlog Processing
+When the "Auto-Approve" feature is toggled ON by an admin, the system performs an immediate, disruptive backlog migration by automatically flipping the status of all existing `PENDING` findings to `APPROVED`. This clears out the review queue for historic items, meaning they will be picked up by the flagger worker on its next cycle.
+
+## Custom Scan Rule Search Syntax
+For scan rules, if a rule name does not map to a pre-known GitHub code-search pattern (like "AWS Access Key" mapping to `AKIA in:file`), the system defaults to applying the exact rule name followed by ` in:file`. Administrators creating custom rules must account for this rule name interpolation inside their queries, or rely on worker overrides.
 
 ## UI areas
 
