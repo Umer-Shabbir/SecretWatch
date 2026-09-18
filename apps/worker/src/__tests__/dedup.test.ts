@@ -10,6 +10,7 @@ interface FakeFindingRow {
   commitSha: string;
   matchedRule: string;
   redactedSnippet: string;
+  secretHash?: string;
   status: string;
   createdAt: Date;
 }
@@ -57,6 +58,7 @@ function resetFakeDb() {
           commitSha: data.commitSha,
           matchedRule: data.matchedRule,
           redactedSnippet: data.redactedSnippet,
+          secretHash: data.secretHash,
           status: data.status ?? "PENDING",
           createdAt: new Date(),
         };

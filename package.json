@@ -21,5 +21,8 @@
     "worker:typecheck": "npm run typecheck --workspace=apps/worker",
     "worker:test": "npm run test --workspace=apps/worker",
     "worker:prisma:generate": "npm run prisma:generate --workspace=apps/worker"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.2"
   }
 }
