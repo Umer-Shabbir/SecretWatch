@@ -33,9 +33,9 @@ vi.mock("../github-client", async () => {
   };
 });
 
-const dispatchWebhookEventMock = vi.fn(async () => {});
+const dispatchWebhookEventMock = vi.fn(async (..._args: unknown[]) => {});
 vi.mock("../webhooks", () => ({
-  dispatchWebhookEvent: (...args: unknown[]) => dispatchWebhookEventMock(...args),
+  dispatchWebhookEvent: (...args: any[]) => (dispatchWebhookEventMock as any)(...args),
 }));
 
 describe("apps/worker/scanner.worker", () => {

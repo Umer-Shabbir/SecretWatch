@@ -31,6 +31,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    pool: "forks",
     // Give the regex sandbox a wide budget under test: files run in parallel
     // worker processes, so a benign regex round-trip through the worker_thread
     // can exceed the 250ms production budget purely from CPU contention and

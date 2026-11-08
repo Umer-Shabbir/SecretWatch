@@ -6,6 +6,8 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+coverage/
+.nyc_output/
 
 # Env / secrets
 .env
